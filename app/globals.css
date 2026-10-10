@@ -293,3 +293,34 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
 .st-bars i { flex: 1; min-height: 3px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--brand2), var(--brand1)); }
 .st-axis { display: flex; justify-content: space-between; font: 600 10px 'JetBrains Mono', monospace; color: var(--sub); margin-top: 4px; }
 .st-row { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; align-items: baseline; }
+
+/* ═══ Computadora ═══ */
+/* Menú arriba (en lugar de la barra flotante de abajo) y hoja más ancha */
+@media (min-width: 1100px) {
+  .apphero { padding: 18px 32px 56px; }
+  .apphero-in, .page.sheetpage { max-width: 1180px; }
+  .page.sheetpage { padding: 30px 32px 48px; min-height: calc(100dvh - 132px); }
+  .apphero .who b { max-width: 260px; }
+  .nav { top: 14px; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); width: auto; max-width: none; margin: 0; padding: 5px; gap: 4px; border-radius: 999px; }
+  .nav a { flex: none; flex-direction: row; gap: 8px; padding: 9px 18px; border-radius: 999px; font-size: 14px; }
+  .nav a.on { box-shadow: 0 6px 14px -8px rgba(11,58,140,.8); }
+}
+
+/* Ejecutar auditoría: tarjeta centrada en vez de pantalla completa estirada */
+@media (min-width: 900px) {
+  .exec { inset: 24px auto 24px 50%; transform: translateX(-50%); width: 760px; max-width: calc(100vw - 48px); border-radius: 32px; overflow: hidden; box-shadow: 0 0 0 100vmax rgba(10,25,60,.55), 0 30px 80px -30px rgba(11,31,77,.6); }
+  .exec-top { border-radius: 0 0 26px 26px; }
+  .exec-body { padding: 26px 32px; }
+  .exec-foot { padding: 14px 32px 20px; }
+}
+
+/* Inicio de sesión: tarjeta ancha con la imagen a un lado y el formulario al otro */
+@media (min-width: 900px) {
+  .login2-card { max-width: 980px; flex-direction: row; min-height: 600px; }
+  .login2 { align-items: center; padding: 28px 24px; }
+  .hero { flex: 1 1 52%; display: flex; flex-direction: column; justify-content: center; padding: 48px 44px; }
+  .hero-in h1 { font-size: 58px; }
+  .hero-in .logo { height: 60px; }
+  .hero::after { background: linear-gradient(180deg, rgba(8,28,74,.45) 0%, rgba(8,28,74,.7) 100%); }
+  .login2 form { flex: 1 1 48%; margin-top: 0; border-radius: 0; box-shadow: none; padding: 56px 44px; display: flex; flex-direction: column; justify-content: center; }
+}
