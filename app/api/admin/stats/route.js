@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { q } from '@/lib/db';
 import { route, json } from '@/lib/api';
+import { siteScope } from '@/lib/site';
 import { mxToday, addDays } from '@/lib/dates';
 
 const TZ = `'America/Mexico_City'`;
@@ -9,7 +10,8 @@ const hhmm = (mins) => mins == null ? null : `${String(Math.floor(mins / 60)).pa
 const FAST_SEC_PER_Q = 5; // menos de 5 s por pregunta se marca como "muy rápida"
 
 // Estadísticas de tiempo: a qué hora y cuánto tardó cada auditor (solo admin)
-export const GET = route(async (req) => {
+export const GET = route(async (req, ctx, user) => {
+  const scope = await siteScope(user);
   const days = Math.min(180, Math.max(1, Number(new URL(req.url).searchParams.get('days')) || 28));
   const from = addDays(mxToday(), -days);
   const { rows } = await q(
@@ -21,8 +23,8 @@ export const GET = route(async (req) => {
             to_char(a.started_at AT TIME ZONE ${TZ},'HH24:MI') AS start_time,
             CASE WHEN a.started_at IS NOT NULL THEN GREATEST(0, EXTRACT(EPOCH FROM (a.completed_at - a.started_at))::int) END AS elapsed_sec
        FROM audits a JOIN users u ON u.id=a.user_id
-      WHERE a.status='completed' AND a.completed_at IS NOT NULL AND a.date >= $1
-      ORDER BY a.completed_at DESC`, [from]);
+      WHERE a.status='completed' AND a.completed_at IS NOT NULL AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2)
+      ORDER BY a.completed_at DESC`, [from, scope]);
 
   const list = rows.map((r) => ({
     ...r,

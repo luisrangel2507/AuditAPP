@@ -1,8 +1,10 @@
 import { q } from '@/lib/db';
 import { route, json } from '@/lib/api';
+import { siteScope } from '@/lib/site';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
 
-export const GET = route(async (req) => {
+export const GET = route(async (req, ctx, user) => {
+  const scope = await siteScope(user);
   const today = mxToday();
   const weeks = Math.min(12, Math.max(1, Number(new URL(req.url).searchParams.get('weeks')) || 4));
   const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
@@ -10,33 +12,34 @@ export const GET = route(async (req) => {
   const from = [addDays(mondayOf(today), -(weeks - 1) * 7), gl].sort().pop();
   // Cuentan para cumplimiento: completadas, o cuya ventana (el día programado) ya cerró
   const due = `(a.due_date < $2::date OR a.status='completed')`;
-  const P = [from, today];
+  const P = [from, today, scope];
+  const SC = `AND ($3::int IS NULL OR u.site_id=$3)`;
 
   const [kpi, layer, dept, week, area, fail, missing, open] = await Promise.all([
     q(`SELECT COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score,
               COUNT(*) FILTER (WHERE a.status='completed' AND a.late)::int late
-         FROM audits a WHERE a.date >= $1 AND ${due}`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC}`, P),
     q(`SELECT u.layer, COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT u.dept, COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT (a.date - (EXTRACT(ISODOW FROM a.date)::int - 1))::text AS week,
               COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a WHERE a.date >= $1 AND ${due} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT a.area, COUNT(*) FILTER (WHERE a.status='completed')::int audits,
               COALESCE(SUM(a.nok_count + a.partial_count),0)::int findings,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a WHERE a.date >= $1 AND a.status='completed' AND a.area <> 'All Areas'
-         GROUP BY 1 HAVING COUNT(*) > 0 ORDER BY avg_score NULLS LAST, findings DESC LIMIT 10`, [from]),
-    q(`SELECT r.question, COUNT(*)::int fails FROM responses r JOIN audits a ON a.id=r.audit_id
-        WHERE a.date >= $1 AND r.result IN ('nok','partial') GROUP BY 1 ORDER BY 2 DESC LIMIT 8`, [from]),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND a.status='completed' AND a.area <> 'All Areas' AND ($2::int IS NULL OR u.site_id=$2)
+         GROUP BY 1 HAVING COUNT(*) > 0 ORDER BY avg_score NULLS LAST, findings DESC LIMIT 10`, [from, scope]),
+    q(`SELECT r.question, COUNT(*)::int fails FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
+        WHERE a.date >= $1 AND r.result IN ('nok','partial') AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1 ORDER BY 2 DESC LIMIT 8`, [from, scope]),
     q(`SELECT a.id,a.date,a.area,u.name,u.dept,u.layer FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.status='pending' AND a.due_date < $1::date AND a.date >= $2 ORDER BY a.date DESC, u.name LIMIT 60`, [today, from]),
-    q(`SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE due_date < $1)::int overdue FROM findings WHERE status <> 'closed'`, [today]),
+        WHERE a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope]),
+    q(`SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`, [today, scope]),
   ]);
   return json({ today, from, weeks, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
     area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0] });

@@ -1,14 +1,15 @@
 import { pool, q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
+import { sameSite } from '@/lib/site';
 import { addOwner, logUpdate, syncFinding } from '@/lib/issues';
 
 // Línea de tiempo del issue
 export const GET = route(async (req, { params }, user) => {
   const { rows: [f] } = await q(
-    `SELECT f.id, a.user_id AS auditor_id, EXISTS(SELECT 1 FROM finding_owners o WHERE o.finding_id=f.id AND o.user_id=$2) AS is_owner
-       FROM findings f JOIN audits a ON a.id=f.audit_id WHERE f.id=$1`, [params.id, user.id]);
+    `SELECT f.id, a.user_id AS auditor_id, au.site_id, EXISTS(SELECT 1 FROM finding_owners o WHERE o.finding_id=f.id AND o.user_id=$2) AS is_owner
+       FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users au ON au.id=a.user_id WHERE f.id=$1`, [params.id, user.id]);
   if (!f) return err('No encontrado', 404);
-  if (!isLead(user) && f.auditor_id !== user.id && !f.is_owner) return err('Sin permiso', 403);
+  if (!(isLead(user) && sameSite(user, f.site_id)) && f.auditor_id !== user.id && !f.is_owner) return err('Sin permiso', 403);
   const { rows } = await q(
     `SELECT fu.id,fu.kind,fu.text,fu.created_at,u.name FROM finding_updates fu LEFT JOIN users u ON u.id=fu.user_id
       WHERE fu.finding_id=$1 ORDER BY fu.id`, [params.id]);
@@ -21,9 +22,9 @@ export const PATCH = route(async (req, { params }, user) => {
   try {
     await client.query('BEGIN');
     const { rows: [f] } = await client.query(
-      `SELECT f.*, a.user_id AS auditor_id FROM findings f JOIN audits a ON a.id=f.audit_id WHERE f.id=$1 FOR UPDATE OF f`, [params.id]);
+      `SELECT f.*, a.user_id AS auditor_id, au.site_id FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users au ON au.id=a.user_id WHERE f.id=$1 FOR UPDATE OF f`, [params.id]);
     if (!f) { await client.query('ROLLBACK'); return err('No encontrado', 404); }
-    const lead = isLead(user);
+    const lead = isLead(user) && sameSite(user, f.site_id);
     const { rows: [mine] } = await client.query('SELECT * FROM finding_owners WHERE finding_id=$1 AND user_id=$2', [f.id, user.id]);
     const participant = lead || f.auditor_id === user.id || !!mine;
     if (!participant) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }

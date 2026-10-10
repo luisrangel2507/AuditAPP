@@ -2,7 +2,8 @@
 import { useEffect, useState, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, DEPT, LAYER } from '@/lib/client';
+import { api, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
+import Guide from '@/components/Guide';
 import { HeroArt } from '@/components/Art';
 import { I } from '@/components/Icons';
 
@@ -37,16 +38,25 @@ function PasswordGate({ onDone }) {
 
 export default function Shell({ children, need }) {
   const [user, setUser] = useState(null), [issues, setIssues] = useState(0);
+  const [guide, setGuide] = useState(false), [sites, setSites] = useState([]), [siteSel, setSiteSel] = useState('ALL');
   const path = usePathname();
   const router = useRouter();
 
-  useEffect(() => { api('/api/auth/me').then(setUser).catch(() => {}); }, []);
+  useEffect(() => { api('/api/auth/me').then(setUser).catch(() => {}); setSiteSel(getSiteCookie()); }, []);
+  useEffect(() => { if (user?.access === 'admin') api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
+  // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
+  useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
     if (user && need === 'lead' && !['lead', 'admin'].includes(user.access)) router.replace('/');
     if (user && need === 'admin' && user.access !== 'admin') router.replace('/');
   }, [user, need, router]);
 
+  function closeGuide() {
+    setGuide(false);
+    if (user && !user.onboarded) { setUser({ ...user, onboarded: true }); api('/api/auth/onboarded', { method: 'POST' }).catch(() => {}); }
+  }
+  function pickSite(code) { setSiteCookie(code); setSiteSel(code); window.location.reload(); }
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   if (!user) return <div className="empty" style={{ paddingTop: 120 }}>Cargando…</div>;
 
@@ -64,11 +74,20 @@ export default function Shell({ children, need }) {
         <div className="apphero-in">
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
-            <div className="who"><b>{user.name}</b><span>{ROLE[user.dept] || ''} · {LAYER[user.layer]}</span></div>
+            <div className="who"><b>{user.name}</b><span>{user.site_code ? user.site_code + ' · ' : ''}{ROLE[user.dept] || ''} · {LAYER[user.layer]}</span></div>
+            <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
             <button className="logout" onClick={logout}>{I.logout(18)}<span>Salir</span></button>
           </div>
-          <div className="appname">LP<span className="app-accent">APP</span></div>
+          <div className="apphero-bottom">
+            <div className="appname">LP<span className="app-accent">APP</span></div>
+            {user.access === 'admin' && sites.length > 0 && (
+              <select className="sitesel" value={siteSel} onChange={(e) => pickSite(e.target.value)} aria-label="Planta">
+                <option value="ALL">Todas las plantas</option>
+                {sites.map((s) => <option key={s.id} value={s.code}>{s.code}{s.active ? '' : ' (sin activar)'}</option>)}
+              </select>
+            )}
+          </div>
         </div>
       </header>
       <main className="page sheetpage">{children}</main>
@@ -77,6 +96,7 @@ export default function Shell({ children, need }) {
           <Link key={href} href={href} className={path === href ? 'on' : ''}><span className="ni">{icon(22)}{href === '/findings' && issues > 0 && <b className="badge">{issues > 9 ? '9+' : issues}</b>}</span><span>{label}</span></Link>
         ))}
       </nav>
+      {guide && !user.must_change && <Guide user={user} onClose={closeGuide} />}
       {user.must_change && <PasswordGate onDone={() => setUser({ ...user, must_change: false })} />}
     </UserCtx.Provider>
   );

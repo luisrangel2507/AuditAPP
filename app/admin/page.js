@@ -1,12 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
-import { api, DEPT, LAYER, DAYS_SHORT } from '@/lib/client';
+import { api, DEPT, LAYER, DAYS_SHORT, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
   const isNew = !u.id;
   const [f, setF] = useState({ name: '', username: '', dept: 'production', layer: 1, access: 'auditor', template_id: '', days: [], pool: [], start_idx: 0, rotate_daily: false, active: true, ...u });
   const [pool, setPool] = useState((u.pool || []).join(', ')), [pin, setPin] = useState(''), [err, setErr] = useState('');
+  const [sites, setSites] = useState([]);
+  useEffect(() => { api('/api/sites').then((s) => { setSites(s); if (isNew) { const c = getSiteCookie(); const d = s.find((x) => x.code === c) || s[0]; if (d) setF((v) => ({ ...v, site_id: d.id })); } }); /* eslint-disable-next-line */ }, []);
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
   async function save() {
     setErr('');
@@ -23,6 +25,9 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       <h2>{isNew ? 'Nuevo usuario' : f.name}</h2>
       <label className="lbl">Nombre</label><input className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} />
       {isNew && <><label className="lbl">Usuario</label><input className="inp" autoCapitalize="none" value={f.username} onChange={(e) => set('username', e.target.value)} /></>}
+      <label className="lbl">Planta</label>
+      <select className="inp" value={f.site_id || ''} onChange={(e) => set('site_id', e.target.value ? Number(e.target.value) : null)}>
+        <option value="">—</option>{sites.map((s) => <option key={s.id} value={s.id}>{s.code}</option>)}</select>
       <div className="row wrap">
         <div className="grow"><label className="lbl">Departamento</label>
           <select className="inp" value={f.dept} onChange={(e) => set('dept', e.target.value)}>{Object.entries(DEPT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
@@ -70,7 +75,7 @@ function Users({ templates }) {
       </div>
       {!rows ? <div className="empty">Cargando…</div> : list.map((u) => (
         <div key={u.id} className="card" style={{ marginBottom: 8, opacity: u.active ? 1 : .5 }} onClick={() => setEdit(u)}>
-          <div className="row"><b className="grow">{u.name}</b><span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
+          <div className="row"><b className="grow">{u.name}</b>{u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
           <div className="sub">{u.username} · {u.template || 'sin plantilla'} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((d) => DAYS_SHORT[d - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
         </div>))}
       {edit && <UserSheet u={edit} templates={templates} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }} />}
@@ -165,6 +170,97 @@ function Stats() {
   );
 }
 
+const EXAMPLE = `Nombre\tDepto\tCapa\tPlantilla\tDías\tÁreas\tAcceso
+Ana López\tCalidad\t1\tQuality Engineer\tLun, Mié\tLínea 1|Línea 2\t
+Beto Ruiz\tProducción\t2\tProduction Manager\t\t\tlíder`;
+
+function ImportSheet({ site, onClose, onDone }) {
+  const [text, setText] = useState(''), [pw, setPw] = useState(''), [prev, setPrev] = useState(null);
+  const [res, setRes] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [copied, setCopied] = useState(false);
+  const call = async (dry) => {
+    setErr(''); setBusy(true);
+    try { return await api(`/api/admin/sites/${site.id}/import`, { method: 'POST', body: { text, password: pw || undefined, dry_run: dry } }); }
+    catch (e) { setErr(e.message); return null; } finally { setBusy(false); }
+  };
+  const review = async () => { const r = await call(true); if (r) setPrev(r); };
+  const run = async () => { const r = await call(false); if (r?.created) { setRes(r.created); onDone(); } };
+  const copy = async () => {
+    const t = ['Nombre\tUsuario\tContraseña', ...res.map((c) => `${c.name}\t${c.username}\t${c.password}`)].join('\n');
+    try { await navigator.clipboard.writeText(t); setCopied(true); } catch { setErr('No se pudo copiar; selecciona la tabla manualmente.'); }
+  };
+  return (
+    <div className="sheet-bg" onClick={res ? undefined : onClose}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <h2>Importar usuarios · {site.code}</h2>
+      {res ? <>
+        <p className="sub">Se crearon {res.length} usuario(s). <b>Guarda estas contraseñas ahora: no se vuelven a mostrar.</b> Cada quien debe cambiarla al entrar.</p>
+        <table className="imp-table"><thead><tr><th>Nombre</th><th>Usuario</th><th>Contraseña</th></tr></thead>
+          <tbody>{res.map((c) => <tr key={c.username}><td>{c.name}</td><td>{c.username}</td><td style={{ fontFamily: 'var(--mono)' }}>{c.password}</td></tr>)}</tbody></table>
+        {err && <div className="err">{err}</div>}
+        <div className="row" style={{ marginTop: 16 }}><button className="btn alt grow" onClick={copy}>{copied ? 'Copiado ✓' : 'Copiar (para Excel)'}</button><button className="btn grow" onClick={onClose}>Listo</button></div>
+      </> : <>
+        <p className="sub">Pega desde Excel una fila por persona, con estas columnas: <b>Nombre, Depto, Capa, Plantilla, Días, Áreas, Acceso</b>. Varias áreas se separan con <b>|</b>; Capa 2 y 3 no necesitan días ni áreas.</p>
+        <details style={{ margin: '8px 0' }}><summary className="sub" style={{ cursor: 'pointer' }}>Ver ejemplo</summary>
+          <pre className="imp-ta" style={{ whiteSpace: 'pre-wrap', background: '#f1f4fa', borderRadius: 12, padding: 10 }}>{EXAMPLE}</pre></details>
+        <textarea className="inp imp-ta" placeholder="Pega aquí…" value={text} onChange={(e) => { setText(e.target.value); setPrev(null); }} />
+        <label className="lbl">Contraseña inicial (opcional)</label>
+        <input className="inp" autoComplete="off" placeholder="Vacío = una contraseña aleatoria distinta por persona" value={pw} onChange={(e) => { setPw(e.target.value); setPrev(null); }} />
+        {prev && <table className="imp-table"><tbody>{prev.rows.map((r) => (
+          <tr key={r.line}><td>{r.ok ? '✓' : '✕'}</td><td>{r.name || '(sin nombre)'}</td><td className={r.ok ? '' : 'bad'}>{r.ok ? r.template : r.errors.join('; ')}</td></tr>))}</tbody></table>}
+        {err && <div className="err">{err}</div>}
+        <div className="row" style={{ marginTop: 16 }}>
+          <button className="btn alt grow" onClick={onClose}>Cancelar</button>
+          {prev?.ok
+            ? <button className="btn grow" disabled={busy} onClick={run}>Importar {prev.count}</button>
+            : <button className="btn grow" disabled={busy || !text.trim()} onClick={review}>Revisar</button>}
+        </div>
+      </>}
+    </div></div>
+  );
+}
+
+function Sites() {
+  const [rows, setRows] = useState(null), [imp, setImp] = useState(null), [err, setErr] = useState(''), [date, setDate] = useState({});
+  const load = () => api('/api/admin/sites').then(setRows);
+  useEffect(() => { load(); }, []);
+  const run = async (fn) => { setErr(''); try { await fn(); await load(); } catch (e) { setErr(e.message); } };
+  const patch = (s, body) => run(() => api(`/api/admin/sites/${s.id}`, { method: 'PATCH', body }));
+  const verUsuarios = (s) => { setSiteCookie(s.code); window.location.reload(); };
+  const Step = ({ ok, children }) => <li className={ok ? 'done' : 'pend'}><span className="dot">{ok ? '✓' : '•'}</span><span>{children}</span></li>;
+  if (!rows) return <div className="empty">Cargando…</div>;
+  return (
+    <>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Para arrancar una planta: importa sus usuarios, entrega las contraseñas y ponla en marcha. Hasta entonces no genera auditorías ni cuenta en el cumplimiento.</p>
+      {err && <div className="err" style={{ marginBottom: 12 }}>{err}</div>}
+      {rows.map((s) => (
+        <div key={s.id} className="card site-card">
+          <div className="row"><b className="grow" style={{ fontSize: 18 }}>{s.code}</b>
+            <span className={`pill ${s.active ? 'ok' : ''}`}>{s.active ? `En marcha${s.go_live ? ' desde ' + s.go_live : ''}` : 'Sin poner en marcha'}</span></div>
+          <label className="lbl">Nombre de la planta</label>
+          <input className="inp" defaultValue={s.name} key={s.name} onBlur={(e) => e.target.value.trim() && e.target.value !== s.name && patch(s, { name: e.target.value })} />
+          <ul className="checks">
+            <Step ok={s.users > 0}>{s.users > 0 ? `Usuarios cargados: ${s.users} (${s.layer1} Layer 1, ${s.managers} gerentes)` : 'Cargar los usuarios de la planta'}</Step>
+            <Step ok={s.users > 0 && s.no_template === 0}>{s.no_template > 0 ? `${s.no_template} usuario(s) sin plantilla de preguntas` : 'Plantilla de preguntas asignada a todos'}</Step>
+            <Step ok={s.users > 0 && s.pending_password === 0}>{s.users > 0 ? `${s.entered} de ${s.users} ya entraron y cambiaron su contraseña` : 'Entregar contraseñas'}</Step>
+            <Step ok={s.active}>{s.active ? 'Planta en marcha' : 'Poner la planta en marcha'}</Step>
+          </ul>
+          <div className="row wrap">
+            <button className="btn sm" onClick={() => setImp(s)}>Importar usuarios</button>
+            <button className="btn alt sm" onClick={() => verUsuarios(s)}>Ver usuarios</button>
+            <a className="btn alt sm" href={`/tv?site=${s.code}`} target="_blank" rel="noreferrer">Pantalla TV</a>
+          </div>
+          <div className="row wrap" style={{ marginTop: 12 }}>
+            {s.active
+              ? <button className="btn alt sm" onClick={() => confirm(`¿Pausar ${s.code}? Dejará de generar auditorías nuevas.`) && patch(s, { active: false })}>Pausar planta</button>
+              : <><span className="sub">Arranca el</span>
+                  <input className="inp" type="date" style={{ width: 170 }} value={date[s.id] || todayStr()} onChange={(e) => setDate({ ...date, [s.id]: e.target.value })} />
+                  <button className="btn sm" onClick={() => patch(s, { active: true, go_live: date[s.id] || todayStr() })}>Poner en marcha</button></>}
+          </div>
+        </div>))}
+      {imp && <ImportSheet site={imp} onClose={() => setImp(null)} onDone={load} />}
+    </>
+  );
+}
+
 function Inner() {
   const [tab, setTab] = useState('users'), [templates, setTemplates] = useState(null);
   const loadT = () => api('/api/admin/templates').then(setTemplates);
@@ -176,8 +272,9 @@ function Inner() {
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
         <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
+        <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>Plantas</button>
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }

@@ -3,7 +3,7 @@ import { q } from '@/lib/db';
 import { passwordError } from '@/lib/password';
 import { route, json, err } from '@/lib/api';
 
-const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active'];
+const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id'];
 
 export const PATCH = route(async (req, { params }, user) => {
   const b = await req.json();

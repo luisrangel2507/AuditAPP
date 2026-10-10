@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
-import { api, fmtDate, DEPT, LAYER, scoreCls } from '@/lib/client';
+import { api, fmtDate, DEPT, LAYER, scoreCls, getSiteCookie } from '@/lib/client';
 
 const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
@@ -15,11 +15,13 @@ function Bars({ rows, label, value, sub, cls }) {
 }
 
 function Inner() {
-  const [weeks, setWeeks] = useState(4), [d, setD] = useState(null), [err, setErr] = useState('');
+  const [weeks, setWeeks] = useState(4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
+  // La TV usa la planta que ve el admin; un líder siempre ve la suya (lo resuelve el servidor)
+  useEffect(() => { const c = getSiteCookie(); setSiteTv(c !== 'ALL' ? `?site=${c}` : ''); }, []);
   useEffect(() => { setD(null); api(`/api/dashboard?weeks=${weeks}`).then(setD).catch((e) => setErr(e.message)); }, [weeks]);
   return (
     <>
-      <div className="row wrap"><h1 className="title grow">Panel de cumplimiento</h1><a className="btn alt sm" href="/tv" target="_blank" rel="noreferrer">Abrir pantalla TV</a></div>
+      <div className="row wrap"><h1 className="title grow">Panel de cumplimiento</h1><a className="btn alt sm" href={`/tv${siteTv}`} target="_blank" rel="noreferrer">Abrir pantalla TV</a></div>
       <div className="seg" style={{ margin: '12px 0' }}>
         {[1, 4, 8, 12].map((w) => <button key={w} className={weeks === w ? 'on' : ''} onClick={() => setWeeks(w)}>{w === 1 ? 'Esta semana' : `${w} semanas`}</button>)}
       </div>

@@ -124,6 +124,22 @@ CREATE TABLE IF NOT EXISTS finding_updates (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_fupdates_finding ON finding_updates(finding_id);
+-- Plantas (multi-planta). Cada usuario pertenece a una; el admin (site_id NULL) ve todas.
+CREATE TABLE IF NOT EXISTS sites (
+  id         SERIAL PRIMARY KEY,
+  code       TEXT NOT NULL UNIQUE,
+  name       TEXT NOT NULL,
+  active     BOOLEAN NOT NULL DEFAULT FALSE,     -- en marcha: genera auditorías
+  go_live    DATE,                               -- primer día en que cuenta la planta
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS site_id INT REFERENCES sites(id) ON DELETE SET NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarded BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE INDEX IF NOT EXISTS idx_users_site ON users(site_id);
+INSERT INTO sites(code,name,active) VALUES ('MPQ','MPQ',TRUE),('MPS','MPS',FALSE),('MPC','MPC',FALSE),('UMW','UMW',FALSE),('MPD','MPD',FALSE)
+  ON CONFLICT (code) DO NOTHING;
+-- Todo lo que existía antes de multi-planta es de MPQ
+UPDATE users SET site_id=(SELECT id FROM sites WHERE code='MPQ') WHERE site_id IS NULL AND access <> 'admin';
 -- Migra el responsable único anterior
 INSERT INTO finding_owners(finding_id,user_id,status,action)
   SELECT id, owner_id, CASE WHEN status='closed' THEN 'done' WHEN status='in_progress' THEN 'in_progress' ELSE 'open' END, COALESCE(action,'')
@@ -181,8 +197,8 @@ async function main() {
       const hash = sharedHash || (await bcrypt.hash(require('crypto').randomBytes(24).toString('hex'), 10));
       if (!tid[tpl]) throw new Error('Plantilla inexistente: ' + tpl);
       await pool.query(
-        `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily,site_id)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,(SELECT id FROM sites WHERE code='MPQ'))`,
         [name, un, hash, dept, layer, access, tid[tpl], days, pool_, start, rotateDaily]
       );
     }

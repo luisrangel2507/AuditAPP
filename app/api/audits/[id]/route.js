@@ -1,10 +1,11 @@
 import { q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
+import { sameSite } from '@/lib/site';
 import { mxToday, windowState, closesOn } from '@/lib/dates';
 
 async function load(id) {
   const { rows } = await q(
-    `SELECT a.*, u.name AS auditor, u.dept, u.layer, t.name AS template
+    `SELECT a.*, u.name AS auditor, u.dept, u.layer, u.site_id, t.name AS template
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id WHERE a.id=$1`, [id]);
   return rows[0];
 }
@@ -12,7 +13,7 @@ async function load(id) {
 export const GET = route(async (req, { params }, user) => {
   const a = await load(params.id);
   if (!a) return err('No encontrada', 404);
-  if (a.user_id !== user.id && !isLead(user)) return err('Sin permiso', 403);
+  if (a.user_id !== user.id && !(isLead(user) && sameSite(user, a.site_id))) return err('Sin permiso', 403);
   const today = mxToday();
   if (user.access !== 'admin') { delete a.started_at; delete a.active_sec; }
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };
@@ -29,14 +30,19 @@ export const GET = route(async (req, { params }, user) => {
 });
 
 // Reasignar auditor / área / fecha de una auditoría pendiente (líderes)
-export const PATCH = route(async (req, { params }) => {
+export const PATCH = route(async (req, { params }, user) => {
   const a = await load(params.id);
   if (!a) return err('No encontrada', 404);
+  if (!sameSite(user, a.site_id)) return err('Sin permiso', 403);
   if (a.status === 'completed') return err('Ya fue completada');
   const b = await req.json();
   const sets = [], vals = [];
   const add = (c, v) => { vals.push(v); sets.push(`${c}=$${vals.length}`); };
-  if (b.user_id) add('user_id', Number(b.user_id));
+  if (b.user_id) {
+    const { rows: [nu] } = await q('SELECT site_id FROM users WHERE id=$1 AND active', [Number(b.user_id)]);
+    if (!nu || nu.site_id !== a.site_id) return err('El auditor debe ser de la misma planta');
+    add('user_id', Number(b.user_id));
+  }
   if (typeof b.area === 'string') add('area', b.area.trim());
   if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) { add('date', b.date); if (a.date === a.due_date) add('due_date', b.date); }
   if (!sets.length) return err('Nada que cambiar');

@@ -36,12 +36,14 @@ export default function TV() {
   const [updated, setUpdated] = useState(null);
 
   useEffect(() => {
-    const key = new URLSearchParams(window.location.search).get('key') || '';
+    const sp = new URLSearchParams(window.location.search);
+    const key = sp.get('key') || '', site = sp.get('site') || '';
+    const qs = [key && `key=${encodeURIComponent(key)}`, site && `site=${encodeURIComponent(site)}`].filter(Boolean).join('&');
     const load = async () => {
       try {
-        const r = await fetch(`/api/tv${key ? `?key=${encodeURIComponent(key)}` : ''}`, { cache: 'no-store' });
+        const r = await fetch(`/api/tv${qs ? `?${qs}` : ''}`, { cache: 'no-store' });
         const j = await r.json();
-        if (!r.ok) throw new Error(r.status === 401 ? 'Pantalla no autorizada. Usa la liga /tv?key=… o inicia sesión como líder.' : j.error);
+        if (!r.ok) throw new Error(r.status === 401 ? 'Pantalla no autorizada. Usa la liga /tv?key=…&site=MPQ o inicia sesión como líder.' : j.error);
         setData(j); setErr(''); setUpdated(new Date());
       } catch (e) { setErr(e.message); }
     };
@@ -68,7 +70,7 @@ export default function TV() {
     <div className="tv">
       <header className="tv-head">
         <Brand />
-        <div className="tv-title">Estatus de auditorías por capas</div>
+        <div className="tv-title">Estatus de auditorías por capas{data?.site ? ` · ${data.site.code}` : ''}</div>
         <div className="tv-clock">
           <b>{now ? now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : ''}</b>
           <span>{data ? cap(fmt(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })) : ''}</span>

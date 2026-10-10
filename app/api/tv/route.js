@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { timingSafeEqual } from 'crypto';
 import { q } from '@/lib/db';
 import { getUser } from '@/lib/session';
+import { siteScope } from '@/lib/site';
 import { json, err } from '@/lib/api';
 import { mxToday, mondayOf, addDays, windowState } from '@/lib/dates';
 
@@ -17,11 +18,19 @@ const mxDay = (ts) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexi
 
 export async function GET(req) {
   try {
-    if (!keyOk(new URL(req.url).searchParams.get('key'))) {
+    const sp = new URL(req.url).searchParams;
+    const code = sp.get('site');
+    const byCode = async () => (await q('SELECT id FROM sites WHERE code=$1', [code])).rows[0]?.id ?? 0;
+    let scope = null; // null = todas las plantas
+    if (keyOk(sp.get('key'))) {
+      if (code) scope = await byCode();
+    } else {
       const u = await getUser();
       if (!u) return err('No autorizado', 401);
       if (!['lead', 'admin'].includes(u.access)) return err('Sin permiso', 403);
+      scope = u.access === 'admin' && code ? await byCode() : await siteScope(u);
     }
+    const site = scope == null ? null : (await q('SELECT code,name FROM sites WHERE id=$1', [scope])).rows[0] || null;
     const today = mxToday();
     const monday = mondayOf(today);
     const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
@@ -32,9 +41,9 @@ export async function GET(req) {
       `SELECT a.id,a.date,a.due_date,a.area,a.status,a.score_pct,a.late,a.completed_at,
               a.nok_count,a.partial_count,u.name,u.dept,u.layer
          FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.date BETWEEN $1 AND $2 AND a.date >= $3
+        WHERE a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4)
         ORDER BY u.layer DESC,u.name`,
-      [monday, addDays(monday, 4), gl]);
+      [monday, addDays(monday, 4), gl, scope]);
     const wk = rows.map((a) => ({ ...a, window: windowState(a, today) }));
 
     const scheduled = wk.filter((a) => a.layer === 1 && a.date === today);
@@ -52,15 +61,17 @@ export async function GET(req) {
     });
     const scores = done.map((a) => Number(a.score_pct)).filter((n) => !isNaN(n));
     const { rows: f } = await q(
-      `SELECT COUNT(*)::int open, COUNT(*) FILTER (WHERE due_date < $1)::int overdue FROM findings WHERE status <> 'closed'`,
-      [today]);
+      `SELECT COUNT(*)::int open, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue
+         FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
+        WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`,
+      [today, scope]);
 
     const slim = (a) => ({
       id: a.id, name: a.name, dept: a.dept, layer: a.layer, area: a.area, date: a.date, due_date: a.due_date,
       status: a.status, window: a.window, score: a.score_pct, late: a.late, findings: a.nok_count + a.partial_count,
     });
     return json({
-      today, monday,
+      today, monday, site,
       kpi: {
         week_pct: counted.length ? Math.round((done.length / counted.length) * 100) : null,
         week_done: done.length, week_counted: counted.length,

@@ -1,12 +1,15 @@
 export const dynamic = 'force-dynamic';
 import { q } from '@/lib/db';
 import { route, json, isLead } from '@/lib/api';
+import { siteScope } from '@/lib/site';
 import { mxToday } from '@/lib/dates';
 
 export const GET = route(async (req, ctx, user) => {
   const sp = new URL(req.url).searchParams;
   const status = sp.get('status') || 'open';
   const cond = [], vals = [];
+  const scope = await siteScope(user);
+  if (scope != null) { vals.push(scope); cond.push(`u.site_id=$${vals.length}`); }
   if (status === 'open') cond.push(`f.status <> 'closed'`);
   else if (status === 'closed') cond.push(`f.status = 'closed'`);
   else if (status === 'mine') {
