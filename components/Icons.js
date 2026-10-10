@@ -1,6 +1,7 @@
 const P = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 export const I = {
-  home: (s = 24) => <svg {...P} width={s} height={s}><path d="M3.5 11 12 4l8.5 7" /><path d="M5.5 10v9.5h13V10" /><path d="M10 19.5v-5h4v5" /></svg>,
+  // Máquina de inyección: unidad de cierre (izq.), cañón, tolva y base
+  home: (s = 24) => <svg {...P} width={s} height={s}><path d="M2.5 20.5h19" /><rect x="3" y="7.5" width="6" height="10.5" rx="1.5" /><rect x="9" y="12" width="12" height="4" rx="1.6" /><path d="M13 4.5h5.4l-1.2 7.5h-3z" /></svg>,
   calendar: (s = 24) => <svg {...P} width={s} height={s}><rect x="3.5" y="5" width="17" height="15.5" rx="3.5" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg>,
   chart: (s = 24) => <svg {...P} width={s} height={s}><rect x="4" y="12" width="3.6" height="8" rx="1.2" /><rect x="10.2" y="7" width="3.6" height="13" rx="1.2" /><rect x="16.4" y="4" width="3.6" height="16" rx="1.2" /></svg>,
   grid: (s = 24) => <svg {...P} width={s} height={s}><rect x="4" y="4" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="2" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2" /></svg>,
