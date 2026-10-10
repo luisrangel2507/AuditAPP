@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
-import { HeroArt, Pellets } from '@/components/Art';
+import { Pellets } from '@/components/Art';
 
 const T = {
   es: { sub1: 'Auditorías por capas', sub2: 'Mitchell Plastics', title: 'Iniciar sesión', lead: 'Ingresa tus credenciales para continuar',
@@ -39,7 +39,7 @@ export default function Login() {
   return (
     <div className="login2"><div className="login2-card">
       <div className="hero">
-        <HeroArt />
+        <img className="hero-photo" src="/login-bg.jpg" alt="" />
         <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
           <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
