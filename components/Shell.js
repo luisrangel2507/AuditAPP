@@ -68,7 +68,7 @@ export default function Shell({ children, need }) {
             <span className="avatar">{initials}</span>
             <button className="logout" onClick={logout}>{I.logout(18)}<span>Salir</span></button>
           </div>
-          <div className="appname">LPAPP</div>
+          <div className="appname">LP<span className="app-accent">APP</span></div>
         </div>
       </header>
       <main className="page sheetpage">{children}</main>

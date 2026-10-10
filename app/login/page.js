@@ -43,7 +43,7 @@ export default function Login() {
         <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
           <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
-          <h1>LPAPP</h1>
+          <h1>LP<span className="app-accent">APP</span></h1>
           <p>{t.sub1}</p><p className="dim">{t.sub2}</p>
           <span className="bar" />
         </div>
