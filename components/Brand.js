@@ -3,7 +3,7 @@ export default function Brand({ size = 'md' }) {
   return (
     <div className={`brand2 ${size}`}>
       <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
-      <span className="brand2-name">AuditAPP<small>Layered Process Audit</small></span>
+      <span className="brand2-name">LPAPP<small>Layered Process Audit</small></span>
     </div>
   );
 }

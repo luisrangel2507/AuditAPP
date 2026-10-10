@@ -1,4 +1,4 @@
-# AuditAPP – Layered Process Audit (Mitchell Plastics)
+# LPAPP – Layered Process Audit (Mitchell Plastics)
 
 PWA móvil (Next.js 14 + PostgreSQL) para ejecutar LPAs desde el teléfono. Basada en el módulo LPA de QualityShield
 y en el programa semanal de la planta (Layer 1 / 2 / 3).
