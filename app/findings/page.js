@@ -1,0 +1,110 @@
+'use client';
+import { useEffect, useState } from 'react';
+import Shell, { useUser } from '@/components/Shell';
+import OwnerPicker from '@/components/OwnerPicker';
+import { api, fmtDate } from '@/lib/client';
+
+const OWN = { open: ['Pendiente', ''], in_progress: ['En proceso', 'gold'], done: ['Terminó', 'ok'] };
+const KIND = { opened: '●', assign: '＋', unassign: '－', progress: '◐', done: '✓', comment: '✎', closed: '■', reopened: '↺' };
+const no = (id) => 'OI-' + String(id).padStart(4, '0');
+const when = (ts) => new Date(ts).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+
+function Item({ f, today, lead, user, reload, startOpen }) {
+  const [open, setOpen] = useState(!!startOpen), [err, setErr] = useState(''), [tl, setTl] = useState(null);
+  const mine = f.owners.find((o) => o.user_id === user.id);
+  const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState('');
+  const closed = f.status === 'closed';
+  const overdue = !closed && f.due_date && f.due_date < today;
+  const canAdd = lead || f.auditor_id === user.id || !!mine;
+  const loadTl = () => api(`/api/findings/${f.id}`).then((d) => setTl(d.updates)).catch(() => {});
+  useEffect(() => { if (open && !tl) loadTl(); /* eslint-disable-next-line */ }, [open]);
+  async function patch(body) {
+    setErr('');
+    try { await api(`/api/findings/${f.id}`, { method: 'PATCH', body }); setComment(''); await loadTl(); reload(); }
+    catch (e) { setErr(e.message); }
+  }
+  const pend = f.owners.filter((o) => o.status !== 'done').length;
+  return (
+    <div id={`oi-${f.id}`} className="card issue" style={{ marginBottom: 10, borderColor: overdue ? 'rgba(200,60,50,.5)' : undefined }}>
+      <div className="row" style={{ alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+        <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
+        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span> {f.question}</div>
+      </div>
+      <div className="sub">{f.area} · {fmtDate(f.audit_date)} · {f.auditor}</div>
+      <div className="row wrap" style={{ marginTop: 8 }}>
+        <span className={`pill ${closed ? 'ok' : f.status === 'in_progress' ? 'gold' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span>
+        {f.owners.length === 0 && !closed && <span className="pill nok">Sin responsable</span>}
+        {f.owners.length > 0 && <span className="pill">{closed ? `${f.owners.length} responsable(s)` : `${f.owners.length - pend}/${f.owners.length} terminaron`}</span>}
+        {f.due_date && <span className={`pill ${overdue ? 'nok' : ''}`}>{overdue ? 'Vencido ' : 'Compromiso '}{fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</span>}
+      </div>
+      {open && (
+        <div style={{ marginTop: 12 }}>
+          {f.notes && <div style={{ fontSize: 14 }}><b>Hallazgo:</b> {f.notes}</div>}
+          {f.evidence_id && <img className="thumb" src={`/api/evidence/${f.evidence_id}`} alt="evidencia" loading="lazy" />}
+
+          <div className="sect" style={{ marginTop: 14 }}>Responsables</div>
+          {f.owners.length === 0 && <div className="sub">Nadie asignado todavía.</div>}
+          {f.owners.map((o) => (
+            <div key={o.user_id} className="owner-row">
+              <div className="grow"><b>{o.name}</b>{o.user_id === user.id ? ' (tú)' : ''}
+                {o.action && <div className="sub" style={{ margin: 0 }}>{o.action}</div>}</div>
+              <span className={`pill ${OWN[o.status][1]}`}>{OWN[o.status][0]}</span>
+              {lead && !closed && <button className="btn-ghost" aria-label="Quitar" onClick={() => patch({ remove_owner: o.user_id })}>✕</button>}
+            </div>))}
+          {canAdd && <div style={{ marginTop: 6 }}><OwnerPicker label="" value={[]} onChange={(v) => v[0] && patch({ add_owner: v[0] })} exclude={f.owners.map((o) => o.user_id)} /></div>}
+
+          {mine && mine.status !== 'done' && !closed && <>
+            <div className="sect" style={{ marginTop: 14 }}>Tu seguimiento</div>
+            <textarea className="inp" rows={2} value={action} onChange={(e) => setAction(e.target.value)} placeholder="Acción / contramedida que tomaste o tomarás…" />
+            <div className="row" style={{ marginTop: 10 }}>
+              <button className="btn alt sm grow" onClick={() => patch({ my_status: 'in_progress', action })}>En proceso</button>
+              <button className="btn sm grow" onClick={() => patch({ my_status: 'done', action })}>Terminé mi parte</button>
+            </div>
+          </>}
+          {mine && mine.status === 'done' && <button className="btn-ghost" style={{ marginTop: 8 }} onClick={() => patch({ my_status: 'open' })}>Reabrir mi parte</button>}
+
+          {lead && <div className="row wrap" style={{ marginTop: 14 }}>
+            <div><label className="lbl">Compromiso</label><input className="inp" type="date" value={f.due_date || ''} onChange={(e) => patch({ due_date: e.target.value })} /></div>
+            {!closed ? <button className="btn-ghost" onClick={() => { const a = prompt('Acción tomada para cerrar el issue'); if (a) patch({ force_status: 'closed', action: a }); }}>Cerrar como líder</button>
+              : <button className="btn-ghost" onClick={() => patch({ force_status: 'open' })}>Reabrir</button>}
+          </div>}
+
+          <div className="sect" style={{ marginTop: 14 }}>Bitácora</div>
+          {!tl ? <div className="sub">Cargando…</div> : tl.map((u) => (
+            <div key={u.id} className="tl"><span className="tl-i">{KIND[u.kind] || '•'}</span>
+              <div><div style={{ fontSize: 13 }}>{u.text}</div><div className="sub" style={{ margin: 0, fontSize: 11 }}>{u.name || 'Sistema'} · {when(u.created_at)}</div></div></div>))}
+          <div className="row" style={{ marginTop: 8 }}>
+            <input className="inp" placeholder="Agregar comentario…" value={comment} onChange={(e) => setComment(e.target.value)} />
+            <button className="btn sm" disabled={!comment.trim()} onClick={() => patch({ comment })}>Enviar</button>
+          </div>
+          {err && <div className="err">{err}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Inner() {
+  const user = useUser();
+  const lead = ['lead', 'admin'].includes(user.access);
+  const [status, setStatus] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
+  const focus = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('oi')) || null : null;
+  // Vista inicial: "Mis issues" si tienes alguno a cargo; si no, abiertos
+  useEffect(() => { api('/api/findings/count').then((c) => setStatus(c.n > 0 ? 'mine' : 'open')).catch(() => setStatus('open')); }, []);
+  const load = () => status && api(`/api/findings?status=${status}`).then(setData).catch((e) => setErr(e.message));
+  useEffect(() => { setData(null); load(); /* eslint-disable-next-line */ }, [status]);
+  const tabs = [['mine', 'A mi cargo'], ['open', 'Abiertos'], ...(lead ? [['unassigned', 'Sin responsable']] : []), ['closed', 'Cerrados']];
+  return (
+    <>
+      <h1 className="title">Open issues</h1>
+      <div className="sub">Cada hallazgo abre un issue; todos sus responsables deben darle seguimiento hasta cerrarlo.</div>
+      <div className="seg" style={{ margin: '12px 0' }}>
+        {tabs.map(([k, l]) => <button key={k} className={status === k ? 'on' : ''} onClick={() => setStatus(k)}>{l}</button>)}
+      </div>
+      {err && <div className="err">{err}</div>}
+      {!data ? <div className="empty">Cargando…</div> : data.findings.length === 0 ? <div className="card empty">Sin issues en esta vista.</div>
+        : data.findings.map((f) => <Item key={f.id} f={f} today={data.today} lead={lead} user={user} reload={load} startOpen={f.id === focus} />)}
+    </>
+  );
+}
+export default function Findings() { return <Shell><Inner /></Shell>; }

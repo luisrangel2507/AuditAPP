@@ -1,0 +1,204 @@
+// Migraciones idempotentes + seed inicial (solo si la base está vacía). Se corre en cada arranque.
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
+const path = require('path');
+const bank = require(path.join(__dirname, '../data/question-bank.json'));
+const { ROSTER, REF_MONDAY, USERNAME_OVERRIDES } = require('../data/roster.js');
+
+const url = process.env.DATABASE_URL;
+if (!url) { console.error('Falta DATABASE_URL'); process.exit(1); }
+const local = /localhost|127\.0\.0\.1/.test(url);
+const pool = new Pool({ connectionString: url, ssl: local ? undefined : { rejectUnauthorized: false } });
+
+const SCHEMA = `
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS templates (
+  id        SERIAL PRIMARY KEY,
+  name      TEXT NOT NULL UNIQUE,
+  zone      TEXT DEFAULT '',
+  per_audit INT  NOT NULL DEFAULT 10
+);
+CREATE TABLE IF NOT EXISTS questions (
+  id          SERIAL PRIMARY KEY,
+  template_id INT NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
+  text        TEXT NOT NULL,
+  category    TEXT DEFAULT '',
+  sort_order  INT DEFAULT 0,
+  active      BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE INDEX IF NOT EXISTS idx_questions_tpl ON questions(template_id);
+
+CREATE TABLE IF NOT EXISTS users (
+  id           SERIAL PRIMARY KEY,
+  name         TEXT NOT NULL,
+  username     TEXT NOT NULL UNIQUE,
+  pin_hash     TEXT NOT NULL,
+  must_change  BOOLEAN NOT NULL DEFAULT TRUE,
+  dept         TEXT NOT NULL DEFAULT 'production',
+  layer        INT  NOT NULL DEFAULT 1,
+  access       TEXT NOT NULL DEFAULT 'auditor',   -- auditor | lead | admin
+  template_id  INT REFERENCES templates(id) ON DELETE SET NULL,
+  days         INT[] NOT NULL DEFAULT '{}',        -- 1=Lun..5=Vie (fijos)
+  pool         TEXT[] NOT NULL DEFAULT '{}',       -- áreas por las que rota
+  start_idx    INT NOT NULL DEFAULT 0,
+  rotate_daily BOOLEAN NOT NULL DEFAULT FALSE,
+  active       BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS audits (
+  id            SERIAL PRIMARY KEY,
+  user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date          DATE NOT NULL,
+  due_date      DATE NOT NULL,
+  area          TEXT NOT NULL DEFAULT '',
+  template_id   INT REFERENCES templates(id) ON DELETE SET NULL,
+  question_ids  INT[] NOT NULL DEFAULT '{}',
+  status        TEXT NOT NULL DEFAULT 'pending',   -- pending | completed
+  completed_at  TIMESTAMPTZ,
+  late          BOOLEAN NOT NULL DEFAULT FALSE,
+  ok_count      INT DEFAULT 0,
+  nok_count     INT DEFAULT 0,
+  partial_count INT DEFAULT 0,
+  na_count      INT DEFAULT 0,
+  score_pct     NUMERIC(5,1),
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, date)
+);
+CREATE INDEX IF NOT EXISTS idx_audits_date ON audits(date);
+
+CREATE TABLE IF NOT EXISTS responses (
+  id          SERIAL PRIMARY KEY,
+  audit_id    INT NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+  question_id INT,
+  question    TEXT NOT NULL,
+  category    TEXT DEFAULT '',
+  result      TEXT NOT NULL,                       -- ok | nok | partial | na
+  notes       TEXT DEFAULT '',
+  corrective  TEXT DEFAULT '',
+  evidence    TEXT DEFAULT ''                      -- data URL jpeg (comprimida en el cliente)
+);
+CREATE INDEX IF NOT EXISTS idx_responses_audit ON responses(audit_id);
+
+CREATE TABLE IF NOT EXISTS findings (
+  id          SERIAL PRIMARY KEY,
+  audit_id    INT NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+  response_id INT REFERENCES responses(id) ON DELETE CASCADE,
+  area        TEXT DEFAULT '',
+  question    TEXT NOT NULL,
+  result      TEXT NOT NULL,
+  notes       TEXT DEFAULT '',
+  owner_id    INT REFERENCES users(id) ON DELETE SET NULL,
+  due_date    DATE,
+  status      TEXT NOT NULL DEFAULT 'open',        -- open | in_progress | closed
+  action      TEXT DEFAULT '',
+  closed_at   TIMESTAMPTZ,
+  closed_by   INT REFERENCES users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
+
+-- Tiempos de auditoría (estadísticas admin)
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
+
+-- Open issues: cada responsable da seguimiento por su cuenta
+CREATE TABLE IF NOT EXISTS finding_owners (
+  finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+  user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status     TEXT NOT NULL DEFAULT 'open',          -- open | in_progress | done
+  action     TEXT DEFAULT '',
+  added_by   INT REFERENCES users(id) ON DELETE SET NULL,
+  added_at   TIMESTAMPTZ DEFAULT NOW(),
+  done_at    TIMESTAMPTZ,
+  PRIMARY KEY (finding_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_fowners_user ON finding_owners(user_id);
+CREATE TABLE IF NOT EXISTS finding_updates (
+  id         SERIAL PRIMARY KEY,
+  finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+  user_id    INT REFERENCES users(id) ON DELETE SET NULL,
+  kind       TEXT NOT NULL DEFAULT 'comment',       -- opened | assign | unassign | progress | done | comment | closed | reopened
+  text       TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_fupdates_finding ON finding_updates(finding_id);
+-- Migra el responsable único anterior
+INSERT INTO finding_owners(finding_id,user_id,status,action)
+  SELECT id, owner_id, CASE WHEN status='closed' THEN 'done' WHEN status='in_progress' THEN 'in_progress' ELSE 'open' END, COALESCE(action,'')
+    FROM findings WHERE owner_id IS NOT NULL
+  ON CONFLICT DO NOTHING;
+`;
+
+function slug(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 .]/g, '').trim();
+}
+function usernameFor(name) {
+  if (USERNAME_OVERRIDES[name]) return USERNAME_OVERRIDES[name];
+  const p = slug(name).replace(/\./g, '').split(/\s+/);
+  return p.length > 1 ? `${p[0]}.${p[p.length - 1]}` : p[0];
+}
+
+async function main() {
+  await pool.query(SCHEMA);
+  await pool.query(`INSERT INTO settings(key,value) VALUES('ref_monday',$1) ON CONFLICT DO NOTHING`, [REF_MONDAY]);
+  // Fecha de arranque: antes de ella no se reportan faltantes (evita "deudas" fantasma el primer día)
+  const mxToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+  await pool.query(`INSERT INTO settings(key,value) VALUES('go_live',$1) ON CONFLICT DO NOTHING`,
+    [process.env.LPA_GO_LIVE || mxToday]);
+
+  // Banco de preguntas (derivado de QualityShield) – solo si no hay plantillas
+  const { rows: t } = await pool.query('SELECT COUNT(*)::int n FROM templates');
+  if (t[0].n === 0) {
+    for (const tpl of bank) {
+      const { rows } = await pool.query(
+        'INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id',
+        [tpl.name, tpl.zone, 10]
+      );
+      for (let i = 0; i < tpl.questions.length; i++) {
+        await pool.query('INSERT INTO questions(template_id,text,category,sort_order) VALUES($1,$2,$3,$4)',
+          [rows[0].id, tpl.questions[i], tpl.zone, i]);
+      }
+    }
+    console.log(`[setup] ${bank.length} plantillas cargadas`);
+  }
+
+  // Usuarios
+  const { rows: u } = await pool.query('SELECT COUNT(*)::int n FROM users');
+  if (u[0].n === 0) {
+    const seedPin = process.env.SEED_PIN || '1234';
+    const hash = await bcrypt.hash(seedPin, 10);
+    const { rows: tpls } = await pool.query('SELECT id,name FROM templates');
+    const tid = Object.fromEntries(tpls.map(r => [r.name, r.id]));
+    const used = new Set();
+    for (const [name, dept, layer, tpl, days, pool_, start, rotateDaily, access] of ROSTER) {
+      let un = usernameFor(name), n = 2;
+      while (used.has(un)) un = usernameFor(name) + n++;
+      used.add(un);
+      if (!tid[tpl]) throw new Error('Plantilla inexistente: ' + tpl);
+      await pool.query(
+        `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [name, un, hash, dept, layer, access, tid[tpl], days, pool_, start, rotateDaily]
+      );
+    }
+    console.log(`[setup] ${ROSTER.length} usuarios sembrados (PIN inicial = SEED_PIN)`);
+  }
+
+  // Usuario admin: se crea si ADMIN_PIN está definido y aún no existe
+  const adminPin = process.env.ADMIN_PIN || '';
+  const { rows: a } = await pool.query(`SELECT 1 FROM users WHERE username='admin'`);
+  if (adminPin && !a.length) {
+    await pool.query(
+      `INSERT INTO users(name,username,pin_hash,must_change,dept,layer,access,days,pool)
+       VALUES('Administrador','admin',$1,FALSE,'quality',2,'admin','{}','{}')`,
+      [await bcrypt.hash(adminPin, 10)]
+    );
+    console.log('[setup] usuario admin creado');
+  } else if (!adminPin && !a.length) {
+    console.warn('[setup] ADMIN_PIN no definido: no hay usuario admin.');
+  }
+}
+
+main().then(() => pool.end()).catch(e => { console.error(e); process.exit(1); });

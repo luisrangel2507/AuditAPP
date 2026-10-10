@@ -1,0 +1,66 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/client';
+import { HeroArt, Pellets } from '@/components/Art';
+
+const T = {
+  es: { sub1: 'Auditorías por capas', sub2: 'Mitchell Plastics', title: 'Iniciar sesión', lead: 'Ingresa tus credenciales para continuar',
+    user: 'USUARIO', userPh: 'nombre.apellido', pin: 'PIN', go: 'Entrar', busy: 'Validando…', noteT: 'Uso interno',
+    note: 'Las auditorías solo pueden registrarse el mismo día programado.' },
+  en: { sub1: 'Layered Process Audits', sub2: 'Mitchell Plastics', title: 'Sign in', lead: 'Enter your credentials to continue',
+    user: 'USERNAME', userPh: 'name.lastname', pin: 'PIN', go: 'Sign in', busy: 'Checking…', noteT: 'Internal use only',
+    note: 'Audits can only be recorded on the scheduled day.' },
+};
+const Icon = {
+  user: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg>,
+  lock: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="3" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /><circle cx="12" cy="15.5" r="1" fill="currentColor" /></svg>,
+  eye: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>,
+  eyeOff: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>,
+  arrow: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>,
+  shield: <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6l7-3z" /><path d="M9 12l2.2 2.2L15.5 10" /></svg>,
+};
+
+export default function Login() {
+  const [lang, setLang] = useState('es');
+  const [username, setU] = useState(''), [pin, setP] = useState(''), [show, setShow] = useState(false);
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const router = useRouter();
+  const t = T[lang];
+
+  useEffect(() => { try { const l = localStorage.getItem('audit-lang'); if (l === 'en' || l === 'es') setLang(l); } catch {} }, []);
+  const pick = (l) => { setLang(l); try { localStorage.setItem('audit-lang', l); } catch {} };
+
+  async function go(e) {
+    e.preventDefault(); setErr(''); setBusy(true);
+    try { await api('/api/auth/login', { method: 'POST', body: { username, pin } }); router.replace('/'); }
+    catch (e2) { setErr(e2.message); setBusy(false); }
+  }
+  return (
+    <div className="login2"><div className="login2-card">
+      <div className="hero">
+        <HeroArt />
+        <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
+        <div className="hero-in">
+          <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
+          <h1>AuditAPP</h1>
+          <p>{t.sub1}</p><p className="dim">{t.sub2}</p>
+          <span className="bar" />
+        </div>
+      </div>
+      <form onSubmit={go}>
+        <div className="ttl">{t.title}</div>
+        <div className="ttl-sub">{t.lead}</div>
+        <div className="field">{Icon.user}<div className="f-in"><label htmlFor="u">{t.user}</label>
+          <input id="u" autoCapitalize="none" autoCorrect="off" autoComplete="username" placeholder={t.userPh} value={username} onChange={(e) => setU(e.target.value)} /></div></div>
+        <div className="field">{Icon.lock}<div className="f-in"><label htmlFor="p">{t.pin}</label>
+          <input id="p" type={show ? 'text' : 'password'} inputMode="numeric" autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
+          <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar PIN">{show ? Icon.eyeOff : Icon.eye}</button></div>
+        {err && <div className="err">{err}</div>}
+        <button className="btn go" disabled={busy || !username || !pin}>{busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
+        <div className="note">{Icon.shield}<div><b>{t.noteT}</b>{t.note}</div></div>
+        <div className="corner"><Pellets w={300} h={230} n={85} seed={11} id="lg" /></div>
+      </form>
+    </div></div>
+  );
+}
