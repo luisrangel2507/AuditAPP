@@ -26,8 +26,8 @@ y en el programa semanal de la planta (Layer 1 / 2 / 3).
 |---|---|
 | `DATABASE_URL` | Postgres (Railway la inyecta) |
 | `SESSION_SECRET` | string largo aleatorio (obligatorio en producción) |
-| `SEED_PIN` | PIN inicial de los usuarios sembrados (default 1234; cada quien lo cambia al entrar) |
-| `ADMIN_PIN` | crea el usuario `admin` en el primer arranque |
+| `ADMIN_PASSWORD` | contraseña del usuario `admin` (mín. 8 caracteres); se crea en el primer arranque |
+| `SEED_PASSWORD` | (opcional) contraseña temporal común de los usuarios sembrados. Sin ella, cada usuario nace con una contraseña aleatoria y el admin asigna la de cada quien en Admin → Usuarios |
 | `TV_KEY` | clave para la pantalla LPA TV (`/tv?key=…`); sin ella, la TV solo abre con sesión de líder |
 | `LPA_GO_LIVE` | (opcional) fecha `YYYY-MM-DD` de arranque; antes de ella no hay "faltantes". Default: día del primer arranque |
 
@@ -38,6 +38,9 @@ cp .env.example .env   # y exporta las variables
 npm run build && npm start   # start corre scripts/setup.js (migraciones + seed idempotente) y luego next start
 ```
 En Railway: servicio Node + plugin PostgreSQL, build `npm run build`, start `npm start`.
+
+## Contraseñas
+Cada persona entra con `nombre.apellido` y su **contraseña** (mín. 8 caracteres). El admin la asigna o restablece en Admin → Usuarios; al primer ingreso el sistema obliga a cambiarla.
 
 ## Roster
 `data/roster.js` se transcribió de la foto del programa. **Verifica nombres, días y áreas** (Admin → Usuarios y rotación).

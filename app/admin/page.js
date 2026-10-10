@@ -13,8 +13,8 @@ function UserSheet({ u, templates, onClose, onSaved }) {
     const body = { ...f, layer: Number(f.layer), template_id: f.template_id ? Number(f.template_id) : null, start_idx: Number(f.start_idx) || 0,
       pool: pool.split(',').map((s) => s.trim()).filter(Boolean), days: Number(f.layer) >= 2 ? [] : f.days };
     try {
-      if (isNew) await api('/api/admin/users', { method: 'POST', body: { ...body, pin } });
-      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(pin ? { reset_pin: pin } : {}) } });
+      if (isNew) await api('/api/admin/users', { method: 'POST', body: { ...body, password: pin } });
+      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(pin ? { reset_password: pin } : {}) } });
       onSaved();
     } catch (e) { setErr(e.message); }
   }
@@ -48,8 +48,8 @@ function UserSheet({ u, templates, onClose, onSaved }) {
           <label className="row" style={{ marginTop: 24 }}><input type="checkbox" checked={f.rotate_daily} onChange={(e) => set('rotate_daily', e.target.checked)} /> Cambia de área cada día</label>
         </div>
       </>}
-      <label className="lbl">{isNew ? 'PIN inicial' : 'Restablecer PIN (opcional)'}</label>
-      <input className="inp" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value)} />
+      <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
+      <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
       {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} /> Activo</label>}
       {err && <div className="err">{err}</div>}
       <div className="row" style={{ marginTop: 16 }}><button className="btn alt grow" onClick={onClose}>Cancelar</button><button className="btn grow" onClick={save}>Guardar</button></div>

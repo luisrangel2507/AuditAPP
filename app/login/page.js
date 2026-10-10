@@ -6,10 +6,10 @@ import { HeroArt, Pellets } from '@/components/Art';
 
 const T = {
   es: { sub1: 'Auditorías por capas', sub2: 'Mitchell Plastics', title: 'Iniciar sesión', lead: 'Ingresa tus credenciales para continuar',
-    user: 'USUARIO', userPh: 'nombre.apellido', pin: 'PIN', go: 'Entrar', busy: 'Validando…', noteT: 'Uso interno',
+    user: 'USUARIO', userPh: 'nombre.apellido', pin: 'CONTRASEÑA', go: 'Entrar', busy: 'Validando…', noteT: 'Uso interno',
     note: 'Las auditorías solo pueden registrarse el mismo día programado.' },
   en: { sub1: 'Layered Process Audits', sub2: 'Mitchell Plastics', title: 'Sign in', lead: 'Enter your credentials to continue',
-    user: 'USERNAME', userPh: 'name.lastname', pin: 'PIN', go: 'Sign in', busy: 'Checking…', noteT: 'Internal use only',
+    user: 'USERNAME', userPh: 'name.lastname', pin: 'PASSWORD', go: 'Sign in', busy: 'Checking…', noteT: 'Internal use only',
     note: 'Audits can only be recorded on the scheduled day.' },
 };
 const Icon = {
@@ -33,7 +33,7 @@ export default function Login() {
 
   async function go(e) {
     e.preventDefault(); setErr(''); setBusy(true);
-    try { await api('/api/auth/login', { method: 'POST', body: { username, pin } }); router.replace('/'); }
+    try { await api('/api/auth/login', { method: 'POST', body: { username, password: pin } }); router.replace('/'); }
     catch (e2) { setErr(e2.message); setBusy(false); }
   }
   return (
@@ -54,8 +54,8 @@ export default function Login() {
         <div className="field">{Icon.user}<div className="f-in"><label htmlFor="u">{t.user}</label>
           <input id="u" autoCapitalize="none" autoCorrect="off" autoComplete="username" placeholder={t.userPh} value={username} onChange={(e) => setU(e.target.value)} /></div></div>
         <div className="field">{Icon.lock}<div className="f-in"><label htmlFor="p">{t.pin}</label>
-          <input id="p" type={show ? 'text' : 'password'} inputMode="numeric" autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
-          <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar PIN">{show ? Icon.eyeOff : Icon.eye}</button></div>
+          <input id="p" type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
+          <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar contraseña">{show ? Icon.eyeOff : Icon.eye}</button></div>
         {err && <div className="err">{err}</div>}
         <button className="btn go" disabled={busy || !username || !pin}>{busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
         <div className="note">{Icon.shield}<div><b>{t.noteT}</b>{t.note}</div></div>

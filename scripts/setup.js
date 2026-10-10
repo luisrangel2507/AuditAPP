@@ -167,8 +167,10 @@ async function main() {
   // Usuarios
   const { rows: u } = await pool.query('SELECT COUNT(*)::int n FROM users');
   if (u[0].n === 0) {
-    const seedPin = process.env.SEED_PIN || '1234';
-    const hash = await bcrypt.hash(seedPin, 10);
+    // Si no hay SEED_PASSWORD, cada usuario nace con una contraseña aleatoria desconocida:
+    // el admin asigna la de cada quien en Admin → Usuarios.
+    const seedPw = process.env.SEED_PASSWORD || '';
+    const sharedHash = seedPw ? await bcrypt.hash(seedPw, 10) : null;
     const { rows: tpls } = await pool.query('SELECT id,name FROM templates');
     const tid = Object.fromEntries(tpls.map(r => [r.name, r.id]));
     const used = new Set();
@@ -176,6 +178,7 @@ async function main() {
       let un = usernameFor(name), n = 2;
       while (used.has(un)) un = usernameFor(name) + n++;
       used.add(un);
+      const hash = sharedHash || (await bcrypt.hash(require('crypto').randomBytes(24).toString('hex'), 10));
       if (!tid[tpl]) throw new Error('Plantilla inexistente: ' + tpl);
       await pool.query(
         `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily)
@@ -183,11 +186,11 @@ async function main() {
         [name, un, hash, dept, layer, access, tid[tpl], days, pool_, start, rotateDaily]
       );
     }
-    console.log(`[setup] ${ROSTER.length} usuarios sembrados (PIN inicial = SEED_PIN)`);
+    console.log(`[setup] ${ROSTER.length} usuarios sembrados (contraseña inicial = SEED_PASSWORD, o aleatoria si no se define)`);
   }
 
   // Usuario admin: se crea si ADMIN_PIN está definido y aún no existe
-  const adminPin = process.env.ADMIN_PIN || '';
+  const adminPin = process.env.ADMIN_PASSWORD || '';
   const { rows: a } = await pool.query(`SELECT 1 FROM users WHERE username='admin'`);
   if (adminPin && !a.length) {
     await pool.query(
@@ -197,7 +200,7 @@ async function main() {
     );
     console.log('[setup] usuario admin creado');
   } else if (!adminPin && !a.length) {
-    console.warn('[setup] ADMIN_PIN no definido: no hay usuario admin.');
+    console.warn('[setup] ADMIN_PASSWORD no definido: no hay usuario admin.');
   }
 }
 

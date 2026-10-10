@@ -11,21 +11,24 @@ const ROLE = { quality: 'Calidad', process: 'Procesos', production: 'Producción
 const UserCtx = createContext(null);
 export const useUser = () => useContext(UserCtx);
 
-function PinGate({ onDone }) {
-  const [pin, setPin] = useState(''), [n1, setN1] = useState(''), [err, setErr] = useState('');
+function PasswordGate({ onDone }) {
+  const [pw, setPw] = useState(''), [n1, setN1] = useState(''), [n2, setN2] = useState(''), [err, setErr] = useState('');
   async function save() {
     setErr('');
-    try { await api('/api/auth/pin', { method: 'POST', body: { pin, new_pin: n1 } }); onDone(); }
+    if (n1 !== n2) return setErr('La contraseña nueva no coincide');
+    try { await api('/api/auth/pin', { method: 'POST', body: { password: pw, new_password: n1 } }); onDone(); }
     catch (e) { setErr(e.message); }
   }
   return (
     <div className="sheet-bg"><div className="sheet">
-      <h2>Cambia tu PIN</h2>
-      <p className="sub">Primer ingreso: por seguridad, define un PIN personal de 4 a 8 dígitos.</p>
-      <label className="lbl">PIN actual</label>
-      <input className="inp" type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value)} />
-      <label className="lbl">PIN nuevo</label>
-      <input className="inp" type="password" inputMode="numeric" value={n1} onChange={(e) => setN1(e.target.value)} />
+      <h2>Cambia tu contraseña</h2>
+      <p className="sub">Primer ingreso: por seguridad, define una contraseña personal de al menos 8 caracteres.</p>
+      <label className="lbl">Contraseña actual</label>
+      <input className="inp" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} />
+      <label className="lbl">Contraseña nueva</label>
+      <input className="inp" type="password" autoComplete="new-password" value={n1} onChange={(e) => setN1(e.target.value)} />
+      <label className="lbl">Repite la contraseña nueva</label>
+      <input className="inp" type="password" autoComplete="new-password" value={n2} onChange={(e) => setN2(e.target.value)} />
       {err && <div className="err">{err}</div>}
       <button className="btn block" style={{ marginTop: 16 }} onClick={save}>Guardar</button>
     </div></div>
@@ -74,7 +77,7 @@ export default function Shell({ children, need }) {
           <Link key={href} href={href} className={path === href ? 'on' : ''}><span className="ni">{icon(22)}{href === '/findings' && issues > 0 && <b className="badge">{issues > 9 ? '9+' : issues}</b>}</span><span>{label}</span></Link>
         ))}
       </nav>
-      {user.must_change && <PinGate onDone={() => setUser({ ...user, must_change: false })} />}
+      {user.must_change && <PasswordGate onDone={() => setUser({ ...user, must_change: false })} />}
     </UserCtx.Provider>
   );
 }
