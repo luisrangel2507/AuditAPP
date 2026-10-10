@@ -4,7 +4,7 @@ export const metadata = {
   title: 'LPAPP – Layered Process Audit',
   description: 'Auditorías por capas desde el teléfono',
   manifest: '/manifest.json',
-  icons: { icon: '/icon-192.png', apple: '/icon-512.png' },
+  icons: { icon: '/favicon.png', apple: '/apple-touch-icon.png' },
 };
 export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#22407f', viewportFit: 'cover' };
 
