@@ -1,6 +1,6 @@
 {
-  "name": "LPAPP – Mitchell Plastics",
-  "short_name": "LPAPP",
+  "name": "LPApp – Mitchell Plastics",
+  "short_name": "LPApp",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#eef1f5",

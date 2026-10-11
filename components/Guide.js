@@ -6,7 +6,7 @@ import { I } from '@/components/Icons';
 function stepsFor(user) {
   const lead = ['lead', 'admin'].includes(user.access), admin = user.access === 'admin', mgr = user.layer >= 2;
   const out = [
-    { icon: I.home, title: `Bienvenido a LPAPP${user.site_code ? ' · ' + user.site_code : ''}`,
+    { icon: I.home, title: `Bienvenido a LPApp${user.site_code ? ' · ' + user.site_code : ''}`,
       text: 'Aquí haces tus auditorías por capas (LPA) desde el teléfono o la computadora y das seguimiento a los hallazgos. Esta guía toma un minuto.' },
     mgr
       ? { icon: I.calendar, title: 'Tu auditoría semanal', text: 'Tienes una auditoría por semana en "All Areas". Puedes hacerla de lunes a viernes; vence el viernes. Si pasa la semana, queda como No realizada.' }

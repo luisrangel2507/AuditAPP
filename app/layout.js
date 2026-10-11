@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'LPAPP – Layered Process Audit',
+  title: 'LPApp – Layered Process Audit',
   description: 'Auditorías por capas desde el teléfono',
   manifest: '/manifest.json',
   icons: { icon: '/favicon.png?v=2', apple: '/apple-touch-icon.png?v=2' },

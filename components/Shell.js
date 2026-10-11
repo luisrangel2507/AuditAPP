@@ -80,7 +80,7 @@ export default function Shell({ children, need }) {
             <button className="logout" onClick={logout}>{I.logout(18)}<span>Salir</span></button>
           </div>
           <div className="apphero-bottom">
-            <div className="appname">LP<span className="app-accent">APP</span></div>
+            <div className="appname">LP<span className="app-accent">App</span></div>
             {user.access === 'admin' && sites.length > 0 && (
               <select className="sitesel" value={siteSel} onChange={(e) => pickSite(e.target.value)} aria-label="Planta">
                 <option value="ALL">Todas las plantas</option>
