@@ -9,7 +9,7 @@ export const GET = route(async (req, ctx, user) => {
   await ensureWeek(monday);
   const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
   const { rows } = await q(
-    `SELECT a.id,a.date,a.due_date,a.area,a.status,a.score_pct,a.late,a.nok_count,a.partial_count,
+    `SELECT a.id,a.date,a.due_date,a.area,a.part_number,a.status,a.score_pct,a.late,a.nok_count,a.partial_count,
             t.name AS template, COALESCE(array_length(a.question_ids,1),0) AS total_questions
        FROM audits a LEFT JOIN templates t ON t.id=a.template_id
       WHERE a.user_id=$1 AND a.date >= $2 AND a.date <= $3 AND a.date >= $5

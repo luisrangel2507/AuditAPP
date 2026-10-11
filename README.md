@@ -54,6 +54,12 @@ La pantalla TV de cada planta: `/tv?key=TV_KEY&site=MPQ` (o `/tv?site=MPQ` con s
 ## Guía de uso
 La primera vez que alguien entra (ya con su contraseña propia) ve una guía corta según su rol; se puede reabrir con el botón **?** del encabezado.
 
+## Asignaciones (zona y número de parte)
+El auditor **no elige nada**: solo ve lo que le asignaron. En **Admin → Asignaciones** el admin carga, por persona y por día de la semana,
+la **zona** a inspeccionar y el **número de parte** (la zona viene sugerida por la rotación y se puede cambiar; "Igual toda la semana" copia el primer día
+a los demás). Solo el admin puede cambiar zona, número de parte o auditor de una auditoría pendiente; los líderes ya no pueden reasignar.
+El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
+
 ## Contraseñas
 Cada persona entra con `nombre.apellido` y su **contraseña** (mín. 8 caracteres). El admin la asigna o restablece en Admin → Usuarios; al primer ingreso el sistema obliga a cambiarla.
 

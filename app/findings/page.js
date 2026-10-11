@@ -30,7 +30,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
         <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
         <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span> {f.question}</div>
       </div>
-      <div className="sub">{f.area} · {fmtDate(f.audit_date)} · {f.auditor}</div>
+      <div className="sub">{f.area}{f.part_number ? ` · N/P ${f.part_number}` : ''} · {fmtDate(f.audit_date)} · {f.auditor}</div>
       <div className="row wrap" style={{ marginTop: 8 }}>
         <span className={`pill ${closed ? 'ok' : f.status === 'in_progress' ? 'gold' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span>
         {f.owners.length === 0 && !closed && <span className="pill nok">Sin responsable</span>}

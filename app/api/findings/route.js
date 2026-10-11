@@ -22,7 +22,7 @@ export const GET = route(async (req, ctx, user) => {
     cond.push(`(a.user_id=$${vals.length} OR EXISTS (SELECT 1 FROM finding_owners o2 WHERE o2.finding_id=f.id AND o2.user_id=$${vals.length}))`);
   }
   const { rows } = await q(
-    `SELECT f.id,f.area,f.question,f.result,f.notes,f.status,f.action,f.due_date,f.created_at,f.closed_at,
+    `SELECT f.id,f.area,a.part_number,f.question,f.result,f.notes,f.status,f.action,f.due_date,f.created_at,f.closed_at,
             a.id AS audit_id, a.date AS audit_date, a.user_id AS auditor_id, u.name AS auditor, u.dept,
             (SELECT r.id FROM responses r WHERE r.id=f.response_id AND r.evidence <> '') AS evidence_id,
             COALESCE((SELECT json_agg(json_build_object('user_id',o.user_id,'name',ou.name,'status',o.status,'action',o.action,'done_at',o.done_at) ORDER BY o.added_at)

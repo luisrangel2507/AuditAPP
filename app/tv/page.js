@@ -61,7 +61,7 @@ export default function TV() {
   const row = (a) => (
     <div className="tv-row" key={a.id}>
       <div className="tv-name">{a.name}<span>{DEPT[a.dept] || a.dept} · L{a.layer}</span></div>
-      <div className="tv-area">{a.area}</div>
+      <div className="tv-area">{a.area}{a.part ? <span className="tv-part">N/P {a.part}</span> : null}</div>
       <Status a={a} />
     </div>
   );

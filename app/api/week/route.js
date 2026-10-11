@@ -15,7 +15,7 @@ export const GET = route(async (req, ctx, user) => {
   if (monday < lim(-8) || monday > lim(8)) return json({ monday, days: [], audits: [], today });
   await ensureWeek(monday);
   const { rows } = await q(
-    `SELECT a.id,a.user_id,u.name,u.dept,u.layer,a.date,a.due_date,a.area,a.status,a.score_pct,a.late,
+    `SELECT a.id,a.user_id,u.name,u.dept,u.layer,a.date,a.due_date,a.area,a.part_number,a.status,a.score_pct,a.late,
             a.nok_count,a.partial_count,t.name AS template
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id
       WHERE a.date BETWEEN $1 AND $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY u.layer DESC,u.dept,u.name,a.date`,

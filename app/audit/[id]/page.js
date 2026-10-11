@@ -65,7 +65,7 @@ function Runner({ audit, onExit, onDone }) {
     const score = scored ? Math.round((c.ok / scored) * 1000) / 10 : 100;
     return (
       <div className="exec">
-        <div className="exec-top"><h2>Resumen</h2><div className="sub">{audit.area} · {audit.template}</div></div>
+        <div className="exec-top"><h2>Resumen</h2><div className="sub">{audit.area}{audit.part_number ? ` · N/P ${audit.part_number}` : ''} · {audit.template}</div></div>
         <div className="exec-body">
           <div className="card" style={{ textAlign: 'center' }}>
             <Ring value={score} size={120} stroke={10} cls={scoreCls(score)} label={`${score}%`} sub="Score" />
@@ -98,7 +98,7 @@ function Runner({ audit, onExit, onDone }) {
       <div className="exec-top">
         <div className="row">
           <button className="btn-ghost" onClick={onExit}>✕ Salir</button>
-          <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.template}</div></div>
+          <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.part_number ? `N/P ${audit.part_number} · ` : ''}{audit.template}</div></div>
           <div className="sub" style={{ margin: 0 }}>{idx + 1}/{qs.length}</div>
         </div>
         <div className="prog"><i style={{ width: `${((idx + 1) / qs.length) * 100}%` }} /></div>
@@ -186,6 +186,7 @@ export default function AuditPage() {
     <>
       <button className="btn-ghost" onClick={() => router.push('/')} style={{ marginBottom: 12 }}>‹ Volver</button>
       <h1 className="title">{audit.area}</h1>
+      {audit.part_number && <div className="partno">N/P <b>{audit.part_number}</b></div>}
       <div className="sub">{audit.template} · {audit.auditor} ({LAYER[audit.layer]} · {DEPT[audit.dept]}) · {fmtDate(audit.date)}</div>
     </>), [audit, router]);
 

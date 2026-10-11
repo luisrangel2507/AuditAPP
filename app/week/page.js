@@ -6,45 +6,18 @@ import { api, fmtDate, DEPT, LAYER, DAYS_SHORT } from '@/lib/client';
 
 const shift = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 
-function EditSheet({ audit, users, onClose, onSaved }) {
-  const [area, setArea] = useState(audit.area), [uid, setUid] = useState(audit.user_id), [err, setErr] = useState('');
-  async function save() {
-    try { await api(`/api/audits/${audit.id}`, { method: 'PATCH', body: { area, user_id: uid } }); onSaved(); }
-    catch (e) { setErr(e.message); }
-  }
-  return (
-    <div className="sheet-bg" onClick={onClose}><div className="sheet" onClick={(e) => e.stopPropagation()}>
-      <h2>Reasignar</h2>
-      <div className="sub">{fmtDate(audit.date)} · {audit.name}</div>
-      <label className="lbl">Área</label>
-      <input className="inp" value={area} onChange={(e) => setArea(e.target.value)} />
-      <label className="lbl">Auditor</label>
-      <select className="inp" value={uid} onChange={(e) => setUid(Number(e.target.value))}>
-        {users.map((u) => <option key={u.id} value={u.id}>{u.name} · {LAYER[u.layer]} · {DEPT[u.dept]}</option>)}
-      </select>
-      {err && <div className="err">{err}</div>}
-      <div className="row" style={{ marginTop: 16 }}>
-        <button className="btn alt grow" onClick={onClose}>Cancelar</button>
-        <button className="btn grow" onClick={save}>Guardar</button>
-      </div>
-    </div></div>
-  );
-}
-
 export default function Week() {
   return <Shell><WeekInner /></Shell>;
 }
 
 function WeekInner() {
   const user = useUser();
-  const lead = ['lead', 'admin'].includes(user.access);
   const [date, setDate] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
-  const [dept, setDept] = useState('all'), [layer, setLayer] = useState('all'), [users, setUsers] = useState([]), [edit, setEdit] = useState(null);
+  const [dept, setDept] = useState('all'), [layer, setLayer] = useState('all');
   const [mine, setMine] = useState(false);
 
   const load = (d) => api(`/api/week${d ? `?date=${d}` : ''}`).then((r) => { setData(r); if (!d) setDate(r.monday); }).catch((e) => setErr(e.message));
   useEffect(() => { load(); }, []);
-  useEffect(() => { if (lead) api('/api/users').then(setUsers).catch(() => {}); }, [lead]);
 
   const go = (n) => { const d = shift(data.monday, n * 7); setDate(d); setData(null); load(d); };
 
@@ -98,16 +71,14 @@ function WeekInner() {
                     {nameCell}
                     {wide ? (
                       <td colSpan={5} className="cell">
-                        <Link href={`/audit/${wide.id}`} className={`chip ${status(wide)}`}>{wide.area} · vence {fmtDate(wide.due_date, { weekday: 'short', day: 'numeric' })}{wide.status === 'completed' ? ` · ${Math.round(wide.score_pct)}%` : ''}</Link>
-                        {lead && wide.status === 'pending' && <button className="btn-ghost" style={{ marginLeft: 8, padding: '2px 8px' }} onClick={() => setEdit(wide)}>editar</button>}
+                        <Link href={`/audit/${wide.id}`} className={`chip ${status(wide)}`}>{wide.area}{wide.part_number ? ` · N/P ${wide.part_number}` : ''} · vence {fmtDate(wide.due_date, { weekday: 'short', day: 'numeric' })}{wide.status === 'completed' ? ` · ${Math.round(wide.score_pct)}%` : ''}</Link>
                       </td>
                     ) : data.days.map((d) => {
                       const a = cells[d];
                       return (
                         <td key={d} className={`cell ${d === today ? 'today' : ''}`}>
                           {a ? <div>
-                            <Link href={`/audit/${a.id}`} className={`chip ${status(a)}`}>{a.area}{a.status === 'completed' && <span> · {Math.round(a.score_pct)}%</span>}</Link>
-                            {lead && a.status === 'pending' && <button className="btn-ghost" style={{ padding: '2px 9px', fontSize: 11, marginLeft: 4 }} onClick={() => setEdit(a)}>editar</button>}
+                            <Link href={`/audit/${a.id}`} className={`chip ${status(a)}`}>{a.area}{a.part_number ? ` · ${a.part_number}` : ''}{a.status === 'completed' && <span> · {Math.round(a.score_pct)}%</span>}</Link>
                           </div> : <span style={{ color: 'var(--line)' }}>—</span>}
                         </td>);
                     })}
@@ -121,7 +92,6 @@ function WeekInner() {
       <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
         <span><span className="dot completed" />Completada</span><span><span className="dot open" />Programada</span><span><span className="dot last_day" />Último día</span><span><span className="dot missed" />No realizada</span><span><span className="dot" />Próxima</span>
       </div>
-      {edit && <EditSheet audit={edit} users={users} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(date); }} />}
     </>
   );
 }

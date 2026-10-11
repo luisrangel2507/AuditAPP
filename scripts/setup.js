@@ -102,6 +102,8 @@ CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 -- Tiempos de auditoría (estadísticas admin)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
+-- Número de parte a inspeccionar (lo asigna el admin junto con la zona/área)
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS part_number TEXT NOT NULL DEFAULT '';
 
 -- Open issues: cada responsable da seguimiento por su cuenta
 CREATE TABLE IF NOT EXISTS finding_owners (

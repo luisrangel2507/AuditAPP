@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
-import { api, DEPT, LAYER, DAYS_SHORT, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
+import { api, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
   const isNew = !u.id;
@@ -261,20 +261,109 @@ function Sites() {
   );
 }
 
+const shiftDay = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+
+// Asignaciones: por persona y por día, la zona y el número de parte a inspeccionar.
+// El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
+function Assign() {
+  const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
+  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false);
+  const dirty = Object.keys(edits).length;
+
+  const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
+  useEffect(() => { load(); }, []);
+  const go = (n) => {
+    if (dirty && !confirm('Tienes cambios sin guardar. ¿Cambiar de semana y descartarlos?')) return;
+    setEdits({}); setMsg(''); load(shiftDay(data.monday, n * 7));
+  };
+
+  const val = (a) => ({ area: a.area, part_number: a.part_number, ...(edits[a.id] || {}) });
+  const set = (a, k, v) => setEdits((e) => {
+    const next = { ...(e[a.id] || {}), [k]: v };
+    const same = (next.area ?? a.area) === a.area && (next.part_number ?? a.part_number) === a.part_number;
+    const { [a.id]: _drop, ...rest } = e;
+    return same ? rest : { ...rest, [a.id]: next };
+  });
+  // Copia lo capturado en el primer día pendiente de la persona a todos sus demás días pendientes
+  const fillWeek = (list) => {
+    const pend = list.filter((a) => a.status === 'pending');
+    if (pend.length < 2) return;
+    const { area, part_number } = val(pend[0]);
+    pend.slice(1).forEach((a) => { set(a, 'area', area); set(a, 'part_number', part_number); });
+  };
+  async function save() {
+    setBusy(true); setMsg('');
+    try {
+      const items = Object.entries(edits).map(([id, v]) => ({ id: Number(id), ...val(data.audits.find((a) => a.id === Number(id))) , ...v }));
+      const r = await api('/api/admin/assignments', { method: 'PUT', body: { items } });
+      setEdits({}); await load(date);
+      setMsg(`Guardado: ${r.saved} asignación(es)${r.skipped ? ` · ${r.skipped} ya no se pudieron cambiar` : ''}`);
+    } catch (e) { setMsg(e.message); } finally { setBusy(false); }
+  }
+
+  const people = [];
+  (data?.audits || []).forEach((a) => {
+    if (qs && !a.name.toLowerCase().includes(qs.toLowerCase())) return;
+    let p = people[people.length - 1];
+    if (!p || p.id !== a.user_id) { p = { id: a.user_id, a, list: [] }; people.push(p); }
+    p.list.push(a);
+  });
+
+  return (
+    <>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
+      <div className="row wrap" style={{ margin: '10px 0' }}>
+        <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
+        <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
+        <button className="btn alt sm" onClick={() => go(1)} disabled={!data}>›</button>
+      </div>
+      <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} style={{ marginBottom: 12 }} />
+      {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
+      {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
+        <>
+          <datalist id="zones">{data.zones.map((z) => <option key={z} value={z} />)}</datalist>
+          {people.map(({ id, a, list }) => (
+            <div key={id} className="card asg-user">
+              <div className="asg-head"><b>{a.name}</b><span className="sub">{LAYER[a.layer]} · {DEPT[a.dept]}{a.site ? ` · ${a.site}` : ''}</span>
+                {list.filter((x) => x.status === 'pending').length > 1 && <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={() => fillWeek(list)}>Igual toda la semana</button>}</div>
+              {list.map((x) => {
+                const v = val(x), done = x.status === 'completed', wide = x.date !== x.due_date;
+                const dayLbl = wide ? 'Semana' : `${DAYS_SHORT[data.days.indexOf(x.date)]} ${Number(x.date.slice(8))}`;
+                return (
+                  <div key={x.id} className="asg-row">
+                    <span className={`day ${x.date === data.today ? 'today' : ''}`}>{dayLbl}</span>
+                    {done ? <span className="done">✓ Completada · {x.area}{x.part_number ? ` · N/P ${x.part_number}` : ''}</span> : <>
+                      <input className="inp" list="zones" placeholder="Zona" value={v.area} onChange={(e) => set(x, 'area', e.target.value)} />
+                      <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={v.part_number} onChange={(e) => set(x, 'part_number', e.target.value)} />
+                    </>}
+                  </div>);
+              })}
+            </div>))}
+          <div className="asg-bar">
+            <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : 'Todo guardado'}</span>
+            {dirty > 0 && <button className="btn alt sm" onClick={() => { setEdits({}); setMsg(''); }}>Descartar</button>}
+            <button className="btn sm" disabled={!dirty || busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+          </div>
+        </>)}
+    </>
+  );
+}
+
 function Inner() {
-  const [tab, setTab] = useState('users'), [templates, setTemplates] = useState(null);
+  const [tab, setTab] = useState('assign'), [templates, setTemplates] = useState(null);
   const loadT = () => api('/api/admin/templates').then(setTemplates);
   useEffect(() => { loadT(); }, []);
   return (
     <>
       <h1 className="title">Administración</h1>
       <div className="seg" style={{ margin: '12px 0' }}>
+        <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
         <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
         <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>Plantas</button>
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }

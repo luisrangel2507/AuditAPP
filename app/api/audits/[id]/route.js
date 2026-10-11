@@ -29,7 +29,7 @@ export const GET = route(async (req, { params }, user) => {
   return json({ ...base, questions: a.question_ids.map((i) => byId[i]).filter(Boolean) });
 });
 
-// Reasignar auditor / área / fecha de una auditoría pendiente (líderes)
+// Reasignar auditor / zona / número de parte / fecha de una auditoría pendiente (solo admin)
 export const PATCH = route(async (req, { params }, user) => {
   const a = await load(params.id);
   if (!a) return err('No encontrada', 404);
@@ -43,7 +43,8 @@ export const PATCH = route(async (req, { params }, user) => {
     if (!nu || nu.site_id !== a.site_id) return err('El auditor debe ser de la misma planta');
     add('user_id', Number(b.user_id));
   }
-  if (typeof b.area === 'string') add('area', b.area.trim());
+  if (typeof b.area === 'string') add('area', b.area.trim().slice(0, 80));
+  if (typeof b.part_number === 'string') add('part_number', b.part_number.trim().slice(0, 40));
   if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) { add('date', b.date); if (a.date === a.due_date) add('due_date', b.date); }
   if (!sets.length) return err('Nada que cambiar');
   vals.push(a.id);
@@ -54,4 +55,4 @@ export const PATCH = route(async (req, { params }, user) => {
     throw e;
   }
   return json({ ok: true });
-}, { need: 'lead' });
+}, { need: 'admin' });

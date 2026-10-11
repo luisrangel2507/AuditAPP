@@ -22,7 +22,8 @@ function Ticket({ a, today }) {
           <span>{a.date === today ? 'Hoy' : multi ? `Semana ${fmtDate(a.date, { day: 'numeric', month: 'short' })} – ${fmtDate(a.due_date, { day: 'numeric', month: 'short' })}` : fmtDate(a.date)}</span>
           <span className={`pill ${cls}`}>{label}</span>
         </div>
-        <div className="area">{a.area || 'Sin área'}</div>
+        <div className="area">{a.area || 'Sin zona asignada'}</div>
+        {a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}
         <div className="meta">
           {a.template} · {a.total_questions} preguntas
           {a.window === 'last_day' && ` · cierra hoy`}{a.window === 'open' && a.date === a.due_date && ` · solo hoy`}
