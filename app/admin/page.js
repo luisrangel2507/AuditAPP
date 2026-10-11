@@ -263,11 +263,71 @@ function Sites() {
 
 const shiftDay = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 
+const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const DAY_IDX = { lun: 0, lunes: 0, mar: 1, martes: 1, mie: 2, miercoles: 2, jue: 3, jueves: 3, vie: 4, viernes: 4 };
+
+// Convierte las filas pegadas (Nombre | Día | Zona | No. de parte) en cambios sobre las auditorías de la semana.
+function parseAssignments(text, audits, days) {
+  const byName = {};
+  audits.forEach((a) => { (byName[norm(a.name)] ||= []).push(a); });
+  const names = Object.keys(byName);
+  const changes = {}, problems = [];
+  let rows = 0;
+  String(text || '').split(/\r?\n/).forEach((raw, i) => {
+    if (!raw.trim()) return;
+    const c = raw.split(raw.includes('\t') ? '\t' : ';').map((x) => x.trim());
+    if (i === 0 && /^nombre/.test(norm(c[0]))) return;
+    const [name, day, zone, part] = c;
+    let key = norm(name);
+    if (!byName[key]) {
+      const hit = names.filter((n) => n.includes(key) || key.includes(n));
+      if (key && hit.length === 1) key = hit[0];
+      else return problems.push(`Línea ${i + 1}: ${hit.length > 1 ? 'nombre ambiguo' : 'no encontré a'} "${name || ''}"`);
+    }
+    const d = norm(day);
+    let list = byName[key];
+    if (d && d !== 'todos' && d !== 'todo' && d !== 'semana') {
+      const k = DAY_IDX[d] ?? (/^[1-5]$/.test(d) ? Number(d) - 1 : -1);
+      if (k < 0) return problems.push(`Línea ${i + 1}: día "${day}" no válido`);
+      list = list.filter((a) => a.date === days[k] || a.date !== a.due_date);
+      if (!list.length) return problems.push(`Línea ${i + 1}: ${name} no tiene auditoría ese día`);
+    }
+    const pend = list.filter((a) => a.status === 'pending');
+    if (!pend.length) return problems.push(`Línea ${i + 1}: ${name} no tiene auditorías pendientes ahí`);
+    pend.forEach((a) => { changes[a.id] = { ...(changes[a.id] || {}), ...(zone ? { area: zone } : {}), ...(part !== undefined && part !== '' ? { part_number: part } : {}) }; });
+    rows++;
+  });
+  return { changes, problems, rows };
+}
+
+function PasteSheet({ data, onApply, onClose }) {
+  const [text, setText] = useState(''), [res, setRes] = useState(null);
+  const run = () => setRes(parseAssignments(text, data.audits, data.days));
+  return (
+    <div className="sheet-bg" onClick={onClose}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <h2>Pegar desde Excel</h2>
+      <p className="sub">Una fila por persona y día, con columnas: <b>Nombre, Día, Zona, No. de parte</b>. Si dejas el Día vacío (o pones "Todos") aplica a todos sus días de esta semana. Los cambios se cargan en la tabla y no se guardan hasta que pulses Guardar.</p>
+      <details style={{ margin: '8px 0' }}><summary className="sub" style={{ cursor: 'pointer' }}>Ver ejemplo</summary>
+        <pre className="imp-ta" style={{ whiteSpace: 'pre-wrap', background: '#f1f4fa', borderRadius: 12, padding: 10 }}>{'Ana López\tLun\tLínea 1\t4521-AB\nAna López\tMié\tLínea 2\t7788-C\nBeto Ruiz\t\tAll Areas\t9001'}</pre></details>
+      <textarea className="inp imp-ta" placeholder="Pega aquí…" value={text} onChange={(e) => { setText(e.target.value); setRes(null); }} />
+      {res && <div className={res.problems.length ? 'err' : 'card'} style={{ marginTop: 12 }}>
+        <b>{res.rows} fila(s) listas para aplicar.</b>
+        {res.problems.map((p) => <div key={p} className="sub" style={{ color: 'inherit' }}>{p}</div>)}</div>}
+      <div className="row" style={{ marginTop: 16 }}>
+        <button className="btn alt grow" onClick={onClose}>Cancelar</button>
+        {res && res.rows > 0
+          ? <button className="btn grow" onClick={() => onApply(res.changes)}>Cargar en la tabla</button>
+          : <button className="btn grow" disabled={!text.trim()} onClick={run}>Revisar</button>}
+      </div>
+    </div></div>
+  );
+}
+
 // Asignaciones: por persona y por día, la zona y el número de parte a inspeccionar.
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
 function Assign() {
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
-  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false);
+  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false);
   const dirty = Object.keys(edits).length;
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
@@ -317,7 +377,10 @@ function Assign() {
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => go(1)} disabled={!data}>›</button>
       </div>
-      <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} style={{ marginBottom: 12 }} />
+      <div className="row" style={{ marginBottom: 12 }}>
+        <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
+        <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>Pegar desde Excel</button>
+      </div>
       {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
@@ -339,6 +402,11 @@ function Assign() {
                   </div>);
               })}
             </div>))}
+          {paste && <PasteSheet data={data} onClose={() => setPaste(false)} onApply={(ch) => {
+            setEdits((e) => { const n = { ...e }; Object.entries(ch).forEach(([id, v]) => { const a = data.audits.find((x) => x.id === Number(id)); const m = { ...(n[id] || {}), ...v };
+              const same = (m.area ?? a.area) === a.area && (m.part_number ?? a.part_number) === a.part_number; if (same) delete n[id]; else n[id] = m; }); return n; });
+            setPaste(false); setMsg('');
+          }} />}
           <div className="asg-bar">
             <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : 'Todo guardado'}</span>
             {dirty > 0 && <button className="btn alt sm" onClick={() => { setEdits({}); setMsg(''); }}>Descartar</button>}
