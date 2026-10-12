@@ -15,7 +15,7 @@ export const GET = route(async (req, ctx, user) => {
   const P = [from, today, scope];
   const SC = `AND ($3::int IS NULL OR u.site_id=$3)`;
 
-  const [kpi, layer, dept, week, area, fail, missing, open] = await Promise.all([
+  const [kpi, layer, dept, week, area, fail, missing, open, results, issues] = await Promise.all([
     q(`SELECT COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score,
               COUNT(*) FILTER (WHERE a.status='completed' AND a.late)::int late
@@ -40,7 +40,18 @@ export const GET = route(async (req, ctx, user) => {
     q(`SELECT a.id,a.date,a.area,u.name,u.dept,u.layer FROM audits a JOIN users u ON u.id=a.user_id
         WHERE a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope]),
     q(`SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`, [today, scope]),
+    // Distribución de resultados (todas las respuestas de auditorías completadas en el periodo)
+    q(`SELECT r.result, COUNT(*)::int n FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
+        WHERE a.status='completed' AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1`, [from, scope]),
+    // Open issues (lista tipo PDCA): todos los abiertos de la planta, los vencidos primero
+    q(`SELECT f.id,f.area,a.part_number,f.question,f.notes,f.result,f.status,f.due_date,f.created_at,a.date AS audit_date,u.name AS auditor,
+              COALESCE((SELECT json_agg(json_build_object('name',ou.name,'status',o.status,'action',o.action) ORDER BY o.added_at)
+                          FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
+         FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
+        WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)
+        ORDER BY f.due_date NULLS LAST, f.id LIMIT 100`, [scope]),
   ]);
   return json({ today, from, weeks, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
-    area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0] });
+    area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0],
+    results: Object.fromEntries(['ok', 'na', 'partial', 'nok'].map((k) => [k, results.rows.find((r) => r.result === k)?.n || 0])), issues: issues.rows });
 }, { need: 'lead' });

@@ -61,6 +61,12 @@ a los demás). Solo el admin puede cambiar zona, número de parte o auditor de u
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 
+## Panel: resultados y Open issues PDCA
+Al final del **Panel** (líderes y admin, solo de su planta) hay dos bloques, como el resumen LPA del Excel:
+- **Gráfica de pastel** con el % de respuestas **OK, N/A, Puede mejorar (Δ) y No OK (X)** del periodo elegido (1, 4, 8 o 12 semanas), con la tabla de conteos y porcentajes.
+- **Open issues · PDCA**: todos los hallazgos abiertos (vencidos primero) con fecha, ubicación (zona + N/P), hallazgo, responsables y acción, fecha compromiso y un avance
+  **P** hallazgo registrado · **D** acción en ejecución · **C** todos los responsables terminaron · **A** cerrado.
+
 ## Preguntas en español e inglés
 Todas las preguntas se muestran en **español (arriba) e inglés (abajo)**: al contestar, en los resultados, en los issues y en el Panel.
 El banco completo está traducido en `data/question-i18n.json`; al arrancar, `npm start` convierte las preguntas existentes (idempotente) y las nuevas instalaciones ya nacen bilingües.

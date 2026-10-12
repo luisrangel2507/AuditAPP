@@ -15,6 +15,84 @@ function Bars({ rows, label, value, sub, cls }) {
     </div>));
 }
 
+const oiNo = (id) => 'OI-' + String(id).padStart(4, '0');
+const SLICES = [
+  { k: 'ok', label: 'OK', color: 'var(--ok)' },
+  { k: 'na', label: 'N/A', color: '#9aa6bd' },
+  { k: 'partial', label: 'Puede mejorar (Δ)', color: '#e2a42b' },
+  { k: 'nok', label: 'No OK (X)', color: 'var(--nok)' },
+];
+
+// Gráfica de pastel: % de respuestas OK, N/A, puede mejorar y no OK
+function ResultsPie({ results }) {
+  const total = SLICES.reduce((s, x) => s + results[x.k], 0);
+  if (!total) return <div className="sub">Aún sin respuestas registradas en el periodo.</div>;
+  const R = 80, C = 100;
+  let a0 = -Math.PI / 2;
+  const arcs = SLICES.filter((s) => results[s.k] > 0).map((s) => {
+    const frac = results[s.k] / total, a1 = a0 + frac * 2 * Math.PI;
+    const p = (a) => [C + R * Math.cos(a), C + R * Math.sin(a)];
+    const [x0, y0] = p(a0), [x1, y1] = p(a1), mid = (a0 + a1) / 2;
+    const d = frac >= 0.9999 ? null : `M${C},${C} L${x0},${y0} A${R},${R} 0 ${frac > 0.5 ? 1 : 0} 1 ${x1},${y1} Z`;
+    const out = { ...s, frac, d, lx: C + R * 0.62 * Math.cos(mid), ly: C + R * 0.62 * Math.sin(mid) };
+    a0 = a1; return out;
+  });
+  const fmt = (f) => `${(f * 100).toFixed(f < 0.1 && f > 0 ? 1 : 0)}%`;
+  return (
+    <div className="pie">
+      <svg viewBox="0 0 200 200" role="img" aria-label={`Resultados: ${SLICES.map((s) => `${s.label} ${fmt(results[s.k] / total)}`).join(', ')}`}>
+        {arcs.map((s) => s.d ? <path key={s.k} d={s.d} fill={s.color} stroke="#fff" strokeWidth="1.5" /> : <circle key={s.k} cx={C} cy={C} r={R} fill={s.color} />)}
+        {arcs.filter((s) => s.frac >= 0.07).map((s) => <text key={'t' + s.k} x={s.lx} y={s.ly} textAnchor="middle" dominantBaseline="middle" className="pie-t">{fmt(s.frac)}</text>)}
+      </svg>
+      <table className="pie-legend"><tbody>
+        {SLICES.map((s) => (
+          <tr key={s.k}><td><i style={{ background: s.color }} /></td><td>{s.label}</td>
+            <td className="n">{results[s.k]}</td><td className="n"><b>{fmt(results[s.k] / total)}</b></td></tr>))}
+        <tr className="tot"><td /><td>Total de respuestas</td><td className="n">{total}</td><td /></tr>
+      </tbody></table>
+    </div>
+  );
+}
+
+// Avance PDCA de un issue: P registrado · D acción en curso · C todos terminaron · A cerrado
+function Pdca({ f }) {
+  const o = f.owners || [];
+  const steps = [
+    ['P', 'Plan: hallazgo registrado', true],
+    ['D', 'Do: acción en ejecución', o.some((x) => x.status !== 'open' || (x.action || '').trim())],
+    ['C', 'Check: todos los responsables terminaron', o.length > 0 && o.every((x) => x.status === 'done')],
+    ['A', 'Act: issue cerrado', f.status === 'closed'],
+  ];
+  const cur = steps.findIndex((s) => !s[2]);
+  return <div className="pdca" aria-label="Avance PDCA">{steps.map(([l, t, ok], i) => <span key={l} title={t} className={ok ? 'done' : i === cur ? 'cur' : ''}>{l}</span>)}</div>;
+}
+
+function OpenIssues({ issues, today }) {
+  if (!issues.length) return <div className="card"><div className="sub">Sin open issues. 🎉</div></div>;
+  return (
+    <div className="oi-list">
+      <div className="oi-head"><span>OI / Fecha</span><span>Ubicación</span><span>Hallazgo (Plan)</span><span>Responsables y acción (Do)</span><span>Compromiso</span><span>PDCA</span></div>
+      {issues.map((f) => {
+        const over = f.due_date && f.due_date < today;
+        const acted = (f.owners || []).filter((o) => (o.action || '').trim());
+        return (
+          <div key={f.id} className={`oi-row ${over ? 'over' : ''}`}>
+            <div data-l="OI / Fecha"><b className="oi-no">{oiNo(f.id)}</b><div className="sub">{fmtDate(f.audit_date, { day: 'numeric', month: 'short' })}</div></div>
+            <div data-l="Ubicación">{f.area}{f.part_number && <div className="partno">N/P <b>{f.part_number}</b></div>}</div>
+            <div data-l="Hallazgo (Plan)"><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span> <Bi text={f.question} />
+              {f.notes && <div className="sub" style={{ marginTop: 4 }}>“{f.notes}”</div>}</div>
+            <div data-l="Responsables y acción (Do)">{(f.owners || []).length ? f.owners.map((o, i) => (
+              <div key={i} className="oi-owner"><b>{o.name}</b> <span className={`pill ${o.status === 'done' ? 'ok' : o.status === 'in_progress' ? 'warn' : ''}`}>{o.status === 'done' ? 'Terminó' : o.status === 'in_progress' ? 'En proceso' : 'Pendiente'}</span>
+                {(o.action || '').trim() && <div className="sub">{o.action}</div>}</div>)) : <span className="sub">Sin responsable asignado</span>}
+              {!acted.length && (f.owners || []).length > 0 && <div className="sub">Sin acción registrada</div>}</div>
+            <div data-l="Compromiso" className={over ? 'oi-over' : ''}>{f.due_date ? fmtDate(f.due_date, { day: 'numeric', month: 'short' }) : '—'}{over && <div className="sub" style={{ color: 'inherit' }}>vencido</div>}</div>
+            <div data-l="PDCA"><Pdca f={f} /></div>
+          </div>);
+      })}
+    </div>
+  );
+}
+
 function Inner() {
   const [weeks, setWeeks] = useState(4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
   // La TV usa la planta que ve el admin; un líder siempre ve la suya (lo resuelve el servidor)
@@ -65,6 +143,12 @@ function Inner() {
             <div key={m.id} className="row" style={{ padding: '6px 0', fontSize: 14 }}>
               <span className="pill nok">{fmtDate(m.date, { day: 'numeric', month: 'short' })}</span>
               <span className="grow">{m.name} <span className="sub">· {LAYER[m.layer]} {DEPT[m.dept]}</span></span><span className="sub">{m.area}</span></div>)) : <div className="sub">Sin auditorías faltantes.</div>}</div>
+
+          <div className="sect">Resultados de las auditorías · {weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
+          <div className="card"><ResultsPie results={d.results} /></div>
+
+          <div className="sect">Open issues · PDCA ({d.issues.length}{d.issues.length >= 100 ? '+' : ''}) · {d.openFindings.overdue} vencido(s)</div>
+          <OpenIssues issues={d.issues} today={d.today} />
         </>
       )}
     </>
