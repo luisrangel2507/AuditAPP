@@ -410,3 +410,29 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
   .oi-row.over { background: #fff5f3; }
   .oi-row > div::before { display: none; }
 }
+
+/* ── Login: nuevo diseño (cuña naranja con pellets, botón azul→naranja, pellets al pie) ── */
+.login2 .hero { padding: calc(40px + env(safe-area-inset-top)) 28px 112px; }
+.login2 .hero::after { background: linear-gradient(180deg, rgba(7,26,72,.38) 0%, rgba(8,28,74,.62) 55%, rgba(8,28,74,.8) 100%); }
+.login2 .hero-photo { object-position: 50% 60%; filter: saturate(1.25) contrast(1.08) brightness(1.12); }
+.hero-wedge { position: absolute; right: 0; bottom: 38px; width: 50%; max-width: 420px; height: auto; z-index: 1; pointer-events: none; }
+.login2 .hero-in h1 { font-size: 60px; margin: 22px 0 0; }
+.login2 .hero-in .bar { width: 62px; height: 4px; margin: 14px 0 20px; }
+.login2 .hero-in p.sub1 { font-size: 19px; font-weight: 500; color: #fff; }
+.login2 .hero-in p.dim { font-size: 17px; margin-top: 2px; }
+.login2 form { margin-top: -44px; border-radius: 30px 30px 0 0; padding: 30px 24px 96px; }
+.login2 .ttl { font-size: 30px; }
+.login2 .go { background: linear-gradient(90deg, #0a49b8 0%, #1f5bd6 48%, #f26a0a 100%); box-shadow: 0 16px 28px -14px rgba(242,106,10,.55); letter-spacing: .01em; }
+.login2 .note { max-width: none; align-items: center; gap: 14px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line2); }
+.login2 .note .vsep { align-self: stretch; width: 1px; background: var(--line); }
+.login2 .note svg { margin-top: 0; }
+.form-pellets { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; z-index: 1; pointer-events: none; }
+@media (min-width: 900px) {
+  .login2 .hero { padding: 56px 48px 56px; }
+  .login2 .hero-in h1 { font-size: 72px; }
+  .hero-wedge { width: 46%; bottom: 0; }
+  .form-pellets { width: 70%; left: auto; right: 0; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 38%); mask-image: linear-gradient(90deg, transparent 0%, #000 38%); }
+  .login2 .note { max-width: none; padding-right: 34%; }
+  .login2 form { margin-top: 0; border-radius: 0; padding: 56px 44px 150px; }
+  .login2 .hero::after { background: linear-gradient(180deg, rgba(7,26,72,.5) 0%, rgba(8,28,74,.8) 100%); }
+}

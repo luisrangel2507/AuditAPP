@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
-import { Pellets } from '@/components/Art';
 
 const T = {
   es: { sub1: 'Auditorías por capas', sub2: 'Mitchell Plastics', title: 'Iniciar sesión', lead: 'Ingresa tus credenciales para continuar',
@@ -18,7 +17,7 @@ const Icon = {
   eye: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>,
   eyeOff: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>,
   arrow: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>,
-  shield: <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6l7-3z" /><path d="M9 12l2.2 2.2L15.5 10" /></svg>,
+  shield: <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6l7-3z" /><path d="M9 12l2.2 2.2L15.5 10" stroke="#f26a0a" strokeWidth="2" /></svg>,
 };
 
 export default function Login() {
@@ -40,12 +39,13 @@ export default function Login() {
     <div className="login2"><div className="login2-card">
       <div className="hero">
         <img className="hero-photo" src="/login-bg.jpg" alt="" />
+        <img className="hero-wedge" src="/login-wedge.webp" alt="" />
         <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
           <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
           <h1>LP<span className="app-accent">App</span></h1>
-          <p>{t.sub1}</p><p className="dim">{t.sub2}</p>
           <span className="bar" />
+          <p className="sub1">{t.sub1}</p><p className="dim">{t.sub2}</p>
         </div>
       </div>
       <form onSubmit={go}>
@@ -58,8 +58,8 @@ export default function Login() {
           <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar contraseña">{show ? Icon.eyeOff : Icon.eye}</button></div>
         {err && <div className="err">{err}</div>}
         <button className="btn go" disabled={busy || !username || !pin}>{busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
-        <div className="note">{Icon.shield}<div><b>{t.noteT}</b>{t.note}</div></div>
-        <div className="corner"><Pellets w={300} h={230} n={85} seed={11} id="lg" /></div>
+        <div className="note">{Icon.shield}<i className="vsep" /><div><b>{t.noteT}</b>{t.note}</div></div>
+        <img className="form-pellets" src="/login-pellets.webp" alt="" />
       </form>
     </div></div>
   );
