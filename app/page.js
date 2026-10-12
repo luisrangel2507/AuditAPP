@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Bi from '@/components/Bi';
 import Shell from '@/components/Shell';
 import { api, fmtDate, scoreCls } from '@/lib/client';
 import Ring from '@/components/Ring';
@@ -61,7 +62,7 @@ export default function Home() {
               <Link key={f.id} href={`/findings?oi=${f.id}`} className={`ticket s-${f.overdue ? 'missed' : 'open'}`}>
                 <div className="main">
                   <div className="day"><span className="oi-no">OI-{String(f.id).padStart(4, '0')}</span><span className={`pill ${f.overdue ? 'nok' : 'gold'}`}>{f.overdue ? 'Vencido' : 'Pendiente'}</span></div>
-                  <div className="area" style={{ fontSize: 17 }}>{f.question}</div>
+                  <div className="area" style={{ fontSize: 17 }}><Bi text={f.question} /></div>
                   <div className="meta">{f.area} · compromiso {fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</div>
                 </div>
                 <div className="stub"><span className="chev">{I.chevron(18)}</span></div>

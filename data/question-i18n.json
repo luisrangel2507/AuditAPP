@@ -1,0 +1,1746 @@
+{
+"¿Están todas las partes etiquetadas correctamente?": {
+"es": "¿Están todas las partes etiquetadas correctamente?",
+"en": "Are all parts labeled correctly?"
+},
+"¿El área está limpia y ordenada? ¿Se mantienen 5's?": {
+"es": "¿El área está limpia y ordenada? ¿Se mantienen 5's?",
+"en": "Is the area clean and tidy? Are the 5S being maintained?"
+},
+"Is scrap placed in RED marked bins/containers?": {
+"es": "¿El scrap se coloca en contenedores marcados en ROJO?",
+"en": "Is scrap placed in RED marked bins/containers?"
+},
+"Is sticker gun set per standards?": {
+"es": "¿La pistola de etiquetas está ajustada según los estándares?",
+"en": "Is sticker gun set per standards?"
+},
+"Is the operation instruction signed by operator and being followed?": {
+"es": "¿La instrucción de operación está firmada por el operador y se está siguiendo?",
+"en": "Is the operation instruction signed by operator and being followed?"
+},
+"Are Scrap Sheets available and being used?": {
+"es": "¿Hay hojas de scrap disponibles y se están utilizando?",
+"en": "Are Scrap Sheets available and being used?"
+},
+"Is the quality alert for the part you are running understood & signed?": {
+"es": "¿La alerta de calidad de la parte que se está corriendo está entendida y firmada?",
+"en": "Is the quality alert for the part you are running understood & signed?"
+},
+"Are safety glasses being worn and are gloves needed for job?": {
+"es": "¿Se usan lentes de seguridad y se requieren guantes para el trabajo?",
+"en": "Are safety glasses being worn and are gloves needed for job?"
+},
+"Are there fatigue mats in the right locations?": {
+"es": "¿Hay tapetes antifatiga en los lugares correctos?",
+"en": "Are there fatigue mats in the right locations?"
+},
+"Is everyone handling parts prior to paint wearing blue nitrile gloves?": {
+"es": "¿Todos los que manejan piezas antes de pintura usan guantes azules de nitrilo?",
+"en": "Is everyone handling parts prior to paint wearing blue nitrile gloves?"
+},
+"Are the Pressure Pots clean and not leaking?": {
+"es": "¿Los tanques de presión están limpios y sin fugas?",
+"en": "Are the Pressure Pots clean and not leaking?"
+},
+"Is the Paint Rack Cleaning Schedule up to date?": {
+"es": "¿El programa de limpieza de racks de pintura está al día?",
+"en": "Is the Paint Rack Cleaning Schedule up to date?"
+},
+"Is the proper robot path being used?": {
+"es": "¿Se está usando la trayectoria correcta del robot?",
+"en": "Is the proper robot path being used?"
+},
+"Are the Exhaust Filters being cleaned?": {
+"es": "¿Se están limpiando los filtros de extracción?",
+"en": "Are the Exhaust Filters being cleaned?"
+},
+"Is the correct pressure on the P-mix gauges?": {
+"es": "¿La presión en los manómetros de P-mix es la correcta?",
+"en": "Is the correct pressure on the P-mix gauges?"
+},
+"Is booth air balanced?": {
+"es": "¿El aire de la cabina está balanceado?",
+"en": "Is booth air balanced?"
+},
+"Is booth temperature OK?": {
+"es": "¿La temperatura de la cabina es correcta?",
+"en": "Is booth temperature OK?"
+},
+"Is air make up temperature OK?": {
+"es": "¿La temperatura del aire de reposición es correcta?",
+"en": "Is air make up temperature OK?"
+},
+"Is oven temperature OK?": {
+"es": "¿La temperatura del horno es correcta?",
+"en": "Is oven temperature OK?"
+},
+"Is conveyor speed correct?": {
+"es": "¿La velocidad del transportador es correcta?",
+"en": "Is conveyor speed correct?"
+},
+"Is PH level of booth water OK?": {
+"es": "¿El nivel de PH del agua de la cabina es correcto?",
+"en": "Is PH level of booth water OK?"
+},
+"Is centrifuge running with no alarms and not jammed?": {
+"es": "¿La centrífuga funciona sin alarmas y sin atorarse?",
+"en": "Is centrifuge running with no alarms and not jammed?"
+},
+"Are the parts being wiped with alcohol?": {
+"es": "¿Las piezas se están limpiando con alcohol?",
+"en": "Are the parts being wiped with alcohol?"
+},
+"¿Se encuentran los contenedores de aterrizados?": {
+"es": "¿Se encuentran los contenedores de aterrizados?",
+"en": "Are the containers grounded?"
+},
+"Los técnicos de pintura portan el EPP correctamente incluida la bata": {
+"es": "Los técnicos de pintura portan el EPP correctamente incluida la bata",
+"en": "Do paint technicians wear their PPE correctly, including the lab coat?"
+},
+"En la sala de mezclas y en cabinas no hay presencia de aparatos electrónicos (celulares)": {
+"es": "En la sala de mezclas y en cabinas no hay presencia de aparatos electrónicos (celulares)",
+"en": "Are there no electronic devices (cell phones) in the mixing room or booths?"
+},
+"¿Es retirado el solvente de purga?": {
+"es": "¿Es retirado el solvente de purga?",
+"en": "Is the purge solvent being removed?"
+},
+"¿Están los contenedores metálicos limpios para transferencia de solvente o pintura?": {
+"es": "¿Están los contenedores metálicos limpios para transferencia de solvente o pintura?",
+"en": "Are the metal containers clean for solvent or paint transfer?"
+},
+"¿Se encuentran los tambos y cubetas aterrizadas?": {
+"es": "¿Se encuentran los tambos y cubetas aterrizadas?",
+"en": "Are the drums and buckets grounded?"
+},
+"El personal utiliza mascarillas": {
+"es": "El personal utiliza mascarillas",
+"en": "Does the personnel use masks?"
+},
+"¿Todas las estructuras aterrizadas a tierra?": {
+"es": "¿Todas las estructuras aterrizadas a tierra?",
+"en": "Are all structures grounded to earth?"
+},
+"¿Hay en área kit antiderrames?": {
+"es": "¿Hay en área kit antiderrames?",
+"en": "Is there a spill kit in the area?"
+},
+"Estación de lava ojos en buenas condiciones": {
+"es": "Estación de lava ojos en buenas condiciones",
+"en": "Is the eyewash station in good condition?"
+},
+"¿Se utilizan herramienta anti chispa para la operación de preparación de pintura?": {
+"es": "¿Se utilizan herramienta anti chispa para la operación de preparación de pintura?",
+"en": "Are anti-spark tools used for the paint preparation operation?"
+},
+"Contenedores de plástico solo para Pintura Base agua": {
+"es": "Contenedores de plástico solo para Pintura Base agua",
+"en": "Plastic containers only for water-based paint"
+},
+"No celulares en área": {
+"es": "No celulares en área",
+"en": "No cell phones in the area"
+},
+"Solo personal autorizado y registrado en bitácora": {
+"es": "Solo personal autorizado y registrado en bitácora",
+"en": "Only authorized personnel who are signed in the logbook"
+},
+"¿Están todas las bombas aterrizadas y su contenedor?": {
+"es": "¿Están todas las bombas aterrizadas y su contenedor?",
+"en": "Are all pumps and their containers grounded?"
+},
+"La bomba de transferencia de solvente trabaja a baja presión 30-50 psi": {
+"es": "La bomba de transferencia de solvente trabaja a baja presión 30-50 psi",
+"en": "Does the solvent transfer pump run at low pressure, 30-50 psi?"
+},
+"Extintor disponible en área": {
+"es": "Extintor disponible en área",
+"en": "Is a fire extinguisher available in the area?"
+},
+"Las pinzas metálicas están limpias y en buena condición": {
+"es": "Las pinzas metálicas están limpias y en buena condición",
+"en": "Are the metal tongs clean and in good condition?"
+},
+"Embudos limpios y cerrados": {
+"es": "Embudos limpios y cerrados",
+"en": "Funnels clean and closed"
+},
+"Verificar condiciones de tierras físicas. Sin daños, pintadas, electrodos sucios, etc.": {
+"es": "Verificar condiciones de tierras físicas. Sin daños, pintadas, electrodos sucios, etc.",
+"en": "Check the condition of the physical grounds: no damage, paint, dirty electrodes, etc."
+},
+"Mantenimiento programado vs real. ¿Se llegó al 100% de actividades programadas?": {
+"es": "Mantenimiento programado vs real. ¿Se llegó al 100% de actividades programadas?",
+"en": "Scheduled vs. actual maintenance. Was 100% of the scheduled activities reached?"
+},
+"Mantenimiento Pintura. Área ordenada, limpia, sin derrames, equipo y herramienta ordenada.": {
+"es": "Mantenimiento Pintura. Área ordenada, limpia, sin derrames, equipo y herramienta ordenada.",
+"en": "Paint maintenance. Area tidy, clean, no spills, equipment and tools organized."
+},
+"Revisar uso correcto del EPP en Líneas de Producción Pintura (Cofia, guantes limpios, sin uso de joyería)": {
+"es": "Revisar uso correcto del EPP en Líneas de Producción Pintura (Cofia, guantes limpios, sin uso de joyería)",
+"en": "Check correct use of PPE on the Paint Production Lines (hair net, clean gloves, no jewelry)"
+},
+"¿Están los QIR / PIR completos y actualizados? Validar en PLEX": {
+"es": "¿Están los QIR / PIR completos y actualizados? Validar en PLEX",
+"en": "Are the QIR / PIR complete and up to date? Validate in PLEX"
+},
+"Has fixture been verified for error proofing?": {
+"es": "¿Se verificó que el dispositivo (fixture) cuente con prueba de error (poka-yoke)?",
+"en": "Has fixture been verified for error proofing?"
+},
+"¿Están los operadores entrenados y se cuenta con el registro en la matriz de versatilidad?": {
+"es": "¿Están los operadores entrenados y se cuenta con el registro en la matriz de versatilidad?",
+"en": "Are the operators trained and is there a record in the versatility matrix?"
+},
+"¿Se ha completado la Verificación de primera pieza?": {
+"es": "¿Se ha completado la Verificación de primera pieza?",
+"en": "Has the first-piece verification been completed?"
+},
+"¿Se cuenta y está actualizado el DMR interno o externo de la pieza auditada?": {
+"es": "¿Se cuenta y está actualizado el DMR interno o externo de la pieza auditada?",
+"en": "Is the internal or external DMR for the audited part available and up to date?"
+},
+"¿Se ha entrenado a la persona en proceso de contención?": {
+"es": "¿Se ha entrenado a la persona en proceso de contención?",
+"en": "Has the person been trained in the containment process?"
+},
+"Are there extra labels at the cell?": {
+"es": "¿Hay etiquetas de más en la celda?",
+"en": "Are there extra labels at the cell?"
+},
+"Are the correct Kanban labels in the cell for the job that is running?": {
+"es": "¿Están en la celda las etiquetas Kanban correctas para el trabajo que se está corriendo?",
+"en": "Are the correct Kanban labels in the cell for the job that is running?"
+},
+"Are old Kanbans removed?": {
+"es": "¿Se retiraron los Kanban viejos?",
+"en": "Are old Kanbans removed?"
+},
+"Are the kanbans correctly split (LH & RH)?": {
+"es": "¿Los Kanban están divididos correctamente (LH y RH)?",
+"en": "Are the kanbans correctly split (LH & RH)?"
+},
+"Is the damaged rack cart at P3 / in hydro full?": {
+"es": "¿El carro de racks dañados en P3 / en hidro está lleno?",
+"en": "Is the damaged rack cart at P3 / in hydro full?"
+},
+"Is paint material stored properly?": {
+"es": "¿El material de pintura está almacenado correctamente?",
+"en": "Is paint material stored properly?"
+},
+"Is exhaust fan functioning?": {
+"es": "¿El extractor funciona?",
+"en": "Is exhaust fan functioning?"
+},
+"Paint Drums Grounded and Bonded?": {
+"es": "¿Los tambos de pintura están aterrizados y conectados (bonded)?",
+"en": "Paint Drums Grounded and Bonded?"
+},
+"Waste paint properly labeled? In correct area?": {
+"es": "¿Los residuos de pintura están etiquetados correctamente y en el área correcta?",
+"en": "Waste paint properly labeled? In correct area?"
+},
+"Test materials labeled?": {
+"es": "¿Los materiales de prueba están etiquetados?",
+"en": "Test materials labeled?"
+},
+"Loading Instructions being followed?": {
+"es": "¿Se están siguiendo las instrucciones de carga?",
+"en": "Loading Instructions being followed?"
+},
+"Is De-Stat equipment in operating and in use?": {
+"es": "¿El equipo De-Stat está operando y en uso?",
+"en": "Is De-Stat equipment in operating and in use?"
+},
+"Is paint pattern being followed as per the operation instruction?": {
+"es": "¿Se está siguiendo el patrón de pintura según la instrucción de operación?",
+"en": "Is paint pattern being followed as per the operation instruction?"
+},
+"Is cap cleaning being followed per the schedule?": {
+"es": "¿Se está siguiendo la limpieza de tapas (caps) según el programa?",
+"en": "Is cap cleaning being followed per the schedule?"
+},
+"Is viscosity running to specification?": {
+"es": "¿La viscosidad está corriendo dentro de especificación?",
+"en": "Is viscosity running to specification?"
+},
+"Is Filtration/ Grounding/ Paint Reduction to Work instructions?": {
+"es": "¿La filtración, el aterrizaje y la reducción de pintura cumplen con las instrucciones de trabajo?",
+"en": "Is Filtration/ Grounding/ Paint Reduction to Work instructions?"
+},
+"Paint Kitchen Storage and Pumps – Is grounding being used?": {
+"es": "Almacén y bombas de la cocina de pintura: ¿se está usando aterrizaje?",
+"en": "Paint Kitchen Storage and Pumps – Is grounding being used?"
+},
+"Are the paint kitchens clean and organized?": {
+"es": "¿Las cocinas de pintura están limpias y ordenadas?",
+"en": "Are the paint kitchens clean and organized?"
+},
+"Are the paint line PMs complete and up to schedule?": {
+"es": "¿Los PM de la línea de pintura están completos y al día según el programa?",
+"en": "Are the paint line PMs complete and up to schedule?"
+},
+"Verify that the alcohol wipe rag change counter is ON.": {
+"es": "Verificar que el contador de cambio de trapos con alcohol esté ENCENDIDO.",
+"en": "Verify that the alcohol wipe rag change counter is ON."
+},
+"Is the Robot Paint Room and assembly area clean and tidy?": {
+"es": "¿El cuarto de pintura robotizada y el área de ensamble están limpios y ordenados?",
+"en": "Is the Robot Paint Room and assembly area clean and tidy?"
+},
+"Is the Paint Storage Room clean and tidy?": {
+"es": "¿El almacén de pintura está limpio y ordenado?",
+"en": "Is the Paint Storage Room clean and tidy?"
+},
+"Is paint line rack cleaning schedule being followed?": {
+"es": "¿Se está siguiendo el programa de limpieza de racks de la línea de pintura?",
+"en": "Is paint line rack cleaning schedule being followed?"
+},
+"¿Se encuentran los contenedores de alcohol y trapos sucios aterrizados?": {
+"es": "¿Se encuentran los contenedores de alcohol y trapos sucios aterrizados?",
+"en": "Are the alcohol and dirty-rag containers grounded?"
+},
+"¿Se encuentra el documento(s) de seguimiento a proceso \"SET UP PROCESS\", correctamente lleno(s)?": {
+"es": "¿Se encuentra el documento(s) de seguimiento a proceso \"SET UP PROCESS\", correctamente lleno(s)?",
+"en": "Is the \"SET UP PROCESS\" tracking document(s) filled out correctly?"
+},
+"¿Está la cámara de visión en automático?": {
+"es": "¿Está la cámara de visión en automático?",
+"en": "Is the vision camera in automatic mode?"
+},
+"¿La cascada de agua tiene un flujo constante y uniforme?": {
+"es": "¿La cascada de agua tiene un flujo constante y uniforme?",
+"en": "Does the water curtain have a constant and uniform flow?"
+},
+"¿Se encuentran los operadores usando el Mylar para la revisión de defectos como: grumos, cráter, fibras?": {
+"es": "¿Se encuentran los operadores usando el Mylar para la revisión de defectos como: grumos, cráter, fibras?",
+"en": "Are the operators using the Mylar to check for defects such as lumps, craters and fibers?"
+},
+"¿Se encuentra la H% y T°C en cuarto de mezclas y almacén de pinturas dentro de especificación?": {
+"es": "¿Se encuentra la H% y T°C en cuarto de mezclas y almacén de pinturas dentro de especificación?",
+"en": "Are the humidity (H%) and temperature (T°C) in the mixing room and paint warehouse within specification?"
+},
+"Revisar que los formatos de preparación de pintura estén correctamente llenos, actualizados y con el número de formato legible.": {
+"es": "Revisar que los formatos de preparación de pintura estén correctamente llenos, actualizados y con el número de formato legible.",
+"en": "Check that the paint preparation forms are filled out correctly, up to date and with a legible form number."
+},
+"Revisar coincida el material registrado vs físicamente del área de cuarentena pintura.": {
+"es": "Revisar coincida el material registrado vs físicamente del área de cuarentena pintura.",
+"en": "Check that the registered material matches the physical material in the paint quarantine area."
+},
+"Are Colour concentrate buckets identified and covered?": {
+"es": "¿Las cubetas de concentrado de color están identificadas y tapadas?",
+"en": "Are Colour concentrate buckets identified and covered?"
+},
+"Is First In / First Out inventory system in use?": {
+"es": "¿Se usa el sistema de inventario primeras entradas, primeras salidas (FIFO)?",
+"en": "Is First In / First Out inventory system in use?"
+},
+"Are the forklift checklists completed and signed off by operator and supervisor within 2 hours of the start of the shift?": {
+"es": "¿Las listas de verificación de montacargas están completas y firmadas por el operador y el supervisor dentro de las 2 horas posteriores al inicio del turno?",
+"en": "Are the forklift checklists completed and signed off by operator and supervisor within 2 hours of the start of the shift?"
+},
+"Is Warehouse clean and organized with all finished goods in the correct location?": {
+"es": "¿El almacén está limpio y ordenado, con todo el producto terminado en su ubicación correcta?",
+"en": "Is Warehouse clean and organized with all finished goods in the correct location?"
+},
+"Are all materials not in use returned to their storage location and labeled?": {
+"es": "¿Todo el material que no está en uso se regresó a su lugar de almacenamiento y está etiquetado?",
+"en": "Are all materials not in use returned to their storage location and labeled?"
+},
+"Is the machine clean with no resin on it?": {
+"es": "¿La máquina está limpia y sin resina encima?",
+"en": "Is the machine clean with no resin on it?"
+},
+"Check that the Batteries are in the correct Lift Trucks?": {
+"es": "Verificar que las baterías estén en los montacargas correctos.",
+"en": "Check that the Batteries are in the correct Lift Trucks?"
+},
+"Check the condition of the Cables from the Lift Truck to the Battery?": {
+"es": "Verificar el estado de los cables del montacargas a la batería.",
+"en": "Check the condition of the Cables from the Lift Truck to the Battery?"
+},
+"Are grinders contaminated?": {
+"es": "¿Los molinos están contaminados?",
+"en": "Are grinders contaminated?"
+},
+"Is the colour feeder set to the master?": {
+"es": "¿El alimentador de color está ajustado al master?",
+"en": "Is the colour feeder set to the master?"
+},
+"Is the grinder set up properly (clean, labeled, correct colour)?": {
+"es": "¿El molino está preparado correctamente (limpio, etiquetado, color correcto)?",
+"en": "Is the grinder set up properly (clean, labeled, correct colour)?"
+},
+"Is colourant station clean? Buckets removed? Colourant boxes back on rack?": {
+"es": "¿La estación de colorante está limpia? ¿Se retiraron las cubetas? ¿Las cajas de colorante regresaron al rack?",
+"en": "Is colourant station clean? Buckets removed? Colourant boxes back on rack?"
+},
+"Is machine verified to master set-up?": {
+"es": "¿La máquina está verificada contra el set-up master?",
+"en": "Is machine verified to master set-up?"
+},
+"Are correct mould clamp bolts being used per the bolt standards?": {
+"es": "¿Se están usando los tornillos de sujeción de molde correctos según el estándar de tornillos?",
+"en": "Are correct mould clamp bolts being used per the bolt standards?"
+},
+"Are all Crane inspection sheets submitted?": {
+"es": "¿Se entregaron todas las hojas de inspección de grúa?",
+"en": "Are all Crane inspection sheets submitted?"
+},
+"Are bump Caps being worn?": {
+"es": "¿Se están usando cascos protectores (bump caps)?",
+"en": "Are bump Caps being worn?"
+},
+"Is equipment functioning correctly?": {
+"es": "¿El equipo funciona correctamente?",
+"en": "Is equipment functioning correctly?"
+},
+"Are thermolator setting to the master set up?": {
+"es": "¿Los termorreguladores (thermolators) están ajustados al set-up master?",
+"en": "Are thermolator setting to the master set up?"
+},
+"¿Los Controles hot runner están trabajando adecuadamente?": {
+"es": "¿Los Controles hot runner están trabajando adecuadamente?",
+"en": "Are the hot runner controllers working properly?"
+},
+"Is the setup tech using the torque wrench labelled for his cell?": {
+"es": "¿El técnico de set-up usa el torquímetro etiquetado para su celda?",
+"en": "Is the setup tech using the torque wrench labelled for his cell?"
+},
+"¿Están legibles y libres de daño el master set up, así como disponible en cada máquina, y está corriendo el producto asignado?": {
+"es": "¿Están legibles y libres de daño el master set up, así como disponible en cada máquina, y está corriendo el producto asignado?",
+"en": "Are the master set-up legible and free of damage, available at every machine, and is the machine running the assigned product?"
+},
+"Revisar todas las máquinas para Master en amarillo y asegurar que están firmados": {
+"es": "Revisar todas las máquinas para Master en amarillo y asegurar que están firmados",
+"en": "Check all machines for a Master in yellow and make sure they are signed"
+},
+"Check/clean the thermolator \"Y\" strainers?": {
+"es": "¿Se revisaron y limpiaron los filtros en \"Y\" del termorregulador?",
+"en": "Check/clean the thermolator \"Y\" strainers?"
+},
+"Verificar que los clamps de los moldes estén en buenas condiciones": {
+"es": "Verificar que los clamps de los moldes estén en buenas condiciones",
+"en": "Verify that the mold clamps are in good condition"
+},
+"¿Están las coladas siendo removidas y segregadas adecuadamente? (Están las coladas bajo la máquina)": {
+"es": "¿Están las coladas siendo removidas y segregadas adecuadamente? (Están las coladas bajo la máquina)",
+"en": "Are the runners being removed and segregated properly? (Are the runners under the machine?)"
+},
+"Are the machines clean?": {
+"es": "¿Las máquinas están limpias?",
+"en": "Are the machines clean?"
+},
+"Material / Color feeder auger check. Is the Auger the proper size for this machine? Is it in good working condition?": {
+"es": "Revisión del tornillo sinfín del alimentador de material / color. ¿El tornillo es del tamaño correcto para esta máquina? ¿Está en buenas condiciones de trabajo?",
+"en": "Material / Color feeder auger check. Is the Auger the proper size for this machine? Is it in good working condition?"
+},
+"Is the Regrind % to Master?": {
+"es": "¿El % de regrind (molido) corresponde al master?",
+"en": "Is the Regrind % to Master?"
+},
+"Verificar si el POM / CELCON ACETAL utiliza la etiqueta color naranja.": {
+"es": "Verificar si el POM / CELCON ACETAL utiliza la etiqueta color naranja.",
+"en": "Verify whether the POM / CELCON ACETAL uses the orange label."
+},
+"Are ALL Cushion Checks completed per the Monthly PM schedule?": {
+"es": "¿Se completaron TODAS las verificaciones de colchón (cushion) según el programa mensual de PM?",
+"en": "Are ALL Cushion Checks completed per the Monthly PM schedule?"
+},
+"Are ALL Cell Spare Thermolators and HRC cables available?": {
+"es": "¿Están disponibles TODOS los termorreguladores y cables HRC de repuesto de la celda?",
+"en": "Are ALL Cell Spare Thermolators and HRC cables available?"
+},
+"Revisar pizarrón de Fast Response y realizar Quality Focus Check (QFC) en estación afectada": {
+"es": "Revisar pizarrón de Fast Response y realizar Quality Focus Check (QFC) en estación afectada",
+"en": "Check the Fast Response board and perform a Quality Focus Check (QFC) at the affected station"
+},
+"¿Se realizan controles de agua y monitoreo de sal mensualmente?": {
+"es": "¿Se realizan controles de agua y monitoreo de sal mensualmente?",
+"en": "Are water checks and monthly salt monitoring performed?"
+},
+"¿Se sigue el procedimiento de bloqueo y etiquetado?": {
+"es": "¿Se sigue el procedimiento de bloqueo y etiquetado?",
+"en": "Is the lockout/tagout procedure followed?"
+},
+"¿Se suministra y utiliza PPE cuando es necesario?": {
+"es": "¿Se suministra y utiliza PPE cuando es necesario?",
+"en": "Is PPE provided and used when necessary?"
+},
+"¿Se han descartado adecuadamente los residuos del departamento?": {
+"es": "¿Se han descartado adecuadamente los residuos del departamento?",
+"en": "Has the department's waste been disposed of properly?"
+},
+"¿Se han realizado los PM en TODAS las máquinas de estacas térmicas?": {
+"es": "¿Se han realizado los PM en TODAS las máquinas de estacas térmicas?",
+"en": "Have PMs been performed on ALL heat-staking machines?"
+},
+"Las Instrucciones de Operación del CF están actualizadas (Formato vigente PLEX e información)": {
+"es": "Las Instrucciones de Operación del CF están actualizadas (Formato vigente PLEX e información)",
+"en": "Are the CF Operating Instructions up to date (current PLEX format and information)?"
+},
+"Las Instrucciones de Operación del CF cuentan con la identificación de la simbología de las características especiales": {
+"es": "Las Instrucciones de Operación del CF cuentan con la identificación de la simbología de las características especiales",
+"en": "Do the CF Operating Instructions include the identification of the special-characteristics symbols?"
+},
+"Is Master list up to date?": {
+"es": "¿La lista maestra está actualizada?",
+"en": "Is Master list up to date?"
+},
+"Is Calibration up to date?": {
+"es": "¿La calibración está al día?",
+"en": "Is Calibration up to date?"
+},
+"Are Annual validations (dimensionals and testing) complete?": {
+"es": "¿Las validaciones anuales (dimensionales y pruebas) están completas?",
+"en": "Are Annual validations (dimensionals and testing) complete?"
+},
+"Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX": {
+"es": "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX",
+"en": "Verify document control. Use of current internal and PLEX forms."
+},
+"Confirmar que las características especiales y controles definidos se estén ejecutando correctamente.": {
+"es": "Confirmar que las características especiales y controles definidos se estén ejecutando correctamente.",
+"en": "Confirm that the special characteristics and defined controls are being carried out correctly."
+},
+"Revisar que instrumentos estén dentro de su vigencia de calibración y correctamente identificados.": {
+"es": "Revisar que instrumentos estén dentro de su vigencia de calibración y correctamente identificados.",
+"en": "Check that instruments are within their calibration validity and correctly identified."
+},
+"Verificar que los dispositivos poka-yoke estén activos, funcionando y no hayan sido bypass.": {
+"es": "Verificar que los dispositivos poka-yoke estén activos, funcionando y no hayan sido bypass.",
+"en": "Verify that poka-yoke devices are active, working and have not been bypassed."
+},
+"FIFO. Confirmar que se respete la rotación de materiales y no existan materiales obsoletos o vencidos.": {
+"es": "FIFO. Confirmar que se respete la rotación de materiales y no existan materiales obsoletos o vencidos.",
+"en": "FIFO. Confirm that material rotation is respected and there are no obsolete or expired materials."
+},
+"5S. Validar condiciones de orden, limpieza, señalización en el área de trabajo.": {
+"es": "5S. Validar condiciones de orden, limpieza, señalización en el área de trabajo.",
+"en": "5S. Validate order, cleanliness and signage conditions in the work area."
+},
+"ECN. Asegurar que cualquier cambio de ingeniería o desviación esté autorizado, documentado y comunicado en piso.": {
+"es": "ECN. Asegurar que cualquier cambio de ingeniería o desviación esté autorizado, documentado y comunicado en piso.",
+"en": "ECN. Ensure that any engineering change or deviation is authorized, documented and communicated on the floor."
+},
+"Is the Receiving inspection list current?": {
+"es": "¿La lista de inspección de recibo está vigente?",
+"en": "Is the Receiving inspection list current?"
+},
+"Are engineering samples coming in properly identified?": {
+"es": "¿Las muestras de ingeniería que llegan están correctamente identificadas?",
+"en": "Are engineering samples coming in properly identified?"
+},
+"Are paint receipts being submitted?": {
+"es": "¿Se están entregando los recibos de pintura?",
+"en": "Are paint receipts being submitted?"
+},
+"Are suppliers responding to 8D requests on time?": {
+"es": "¿Los proveedores responden a tiempo a las solicitudes de 8D?",
+"en": "Are suppliers responding to 8D requests on time?"
+},
+"Is Delivery chart complete and posted?": {
+"es": "¿La gráfica de entregas está completa y publicada?",
+"en": "Is Delivery chart complete and posted?"
+},
+"Has expendable packaging tracking been submitted to customers?": {
+"es": "¿Se entregó a los clientes el seguimiento de empaque retornable?",
+"en": "Has expendable packaging tracking been submitted to customers?"
+},
+"Are CMS (container management system) records up to date?": {
+"es": "¿Los registros del CMS (sistema de administración de contenedores) están al día?",
+"en": "Are CMS (container management system) records up to date?"
+},
+"Have customer website ticket systems been checked and responded to in a timely manner?": {
+"es": "¿Se revisaron y respondieron a tiempo los sistemas de tickets de los sitios web de los clientes?",
+"en": "Have customer website ticket systems been checked and responded to in a timely manner?"
+},
+"Are service orders processed in a timely manner?": {
+"es": "¿Las órdenes de servicio se procesan a tiempo?",
+"en": "Are service orders processed in a timely manner?"
+},
+"Is window times document updated and current?": {
+"es": "¿El documento de ventanas de tiempo está actualizado y vigente?",
+"en": "Is window times document updated and current?"
+},
+"Is production calendar updated and current?": {
+"es": "¿El calendario de producción está actualizado y vigente?",
+"en": "Is production calendar updated and current?"
+},
+"Are all ECN part and price changes been entered into Escore?": {
+"es": "¿Todos los cambios de número de parte y de precio de los ECN se capturaron en Escore?",
+"en": "Are all ECN part and price changes been entered into Escore?"
+},
+"Have any violations been disputed within the allotted time frame?": {
+"es": "¿Se disputaron a tiempo las violaciones (cargos) dentro del plazo permitido?",
+"en": "Have any violations been disputed within the allotted time frame?"
+},
+"Is customer contact spreadsheet being maintained?": {
+"es": "¿Se mantiene la hoja de contactos de clientes?",
+"en": "Is customer contact spreadsheet being maintained?"
+},
+"Has Ultra contact list been submitted with changes to all customers?": {
+"es": "¿Se envió a todos los clientes la lista de contactos de Ultra con los cambios?",
+"en": "Has Ultra contact list been submitted with changes to all customers?"
+},
+"Does SPR reflect actual customer requirements?": {
+"es": "¿El SPR refleja los requerimientos reales del cliente?",
+"en": "Does SPR reflect actual customer requirements?"
+},
+"Are SPR reports reviewed daily and unusual release quantities identified and investigated?": {
+"es": "¿Los reportes SPR se revisan a diario y las cantidades de liberación inusuales se identifican e investigan?",
+"en": "Are SPR reports reviewed daily and unusual release quantities identified and investigated?"
+},
+"Are shippers following proper staging procedures?": {
+"es": "¿Los embarcadores siguen los procedimientos correctos de preparación de carga (staging)?",
+"en": "Are shippers following proper staging procedures?"
+},
+"Shipping to audit 2 trucks daily to confirm expendable packaging is being tracked and recorded on Pick List": {
+"es": "Embarques debe auditar 2 camiones al día para confirmar que el empaque retornable se registra en la lista de surtido (Pick List)",
+"en": "Shipping to audit 2 trucks daily to confirm expendable packaging is being tracked and recorded on Pick List"
+},
+"Is product stored against walls rotated weekly to ensure FIFO?": {
+"es": "¿El producto almacenado contra las paredes se rota semanalmente para asegurar FIFO?",
+"en": "Is product stored against walls rotated weekly to ensure FIFO?"
+},
+"Is all non-conforming product (including scanning issues) tagged in DMR area?": {
+"es": "¿Todo el producto no conforme (incluidos problemas de escaneo) está etiquetado en el área de DMR?",
+"en": "Is all non-conforming product (including scanning issues) tagged in DMR area?"
+},
+"Are all cleaned bins free of debris and labels?": {
+"es": "¿Todos los contenedores limpiados están libres de residuos y etiquetas?",
+"en": "Are all cleaned bins free of debris and labels?"
+},
+"Are any over picked totes immediately returned to the WH?": {
+"es": "¿Las cajas surtidas de más se regresan de inmediato al almacén?",
+"en": "Are any over picked totes immediately returned to the WH?"
+},
+"Is scrap weighed, recorded, and loaded in a timely manner?": {
+"es": "¿El scrap se pesa, se registra y se carga a tiempo?",
+"en": "Is scrap weighed, recorded, and loaded in a timely manner?"
+},
+"Are pick lists completed correctly?": {
+"es": "¿Las listas de surtido (pick lists) se llenan correctamente?",
+"en": "Are pick lists completed correctly?"
+},
+"Have all ASNs been sent and checked for successful receipt during allotted timeframe?": {
+"es": "¿Se enviaron todos los ASN y se confirmó su recepción exitosa dentro del plazo?",
+"en": "Have all ASNs been sent and checked for successful receipt during allotted timeframe?"
+},
+"Is ATBS log complete?": {
+"es": "¿La bitácora ATBS está completa?",
+"en": "Is ATBS log complete?"
+},
+"Is driver log book being monitored for completeness?": {
+"es": "¿Se revisa que la bitácora del chofer esté completa?",
+"en": "Is driver log book being monitored for completeness?"
+},
+"Are shortage emails sent at appropriate times and are accurate?": {
+"es": "¿Los correos de faltantes se envían en los momentos adecuados y son correctos?",
+"en": "Are shortage emails sent at appropriate times and are accurate?"
+},
+"Is red/yellow/green board being updated?": {
+"es": "¿El tablero rojo/amarillo/verde se está actualizando?",
+"en": "Is red/yellow/green board being updated?"
+},
+"Is proper 5S being followed in returnable packaging storage areas?": {
+"es": "¿Se cumple correctamente 5S en las áreas de almacenamiento de empaque retornable?",
+"en": "Is proper 5S being followed in returnable packaging storage areas?"
+},
+"Are bins put away for production use clean of old labels and other debris?": {
+"es": "¿Los contenedores guardados para uso de producción están limpios de etiquetas viejas y otros residuos?",
+"en": "Are bins put away for production use clean of old labels and other debris?"
+},
+"Are bins returned to us in error, segregated and identified for return to customer?": {
+"es": "¿Los contenedores que nos regresan por error están segregados e identificados para devolverse al cliente?",
+"en": "Are bins returned to us in error, segregated and identified for return to customer?"
+},
+"Are damaged bins segregated for repair?": {
+"es": "¿Los contenedores dañados están segregados para reparación?",
+"en": "Are damaged bins segregated for repair?"
+},
+"Have all pick list notes been signed by shipping coordinator?": {
+"es": "¿Todas las notas de las listas de surtido fueron firmadas por el coordinador de embarques?",
+"en": "Have all pick list notes been signed by shipping coordinator?"
+},
+"Is received product put away in a timely fashion?": {
+"es": "¿El producto recibido se acomoda a tiempo?",
+"en": "Is received product put away in a timely fashion?"
+},
+"Are PRS orders being receipted?": {
+"es": "¿Se están recibiendo (receipting) las órdenes PRS?",
+"en": "Are PRS orders being receipted?"
+},
+"Is cardboard area organized and labeled?": {
+"es": "¿El área de cartón está ordenada y etiquetada?",
+"en": "Is cardboard area organized and labeled?"
+},
+"Is silo fill log complete and silo area monitored for clean up?": {
+"es": "¿La bitácora de llenado de silos está completa y se monitorea la limpieza del área de silos?",
+"en": "Is silo fill log complete and silo area monitored for clean up?"
+},
+"Are RDRs issued for each occurrence?": {
+"es": "¿Se emiten RDR por cada ocurrencia?",
+"en": "Are RDRs issued for each occurrence?"
+},
+"Are internal part numbers applied to incoming raw materials when required?": {
+"es": "¿Se aplican los números de parte internos a la materia prima entrante cuando se requiere?",
+"en": "Are internal part numbers applied to incoming raw materials when required?"
+},
+"Is all incoming raw material date stamped?": {
+"es": "¿Toda la materia prima entrante tiene fecha estampada?",
+"en": "Is all incoming raw material date stamped?"
+},
+"Have appropriate materials been put through receiving inspection?": {
+"es": "¿Los materiales correspondientes pasaron por inspección de recibo?",
+"en": "Have appropriate materials been put through receiving inspection?"
+},
+"Is one spot left empty on racks for partials to be put away by production?": {
+"es": "¿Se deja un espacio vacío en los racks para que producción acomode los parciales?",
+"en": "Is one spot left empty on racks for partials to be put away by production?"
+},
+"Are staff notified of deliveries sent to their attention?": {
+"es": "¿Se avisa al personal de las entregas dirigidas a ellos?",
+"en": "Are staff notified of deliveries sent to their attention?"
+},
+"Are Escore IME entries completed at the end of each shift?": {
+"es": "¿Las capturas IME en Escore se completan al final de cada turno?",
+"en": "Are Escore IME entries completed at the end of each shift?"
+},
+"Is FIFO being followed?": {
+"es": "¿Se está siguiendo FIFO?",
+"en": "Is FIFO being followed?"
+},
+"Is purchased product not in excess of storage space received and put away within 24 hours of release from RI?": {
+"es": "¿El producto comprado no excede el espacio de almacenamiento y se acomoda dentro de 24 horas de su liberación de RI?",
+"en": "Is purchased product not in excess of storage space received and put away within 24 hours of release from RI?"
+},
+"Is proper 5S being followed in receiving area?": {
+"es": "¿Se cumple correctamente 5S en el área de recibo?",
+"en": "Is proper 5S being followed in receiving area?"
+},
+"Are through-put goals and actuals clearly posted?": {
+"es": "¿Las metas y los resultados reales de producción (through-put) están claramente publicados?",
+"en": "Are through-put goals and actuals clearly posted?"
+},
+"Are red scrap bins available in the work cell?": {
+"es": "¿Hay contenedores rojos de scrap en la celda de trabajo?",
+"en": "Are red scrap bins available in the work cell?"
+},
+"Are cell information boards signed off by Supervisors daily?": {
+"es": "¿Los supervisores firman diariamente los tableros de información de la celda?",
+"en": "Are cell information boards signed off by Supervisors daily?"
+},
+"Are plastic recycling gay lords audited by Supervisors / Managers daily?": {
+"es": "¿Los supervisores / gerentes auditan diariamente los contenedores de reciclaje de plástico (gaylords)?",
+"en": "Are plastic recycling gay lords audited by Supervisors / Managers daily?"
+},
+"Health & Safety walk (with Safety Rep) completed and open issue submitted to HR?": {
+"es": "¿Se completó el recorrido de Salud y Seguridad (con el representante de Seguridad) y se presentó el tema abierto a RH?",
+"en": "Health & Safety walk (with Safety Rep) completed and open issue submitted to HR?"
+},
+"Is paint kitchen clean and organized?": {
+"es": "¿La cocina de pintura está limpia y ordenada?",
+"en": "Is paint kitchen clean and organized?"
+},
+"¿Son todo de PM requeridos hasta la fecha para el montaje de equipos?": {
+"es": "¿Son todo de PM requeridos hasta la fecha para el montaje de equipos?",
+"en": "Have all PMs required to date for equipment setup been completed?"
+},
+"Is dip schedule being followed?": {
+"es": "¿Se está siguiendo el programa de inmersión (dip)?",
+"en": "Is dip schedule being followed?"
+},
+"¿Se encuentran todas las incidencias aprobadas en DayForce?": {
+"es": "¿Se encuentran todas las incidencias aprobadas en DayForce?",
+"en": "Are all incidents approved in DayForce?"
+},
+"¿Se encuentran HID abiertos/pendientes de completar?": {
+"es": "¿Se encuentran HID abiertos/pendientes de completar?",
+"en": "Are there open/pending HIDs to be completed?"
+},
+"Is the production office clean and training sheets in binders?": {
+"es": "¿La oficina de producción está limpia y las hojas de capacitación están en sus carpetas?",
+"en": "Is the production office clean and training sheets in binders?"
+},
+"¿Salud y Seguridad paseo (con seguridad Rep) completado y presentado tema abierto HR (Mensual)?": {
+"es": "¿Salud y Seguridad paseo (con seguridad Rep) completado y presentado tema abierto HR (Mensual)?",
+"en": "Health & Safety walk (with the Safety Rep) completed and open item submitted to HR (monthly)?"
+},
+"Is the proper level of manpower available and working in the cell?": {
+"es": "¿Hay el nivel adecuado de personal disponible y trabajando en la celda?",
+"en": "Is the proper level of manpower available and working in the cell?"
+},
+"Do the printed labels provided to the cell have today's date?": {
+"es": "¿Las etiquetas impresas que se entregaron a la celda tienen la fecha de hoy?",
+"en": "Do the printed labels provided to the cell have today's date?"
+},
+"Are there any mixed KANBAN cards in the holders?": {
+"es": "¿Hay tarjetas KANBAN mezcladas en los portatarjetas?",
+"en": "Are there any mixed KANBAN cards in the holders?"
+},
+"Are there production tracking sheets in use in the work cell? Printed on both sides? Operator Sticker on the top?": {
+"es": "¿Se usan hojas de seguimiento de producción en la celda? ¿Impresas por ambos lados? ¿Con la etiqueta del operador arriba?",
+"en": "Are there production tracking sheets in use in the work cell? Printed on both sides? Operator Sticker on the top?"
+},
+"Was the First off completed on time? Is the color check sheet attached to the FO? Are issues identified and signed off?": {
+"es": "¿La primera pieza (First off) se completó a tiempo? ¿La hoja de verificación de color está anexa? ¿Los problemas están identificados y firmados?",
+"en": "Was the First off completed on time? Is the color check sheet attached to the FO? Are issues identified and signed off?"
+},
+"Are hourly checks completed on time and properly recorded?": {
+"es": "¿Las verificaciones por hora se completan a tiempo y se registran correctamente?",
+"en": "Are hourly checks completed on time and properly recorded?"
+},
+"Did you witness the Red Rabbit Check (Poke Verification)?": {
+"es": "¿Presenciaste la verificación Red Rabbit (verificación de poka-yoke)?",
+"en": "Did you witness the Red Rabbit Check (Poke Verification)?"
+},
+"Are the QIRs for the running jobs put away on the proper locations?": {
+"es": "¿Los QIR de los trabajos en proceso están guardados en sus lugares correctos?",
+"en": "Are the QIRs for the running jobs put away on the proper locations?"
+},
+"¿Están todos los DMR registrados en el log? ¿Han sido firmados los reportes?": {
+"es": "¿Están todos los DMR registrados en el log? ¿Han sido firmados los reportes?",
+"en": "Are all DMRs recorded in the log? Have the reports been signed?"
+},
+"Has DMR tagged product been moved to the hold area?": {
+"es": "¿El producto con etiqueta DMR se movió al área de retención?",
+"en": "Has DMR tagged product been moved to the hold area?"
+},
+"Do all items in the hold area have DMR tags?": {
+"es": "¿Todos los artículos del área de retención tienen etiqueta DMR?",
+"en": "Do all items in the hold area have DMR tags?"
+},
+"Are all DMR less than 24hrs old?": {
+"es": "¿Todos los DMR tienen menos de 24 horas?",
+"en": "Are all DMR less than 24hrs old?"
+},
+"Are the associates / containment operators packing out the parts certified?": {
+"es": "¿Los asociados / operadores de contención que empacan las piezas están certificados?",
+"en": "Are the associates / containment operators packing out the parts certified?"
+},
+"Does the containment activity match the containment instructions?": {
+"es": "¿La actividad de contención coincide con las instrucciones de contención?",
+"en": "Does the containment activity match the containment instructions?"
+},
+"Was the material from the last production run put away?": {
+"es": "¿Se guardó el material de la última corrida de producción?",
+"en": "Was the material from the last production run put away?"
+},
+"Is the proper regrind connected to the machine and in use? Is it Mixed? Is it labeled properly?": {
+"es": "¿Está conectado a la máquina y en uso el regrind correcto? ¿Está mezclado? ¿Está etiquetado correctamente?",
+"en": "Is the proper regrind connected to the machine and in use? Is it Mixed? Is it labeled properly?"
+},
+"Does the color concentrate mixer and the grinder have the proper label on them?": {
+"es": "¿El mezclador de concentrado de color y el molino tienen la etiqueta correcta?",
+"en": "Does the color concentrate mixer and the grinder have the proper label on them?"
+},
+"Are totes stored / staged in the proper locations?": {
+"es": "¿Las cajas (totes) están almacenadas / en staging en los lugares correctos?",
+"en": "Are totes stored / staged in the proper locations?"
+},
+"¿El trabajo actual se está ejecutando de acuerdo a lo que indica PLEX?": {
+"es": "¿El trabajo actual se está ejecutando de acuerdo a lo que indica PLEX?",
+"en": "Is the current job being run as indicated by PLEX?"
+},
+"Is the tool clean? Was it cleaned at start up?": {
+"es": "¿El molde está limpio? ¿Se limpió al arranque?",
+"en": "Is the tool clean? Was it cleaned at start up?"
+},
+"Does the cleaning station have the proper tools available?": {
+"es": "¿La estación de limpieza tiene las herramientas adecuadas disponibles?",
+"en": "Does the cleaning station have the proper tools available?"
+},
+"Is the hold area clean? Are the DMRs less than 24 hours old? Are sort operators certified?": {
+"es": "¿El área de retención está limpia? ¿Los DMR tienen menos de 24 horas? ¿Los operadores de selección están certificados?",
+"en": "Is the hold area clean? Are the DMRs less than 24 hours old? Are sort operators certified?"
+},
+"Have all the shortage issues for the shift been resolved?": {
+"es": "¿Se resolvieron todos los problemas de faltantes del turno?",
+"en": "Have all the shortage issues for the shift been resolved?"
+},
+"Are keys used in any fixtures in your ENTIRE cell? If yes, are parts being certified and has anyone been notified?": {
+"es": "¿Se usan llaves en algún dispositivo (fixture) de TODA tu celda? Si es así, ¿se están certificando las piezas y se avisó a alguien?",
+"en": "Are keys used in any fixtures in your ENTIRE cell? If yes, are parts being certified and has anyone been notified?"
+},
+"Is kanban procedure being followed?": {
+"es": "¿Se está siguiendo el procedimiento de Kanban?",
+"en": "Is kanban procedure being followed?"
+},
+"Are cleaning stations fully stocked and labelled correctly?": {
+"es": "¿Las estaciones de limpieza están completamente surtidas y bien etiquetadas?",
+"en": "Are cleaning stations fully stocked and labelled correctly?"
+},
+"Are all fixture keys signed in and log up-to-date?": {
+"es": "¿Todas las llaves de los dispositivos están registradas y la bitácora está al día?",
+"en": "Are all fixture keys signed in and log up-to-date?"
+},
+"Is the green walk isle free of obstructions?": {
+"es": "¿El pasillo verde de circulación peatonal está libre de obstrucciones?",
+"en": "Is the green walk isle free of obstructions?"
+},
+"Have all labels been removed from supplier WIP totes?": {
+"es": "¿Se retiraron todas las etiquetas de las cajas de WIP del proveedor?",
+"en": "Have all labels been removed from supplier WIP totes?"
+},
+"Are all Kan Ban holders present & in good shape?": {
+"es": "¿Están presentes todos los portatarjetas Kanban y en buen estado?",
+"en": "Are all Kan Ban holders present & in good shape?"
+},
+"All air guns are safe and working properly?": {
+"es": "¿Todas las pistolas de aire son seguras y funcionan correctamente?",
+"en": "All air guns are safe and working properly?"
+},
+"Is the Cardboard Aisle – Clear and Clean?": {
+"es": "¿El pasillo de cartón está despejado y limpio?",
+"en": "Is the Cardboard Aisle – Clear and Clean?"
+},
+"Are the process verification check sheets filled out and up to date?": {
+"es": "¿Las hojas de verificación del proceso están llenas y al día?",
+"en": "Are the process verification check sheets filled out and up to date?"
+},
+"Is the error skid totes complete and sent to shipping?": {
+"es": "¿La tarima de cajas de error está completa y se envió a embarques?",
+"en": "Is the error skid totes complete and sent to shipping?"
+},
+"Is the quantity of paint/waste stored behind P4 less than 660 gallons or 12 Drums?": {
+"es": "¿La cantidad de pintura / residuos almacenados detrás de P4 es menor de 660 galones o 12 tambos?",
+"en": "Is the quantity of paint/waste stored behind P4 less than 660 gallons or 12 Drums?"
+},
+"Is part wiping being performed as per operator instruction?": {
+"es": "¿La limpieza de piezas se realiza según la instrucción del operador?",
+"en": "Is part wiping being performed as per operator instruction?"
+},
+"Durante la auditoría, ¿identificaste alguna condición insegura? Repórtala vía correo electrónico mpq-hazard-identification@mitchellplastics.com": {
+"es": "Durante la auditoría, ¿identificaste alguna condición insegura? Repórtala vía correo electrónico mpq-hazard-identification@mitchellplastics.com",
+"en": "During the audit, did you identify any unsafe condition? Report it by email to mpq-hazard-identification@mitchellplastics.com"
+},
+"Verificar si tiene acciones pendientes en el Tablero 4D. Reporte Hazard ID.": {
+"es": "Verificar si tiene acciones pendientes en el Tablero 4D. Reporte Hazard ID.",
+"en": "Check whether you have pending actions on the 4D Board. Hazard ID report."
+},
+"Are Operator instructions signed by operators, posted & complete?": {
+"es": "¿Las instrucciones del operador están firmadas por los operadores, publicadas y completas?",
+"en": "Are Operator instructions signed by operators, posted & complete?"
+},
+"Is the cell efficiently laid out?": {
+"es": "¿La celda tiene un layout eficiente?",
+"en": "Is the cell efficiently laid out?"
+},
+"Are Corrective and preventative actions on time?": {
+"es": "¿Las acciones correctivas y preventivas están a tiempo?",
+"en": "Are Corrective and preventative actions on time?"
+},
+"Are Alerts signed and log up to date?": {
+"es": "¿Las alertas están firmadas y la bitácora está al día?",
+"en": "Are Alerts signed and log up to date?"
+},
+"Are all expired Alerts removed from boards?": {
+"es": "¿Se retiraron de los tableros todas las alertas vencidas?",
+"en": "Are all expired Alerts removed from boards?"
+},
+"Is ECR/PPAP paperwork complete?": {
+"es": "¿La documentación de ECR/PPAP está completa?",
+"en": "Is ECR/PPAP paperwork complete?"
+},
+"Is part containment data reviewed and action taken?": {
+"es": "¿Se revisan los datos de contención de piezas y se toman acciones?",
+"en": "Is part containment data reviewed and action taken?"
+},
+"Non conforming parts are dispositioned within 24 hours.": {
+"es": "Las piezas no conformes tienen su disposición en menos de 24 horas.",
+"en": "Non conforming parts are dispositioned within 24 hours."
+},
+"Is there a Kanban holder in the cell?": {
+"es": "¿Hay un portatarjetas Kanban en la celda?",
+"en": "Is there a Kanban holder in the cell?"
+},
+"Is there a finished goods label holder in the cell?": {
+"es": "¿Hay un portaetiquetas de producto terminado en la celda?",
+"en": "Is there a finished goods label holder in the cell?"
+},
+"Are the conveyors covered by PVC?": {
+"es": "¿Los transportadores están cubiertos con PVC?",
+"en": "Are the conveyors covered by PVC?"
+},
+"Are DMR's checked?": {
+"es": "¿Se revisan los DMR?",
+"en": "Are DMR's checked?"
+},
+"Have open issues been updated to include issues from the DMR log?": {
+"es": "¿Los temas abiertos se actualizaron para incluir los del registro de DMR?",
+"en": "Have open issues been updated to include issues from the DMR log?"
+},
+"Have the QIRs been reviewed, filed and issues forwarded to the production manager?": {
+"es": "¿Se revisaron y archivaron los QIR y se turnaron los problemas al gerente de producción?",
+"en": "Have the QIRs been reviewed, filed and issues forwarded to the production manager?"
+},
+"Is proper work cell flow being followed?": {
+"es": "¿Se está siguiendo el flujo correcto de la celda de trabajo?",
+"en": "Is proper work cell flow being followed?"
+},
+"Is the process equipment operating correctly? Poke Working? I/R Caps Clean? Heat Stake heaters working?": {
+"es": "¿El equipo de proceso opera correctamente? ¿El poka-yoke funciona? ¿Los casquillos I/R están limpios? ¿Los calentadores de la estaca térmica funcionan?",
+"en": "Is the process equipment operating correctly? Poke Working? I/R Caps Clean? Heat Stake heaters working?"
+},
+"Is the Kaizan area clean and organized?": {
+"es": "¿El área Kaizen está limpia y ordenada?",
+"en": "Is the Kaizan area clean and organized?"
+},
+"Is the QE/PE office area clean and organized?": {
+"es": "¿La oficina de QE/PE está limpia y ordenada?",
+"en": "Is the QE/PE office area clean and organized?"
+},
+"Is the work cell set-up and running to the layout; is the work area clean and organized?": {
+"es": "¿La celda está montada y corriendo conforme al layout? ¿El área de trabajo está limpia y ordenada?",
+"en": "Is the work cell set-up and running to the layout; is the work area clean and organized?"
+},
+"Are quality alerts signed off by Process Engineer?": {
+"es": "¿Las alertas de calidad están firmadas por el Ingeniero de Procesos?",
+"en": "Are quality alerts signed off by Process Engineer?"
+},
+"Are any out of spec conditions noted on the back of the QIR/PIR?": {
+"es": "¿Las condiciones fuera de especificación están anotadas al reverso del QIR/PIR?",
+"en": "Are any out of spec conditions noted on the back of the QIR/PIR?"
+},
+"Are the operators trained and is the versatility matrix up to date?": {
+"es": "¿Los operadores están capacitados y la matriz de versatilidad está al día?",
+"en": "Are the operators trained and is the versatility matrix up to date?"
+},
+"Are blue nitrile gloves being worn when handling parts that will be painted?": {
+"es": "¿Se usan guantes azules de nitrilo al manejar piezas que serán pintadas?",
+"en": "Are blue nitrile gloves being worn when handling parts that will be painted?"
+},
+"Are corrective and preventative actions on time?": {
+"es": "¿Las acciones correctivas y preventivas están a tiempo?",
+"en": "Are corrective and preventative actions on time?"
+},
+"Are QIR's complete and out of spec conditions noted on the back with acceptable reaction plans and signed by the supervisor?": {
+"es": "¿Los QIR están completos, con las condiciones fuera de especificación anotadas al reverso con planes de reacción aceptables y firmados por el supervisor?",
+"en": "Are QIR's complete and out of spec conditions noted on the back with acceptable reaction plans and signed by the supervisor?"
+},
+"¿Cajas parciales están identificadas correctamente de acuerdo al número de parte y lado?": {
+"es": "¿Cajas parciales están identificadas correctamente de acuerdo al número de parte y lado?",
+"en": "Are partial boxes identified correctly according to part number and side?"
+},
+"Are Containment instructions available?": {
+"es": "¿Hay instrucciones de contención disponibles?",
+"en": "Are Containment instructions available?"
+},
+"Are visual aids & boundary samples available and clear?": {
+"es": "¿Las ayudas visuales y las muestras límite (boundary samples) están disponibles y legibles?",
+"en": "Are visual aids & boundary samples available and clear?"
+},
+"Are PPAP's submitted on time?": {
+"es": "¿Los PPAP se entregan a tiempo?",
+"en": "Are PPAP's submitted on time?"
+},
+"Is inspection and test status being followed?": {
+"es": "¿Se está siguiendo el estatus de inspección y prueba?",
+"en": "Is inspection and test status being followed?"
+},
+"Does the process match the master setup?": {
+"es": "¿El proceso coincide con el set-up master?",
+"en": "Does the process match the master setup?"
+},
+"Do WIP totes have orange traceability tags on them?": {
+"es": "¿Las cajas de WIP tienen etiquetas naranjas de trazabilidad?",
+"en": "Do WIP totes have orange traceability tags on them?"
+},
+"Did you witness the check fixture and SDS process? The process was properly completed?": {
+"es": "¿Presenciaste el proceso del dispositivo de verificación (check fixture) y SDS? ¿Se completó correctamente?",
+"en": "Did you witness the check fixture and SDS process? The process was properly completed?"
+},
+"Do all the posted documents match the Master File list?": {
+"es": "¿Todos los documentos publicados coinciden con la lista de archivo maestro?",
+"en": "Do all the posted documents match the Master File list?"
+},
+"Are all posted alerts current? Have they been signed off by all members of the affected production team?": {
+"es": "¿Todas las alertas publicadas están vigentes? ¿Fueron firmadas por todos los miembros del equipo de producción afectado?",
+"en": "Are all posted alerts current? Have they been signed off by all members of the affected production team?"
+},
+"Have signed off alerts been returned to the proper storage binder?": {
+"es": "¿Las alertas firmadas se regresaron a la carpeta de archivo correcta?",
+"en": "Have signed off alerts been returned to the proper storage binder?"
+},
+"Has the DMR log been signed off by all supervisors?": {
+"es": "¿El registro de DMR fue firmado por todos los supervisores?",
+"en": "Has the DMR log been signed off by all supervisors?"
+},
+"Is gauge storage area kept clean and organized?": {
+"es": "¿El área de almacenamiento de calibradores se mantiene limpia y ordenada?",
+"en": "Is gauge storage area kept clean and organized?"
+},
+"Is Lot Traceability section of QIR filled out correctly and contain all required information?": {
+"es": "¿La sección de trazabilidad de lote del QIR está llena correctamente y contiene toda la información requerida?",
+"en": "Is Lot Traceability section of QIR filled out correctly and contain all required information?"
+},
+"Is the operator within the work cell following 1 Piece Flow?": {
+"es": "¿El operador dentro de la celda sigue el flujo de una pieza (1 Piece Flow)?",
+"en": "Is the operator within the work cell following 1 Piece Flow?"
+},
+"Has containment operator signed instructions/alerts and following correctly?": {
+"es": "¿El operador de contención firmó las instrucciones/alertas y las sigue correctamente?",
+"en": "Has containment operator signed instructions/alerts and following correctly?"
+},
+"Are the part date codes set correctly?": {
+"es": "¿Los códigos de fecha de las piezas están ajustados correctamente?",
+"en": "Are the part date codes set correctly?"
+},
+"Select 1 of your parts and check the Warehouse to see if FIFO is being followed.": {
+"es": "Selecciona 1 de tus piezas y revisa en el almacén si se está siguiendo FIFO.",
+"en": "Select 1 of your parts and check the Warehouse to see if FIFO is being followed."
+},
+"Was the first off completed on time? Is it signed and dated by the appropriate personnel?": {
+"es": "¿La primera pieza (first off) se completó a tiempo? ¿Está firmada y fechada por el personal correspondiente?",
+"en": "Was the first off completed on time? Is it signed and dated by the appropriate personnel?"
+},
+"Is containment data being entered into the containment system?": {
+"es": "¿Los datos de contención se están capturando en el sistema de contención?",
+"en": "Is containment data being entered into the containment system?"
+},
+"Select a recently closed CAR (Non-Owner) and verify that the actions put in place are being followed.": {
+"es": "Selecciona un CAR cerrado recientemente (de otra área) y verifica que se estén siguiendo las acciones implementadas.",
+"en": "Select a recently closed CAR (Non-Owner) and verify that the actions put in place are being followed."
+},
+"Are there any moulding, paint, or assembly defects that would negatively impact fit, function, or customer satisfaction?": {
+"es": "¿Hay defectos de moldeo, pintura o ensamble que afecten negativamente el ajuste, la función o la satisfacción del cliente?",
+"en": "Are there any moulding, paint, or assembly defects that would negatively impact fit, function, or customer satisfaction?"
+},
+"Is new launch activity on time as per the Launch Readiness Timeline?": {
+"es": "¿Las actividades de nuevos lanzamientos van a tiempo según la línea de tiempo de preparación para el lanzamiento (Launch Readiness Timeline)?",
+"en": "Is new launch activity on time as per the Launch Readiness Timeline?"
+},
+"Walk thru GP12 area or containment to evaluate current condition and criteria of rejection.": {
+"es": "Recorrer el área de GP12 o de contención para evaluar la condición actual y el criterio de rechazo.",
+"en": "Walk thru GP12 area or containment to evaluate current condition and criteria of rejection."
+},
+"Are parameters of injection set according to master process sheet? (Validate on Machine Monitor)": {
+"es": "¿Los parámetros de inyección están ajustados según la hoja maestra de proceso? (Validar en el monitor de la máquina)",
+"en": "Are parameters of injection set according to master process sheet? (Validate on Machine Monitor)"
+},
+"Are all samples on the Area Boundary Boards approved by Quality? If not, remove the sample.": {
+"es": "¿Todas las muestras de los tableros de límites del área están aprobadas por Calidad? Si no, retirar la muestra.",
+"en": "Are all samples on the Area Boundary Boards approved by Quality? If not, remove the sample."
+},
+"Realizar LPA en zona afectada por proceso de Fast Response; auditar QFC.": {
+"es": "Realizar LPA en zona afectada por proceso de Fast Response; auditar QFC.",
+"en": "Perform an LPA in the area affected by the Fast Response process; audit the QFC."
+},
+"Conduct a Control Plan audit and specify part number audited in Notes area of this form.": {
+"es": "Realizar una auditoría del Plan de Control y especificar el número de parte auditado en el área de Notas de este formato.",
+"en": "Conduct a Control Plan audit and specify part number audited in Notes area of this form."
+},
+"Does the Control Plan audited align with the PFMEA and QIR/PIR? Confirm if Critical Characteristics are homologated.": {
+"es": "¿El Plan de Control auditado está alineado con el PFMEA y el QIR/PIR? Confirmar si las características críticas están homologadas.",
+"en": "Does the Control Plan audited align with the PFMEA and QIR/PIR? Confirm if Critical Characteristics are homologated."
+},
+"Go to safety board and review and sign the Safety instruction assigned.": {
+"es": "Ir al tablero de seguridad, revisar y firmar la instrucción de seguridad asignada.",
+"en": "Go to safety board and review and sign the Safety instruction assigned."
+},
+"Realice auditoría Dock Audit / Embarques.": {
+"es": "Realice auditoría Dock Audit / Embarques.",
+"en": "Perform a Dock Audit / Shipping audit."
+},
+"¿Se cuenta con Instrucción de trabajo / TTE / HET Firmada?": {
+"es": "¿Se cuenta con Instrucción de trabajo / TTE / HET Firmada?",
+"en": "Is there a signed Work Instruction / TTE / HET?"
+},
+"El número de parte cuenta con Verificación de arranque de proceso con los datos correcto y firmada por los responsables.": {
+"es": "El número de parte cuenta con Verificación de arranque de proceso con los datos correcto y firmada por los responsables.",
+"en": "Does the part number have a process start-up verification with the correct data, signed by the responsible people?"
+},
+"Lista de defectos con nivel ok/nok. Boundary samples.": {
+"es": "Lista de defectos con nivel ok/nok. Boundary samples.",
+"en": "Defect list with OK/NOK level. Boundary samples."
+},
+"Entrevista. Todos los operarios han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).": {
+"es": "Entrevista. Todos los operarios han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).",
+"en": "Interview. Have all operators been trained on the work instructions and are they aware of process deviations (quality alerts)?"
+},
+"La matriz de versatilidad se encuentra disponible y actualizada en Tablero 4D.": {
+"es": "La matriz de versatilidad se encuentra disponible y actualizada en Tablero 4D.",
+"en": "Is the versatility matrix available and up to date on the 4D Board?"
+},
+"La distribución del proceso y el flujo de material funcionan de acuerdo al Layout y el diagrama de proceso. OJT.": {
+"es": "La distribución del proceso y el flujo de material funcionan de acuerdo al Layout y el diagrama de proceso. OJT.",
+"en": "Do the process layout and material flow work according to the Layout and the process diagram? OJT."
+},
+"Revisión 8D. CAR______. Acciones correctivas permanentes.": {
+"es": "Revisión 8D. CAR______. Acciones correctivas permanentes.",
+"en": "8D review. CAR______. Permanent corrective actions."
+},
+"¿Los contenedores parciales de producto terminado se revisan al 100%, siguiendo la ayuda visual correspondiente a cada producto?": {
+"es": "¿Los contenedores parciales de producto terminado se revisan al 100%, siguiendo la ayuda visual correspondiente a cada producto?",
+"en": "Are partial containers of finished product checked 100%, following the visual aid for each product?"
+},
+"¿Las piezas de contenedores parciales pasan nuevamente por Poka Yoke y cuentan con etiqueta de producto terminado?": {
+"es": "¿Las piezas de contenedores parciales pasan nuevamente por Poka Yoke y cuentan con etiqueta de producto terminado?",
+"en": "Do parts from partial containers go through Poka Yoke again and have a finished-product label?"
+},
+"FIFO correcto de materias primas, componentes y producto terminado. Correcta trazabilidad de todo el material producido y empaquetado.": {
+"es": "FIFO correcto de materias primas, componentes y producto terminado. Correcta trazabilidad de todo el material producido y empaquetado.",
+"en": "Correct FIFO of raw materials, components and finished product. Correct traceability of all material produced and packed."
+},
+"Antes de iniciar corrida de inyección, ¿se conoce la cantidad de piezas parciales disponibles para que sean ajustadas al contador de máquina de inyección?": {
+"es": "Antes de iniciar corrida de inyección, ¿se conoce la cantidad de piezas parciales disponibles para que sean ajustadas al contador de máquina de inyección?",
+"en": "Before starting an injection run, is the quantity of available partial pieces known so that it can be adjusted on the injection machine counter?"
+},
+"¿El material acumulado en la estación de ensamble se identifica correctamente en caso de que esté pendiente de ensamblar?": {
+"es": "¿El material acumulado en la estación de ensamble se identifica correctamente en caso de que esté pendiente de ensamblar?",
+"en": "Is the material accumulated at the assembly station correctly identified if it is pending assembly?"
+},
+"Los Red/Green Rabbit están correctamente identificados.": {
+"es": "Los Red/Green Rabbit están correctamente identificados.",
+"en": "Are the Red/Green Rabbits correctly identified?"
+},
+"Realizar check list H&S-019-I – MPQ Inspección de Racks.": {
+"es": "Realizar check list H&S-019-I – MPQ Inspección de Racks.",
+"en": "Complete checklist H&S-019-I – MPQ Rack Inspection."
+},
+"Is the \"load manifest\" procedure being followed and load manifest being completed for each shift?": {
+"es": "¿Se está siguiendo el procedimiento de \"load manifest\" y se completa el manifiesto de carga en cada turno?",
+"en": "Is the \"load manifest\" procedure being followed and load manifest being completed for each shift?"
+},
+"Are all entry ways into Shipping and Receiving clean and free of debris?": {
+"es": "¿Todas las entradas a Embarques y Recibo están limpias y libres de residuos?",
+"en": "Are all entry ways into Shipping and Receiving clean and free of debris?"
+},
+"Is all racking in good working condition including no missing pins/bolts?": {
+"es": "¿Todos los racks están en buenas condiciones de trabajo, sin pernos/pasadores faltantes?",
+"en": "Is all racking in good working condition including no missing pins/bolts?"
+},
+"Are Shipping doors in good working condition and wheel chocks available?": {
+"es": "¿Las puertas de embarques están en buenas condiciones y hay calzas para las ruedas?",
+"en": "Are Shipping doors in good working condition and wheel chocks available?"
+},
+"Are shipping DMR's up to date and corrective actions implemented?": {
+"es": "¿Los DMR de embarques están al día y se implementaron las acciones correctivas?",
+"en": "Are shipping DMR's up to date and corrective actions implemented?"
+},
+"Are Shipping & Receiving areas clean outside?": {
+"es": "¿Las áreas exteriores de Embarques y Recibo están limpias?",
+"en": "Are Shipping & Receiving areas clean outside?"
+},
+"Is the battery area neat and clean?": {
+"es": "¿El área de baterías está ordenada y limpia?",
+"en": "Is the battery area neat and clean?"
+},
+"Are all alerts signed and filed?": {
+"es": "¿Todas las alertas están firmadas y archivadas?",
+"en": "Are all alerts signed and filed?"
+},
+"Is trailer list accurate and current?": {
+"es": "¿La lista de remolques es exacta y vigente?",
+"en": "Is trailer list accurate and current?"
+},
+"Are department overtime hours within approved range?": {
+"es": "¿Las horas extra del departamento están dentro del rango aprobado?",
+"en": "Are department overtime hours within approved range?"
+},
+"Are all scanning errors investigated and overrides noted on graph?": {
+"es": "¿Todos los errores de escaneo se investigan y las excepciones (overrides) se anotan en la gráfica?",
+"en": "Are all scanning errors investigated and overrides noted on graph?"
+},
+"Are ship requests updated as shipped/received in the online request system?": {
+"es": "¿Las solicitudes de embarque se actualizan como embarcadas/recibidas en el sistema de solicitudes en línea?",
+"en": "Are ship requests updated as shipped/received in the online request system?"
+},
+"Does the battery change station have the proper PPE present?": {
+"es": "¿La estación de cambio de baterías cuenta con el EPP adecuado?",
+"en": "Does the battery change station have the proper PPE present?"
+},
+"Are all KANBAN cards returned to the proper storage location?": {
+"es": "¿Todas las tarjetas KANBAN se regresaron a su lugar de almacenamiento?",
+"en": "Are all KANBAN cards returned to the proper storage location?"
+},
+"Are all staging instructions being followed?": {
+"es": "¿Se están siguiendo todas las instrucciones de staging (preparación de carga)?",
+"en": "Are all staging instructions being followed?"
+},
+"Are the lift trucks clean and working properly?": {
+"es": "¿Los montacargas están limpios y funcionan correctamente?",
+"en": "Are the lift trucks clean and working properly?"
+},
+"Have all items been received in the system with proper labels and stickers attached?": {
+"es": "¿Todos los artículos se recibieron en el sistema con sus etiquetas y stickers correctos?",
+"en": "Have all items been received in the system with proper labels and stickers attached?"
+},
+"Is the shipment / staging status board up to date and accurate?": {
+"es": "¿El tablero de estatus de embarques / staging está actualizado y es exacto?",
+"en": "Is the shipment / staging status board up to date and accurate?"
+},
+"Is 5S being followed in all warehouse areas?": {
+"es": "¿Se cumple 5S en todas las áreas del almacén?",
+"en": "Is 5S being followed in all warehouse areas?"
+},
+"Is 5S being followed in all logistics office areas?": {
+"es": "¿Se cumple 5S en todas las áreas de oficinas de logística?",
+"en": "Is 5S being followed in all logistics office areas?"
+},
+"Is overflow product organized and overflow issues communicated to production?": {
+"es": "¿El producto en exceso (overflow) está organizado y los problemas de exceso se comunican a producción?",
+"en": "Is overflow product organized and overflow issues communicated to production?"
+},
+"Are skids with scanning issues properly identified and contained?": {
+"es": "¿Las tarimas con problemas de escaneo están correctamente identificadas y contenidas?",
+"en": "Are skids with scanning issues properly identified and contained?"
+},
+"Are Certified Shipment Status boards up to date?": {
+"es": "¿Los tableros de estatus de embarques certificados están al día?",
+"en": "Are Certified Shipment Status boards up to date?"
+},
+"Is shipping entrance/parking lot area clean and free from unnecessary items?": {
+"es": "¿La entrada de embarques / estacionamiento está limpia y libre de objetos innecesarios?",
+"en": "Is shipping entrance/parking lot area clean and free from unnecessary items?"
+},
+"Toyota shipments are staged no more than 3 orders ahead of time and pallet count is being verified when staged and loaded?": {
+"es": "¿Los embarques de Toyota se preparan con no más de 3 órdenes de anticipación y se verifica el conteo de tarimas al prepararlos y cargarlos?",
+"en": "Toyota shipments are staged no more than 3 orders ahead of time and pallet count is being verified when staged and loaded?"
+},
+"Are SMART ticket times being verified before ASN is sent?": {
+"es": "¿Se verifican los horarios de los tickets SMART antes de enviar el ASN?",
+"en": "Are SMART ticket times being verified before ASN is sent?"
+},
+"Are ATSB forms being reviewed before sending and are they logged properly?": {
+"es": "¿Los formatos ATSB se revisan antes de enviarse y se registran correctamente?",
+"en": "Are ATSB forms being reviewed before sending and are they logged properly?"
+},
+"Are Customer Container systems properly maintained? Receipts entered or voided daily. No negative inventories.": {
+"es": "¿Los sistemas de contenedores de clientes se mantienen correctamente? Recibos capturados o cancelados a diario. Sin inventarios negativos.",
+"en": "Are Customer Container systems properly maintained? Receipts entered or voided daily. No negative inventories."
+},
+"Error skid and kanbans are being returned to correct production locations in a timely manner.": {
+"es": "¿Las tarimas de error y los kanbans se regresan a tiempo a las ubicaciones de producción correctas?",
+"en": "Error skid and kanbans are being returned to correct production locations in a timely manner."
+},
+"Are Shipments staged to proper area, picklists & load manifest completed correctly?": {
+"es": "¿Los embarques están preparados en el área correcta y las listas de surtido y el manifiesto de carga se llenaron correctamente?",
+"en": "Are Shipments staged to proper area, picklists & load manifest completed correctly?"
+},
+"Is proper PPE in use? Glasses, ring protectors, closed toe shoes.": {
+"es": "¿Se usa el EPP correcto? Lentes, protectores de anillos, calzado cerrado.",
+"en": "Is proper PPE in use? Glasses, ring protectors, closed toe shoes."
+},
+"Are 5S / housekeeping expectations being maintained? No material on or behind the machine?": {
+"es": "¿Se mantienen las expectativas de 5S / orden y limpieza? ¿Sin material sobre o detrás de la máquina?",
+"en": "Are 5S / housekeeping expectations being maintained? No material on or behind the machine?"
+},
+"Was the production tracking sheets completed on time?": {
+"es": "¿Las hojas de seguimiento de producción se completaron a tiempo?",
+"en": "Was the production tracking sheets completed on time?"
+},
+"Was a shift change over sheet completed for each shift?": {
+"es": "¿Se llenó una hoja de cambio de turno para cada turno?",
+"en": "Was a shift change over sheet completed for each shift?"
+},
+"Was a sticker gun audit completed on every shift?": {
+"es": "¿Se realizó una auditoría de la pistola de etiquetas en cada turno?",
+"en": "Was a sticker gun audit completed on every shift?"
+},
+"Has the Motan blowers been inspected for material leakages?": {
+"es": "¿Se inspeccionaron los sopladores Motan por fugas de material?",
+"en": "Has the Motan blowers been inspected for material leakages?"
+},
+"Has the Production Tracking sheets been signed by the supervisors? Have the items been reviewed and coached back?": {
+"es": "¿Los supervisores firmaron las hojas de seguimiento de producción? ¿Se revisaron los puntos y se dio retroalimentación?",
+"en": "Has the Production Tracking sheets been signed by the supervisors? Have the items been reviewed and coached back?"
+},
+"Has the training documents from the past 48 hours been filed in the appropriate associate training binder?": {
+"es": "¿Los documentos de capacitación de las últimas 48 horas se archivaron en la carpeta de capacitación del asociado correspondiente?",
+"en": "Has the training documents from the past 48 hours been filed in the appropriate associate training binder?"
+},
+"Is regrind in use on all machines?": {
+"es": "¿Se está usando regrind en todas las máquinas?",
+"en": "Is regrind in use on all machines?"
+},
+"Has the exception report been reviewed and signed off?": {
+"es": "¿Se revisó y firmó el reporte de excepciones?",
+"en": "Has the exception report been reviewed and signed off?"
+},
+"Are production rates posted at the work cell?": {
+"es": "¿Las tasas de producción están publicadas en la celda de trabajo?",
+"en": "Are production rates posted at the work cell?"
+},
+"Has the regrind inventory been completed?": {
+"es": "¿Se completó el inventario de regrind?",
+"en": "Has the regrind inventory been completed?"
+},
+"Is the production office clean and organized? Are papers being filed correctly?": {
+"es": "¿La oficina de producción está limpia y ordenada? ¿Los papeles se archivan correctamente?",
+"en": "Is the production office clean and organized? Are papers being filed correctly?"
+},
+"Are the Production Layer 1 (LPA) audits complete? Actions Taken?": {
+"es": "¿Están completas las auditorías LPA de Layer 1 de Producción? ¿Se tomaron acciones?",
+"en": "Are the Production Layer 1 (LPA) audits complete? Actions Taken?"
+},
+"Do all production partials in the Hold area have the proper orange tag applied?": {
+"es": "¿Todos los parciales de producción en el área de retención tienen la etiqueta naranja correcta?",
+"en": "Do all production partials in the Hold area have the proper orange tag applied?"
+},
+"Are HRCs Powered-Down on Inactive Machines?": {
+"es": "¿Los HRC de las máquinas inactivas están apagados?",
+"en": "Are HRCs Powered-Down on Inactive Machines?"
+},
+"Is the Error Skid Procedure being followed?": {
+"es": "¿Se está siguiendo el procedimiento de tarima de error (Error Skid)?",
+"en": "Is the Error Skid Procedure being followed?"
+},
+"Are the Safety Checks for Cranes and Fork-Lifts being completed?": {
+"es": "¿Se están realizando las revisiones de seguridad de grúas y montacargas?",
+"en": "Are the Safety Checks for Cranes and Fork-Lifts being completed?"
+},
+"Is the Quality Alert Procedure being followed?": {
+"es": "¿Se está siguiendo el procedimiento de alertas de calidad?",
+"en": "Is the Quality Alert Procedure being followed?"
+},
+"Are process Verification Sheets being fully completed and signed off by Supervisors?": {
+"es": "¿Las hojas de verificación del proceso están completamente llenas y firmadas por los supervisores?",
+"en": "Are process Verification Sheets being fully completed and signed off by Supervisors?"
+},
+"Are all zone boards signed off by supervisors daily?": {
+"es": "¿Los supervisores firman diariamente todos los tableros de zona?",
+"en": "Are all zone boards signed off by supervisors daily?"
+},
+"Are the training Versatility charts being updated by OJT?": {
+"es": "¿Las gráficas de versatilidad de capacitación se actualizan con OJT?",
+"en": "Are the training Versatility charts being updated by OJT?"
+},
+"Verificar si se cuenta con Mylar disponibles en el área de inspección Pintura y Ensamble.": {
+"es": "Verificar si se cuenta con Mylar disponibles en el área de inspección Pintura y Ensamble.",
+"en": "Verify that Mylars are available in the Paint and Assembly inspection area."
+},
+"¿Conoce los criterios de Aceptación para defectos de Apariencia de la pieza? Entrevista al operador/inspector.": {
+"es": "¿Conoce los criterios de Aceptación para defectos de Apariencia de la pieza? Entrevista al operador/inspector.",
+"en": "Do you know the acceptance criteria for part appearance defects? Interview the operator/inspector."
+},
+"Verificar uso de Mylar Pintura y Ensamble (Criterio de Aceptación para defectos de Apariencia).": {
+"es": "Verificar uso de Mylar Pintura y Ensamble (Criterio de Aceptación para defectos de Apariencia).",
+"en": "Verify the use of Mylar in Paint and Assembly (acceptance criteria for appearance defects)."
+},
+"Is Cell PPM updated?": {
+"es": "¿El PPM de la celda está actualizado?",
+"en": "Is Cell PPM updated?"
+},
+"Is Customer PPM updated?": {
+"es": "¿El PPM del cliente está actualizado?",
+"en": "Is Customer PPM updated?"
+},
+"Are process/control plan audits complete?": {
+"es": "¿Las auditorías de proceso / plan de control están completas?",
+"en": "Are process/control plan audits complete?"
+},
+"Are all internal audits on schedule?": {
+"es": "¿Todas las auditorías internas van conforme al programa?",
+"en": "Are all internal audits on schedule?"
+},
+"Are customer report cards posted?": {
+"es": "¿Las tarjetas de calificación del cliente (report cards) están publicadas?",
+"en": "Are customer report cards posted?"
+},
+"Are customer chargebacks reviewed in a timely manner?": {
+"es": "¿Los cargos del cliente (chargebacks) se revisan a tiempo?",
+"en": "Are customer chargebacks reviewed in a timely manner?"
+},
+"Are the QE Layer 1 (LPA) audits complete? Actions Taken?": {
+"es": "¿Están completas las auditorías LPA de Layer 1 de QE? ¿Se tomaron acciones?",
+"en": "Are the QE Layer 1 (LPA) audits complete? Actions Taken?"
+},
+"Are all calibrations up to date?": {
+"es": "¿Todas las calibraciones están al día?",
+"en": "Are all calibrations up to date?"
+},
+"Is the master list complete and up to date?": {
+"es": "¿La lista maestra está completa y actualizada?",
+"en": "Is the master list complete and up to date?"
+},
+"Are all the dates in the CAR log current and up to date?": {
+"es": "¿Todas las fechas de la bitácora de CAR están vigentes y al día?",
+"en": "Are all the dates in the CAR log current and up to date?"
+},
+"Are all supplier DMRs processed?": {
+"es": "¿Se procesaron todos los DMR de proveedores?",
+"en": "Are all supplier DMRs processed?"
+},
+"Is the color booth clean? Are all color tools working properly?": {
+"es": "¿La cabina de color está limpia? ¿Todas las herramientas de color funcionan correctamente?",
+"en": "Is the color booth clean? Are all color tools working properly?"
+},
+"Have all the items in RI been processed?": {
+"es": "¿Se procesaron todos los artículos en inspección de recibo (RI)?",
+"en": "Have all the items in RI been processed?"
+},
+"Are all required internal audits on schedule?": {
+"es": "¿Todas las auditorías internas requeridas van conforme al programa?",
+"en": "Are all required internal audits on schedule?"
+},
+"Have warranty claims been reviewed and action plans created?": {
+"es": "¿Se revisaron los reclamos de garantía y se crearon planes de acción?",
+"en": "Have warranty claims been reviewed and action plans created?"
+},
+"Are there issues on the escalation report?": {
+"es": "¿Hay problemas en el reporte de escalación?",
+"en": "Are there issues on the escalation report?"
+},
+"Have all corrective actions been implemented prior to CAR closure?": {
+"es": "¿Se implementaron todas las acciones correctivas antes del cierre del CAR?",
+"en": "Have all corrective actions been implemented prior to CAR closure?"
+},
+"Have all Quality Alerts been signed by operators on the shift being audited?": {
+"es": "¿Todas las alertas de calidad fueron firmadas por los operadores del turno auditado?",
+"en": "Have all Quality Alerts been signed by operators on the shift being audited?"
+},
+"Is Lot Traceability section of QIR filled out correctly, validate with gaylor and dryer?": {
+"es": "¿La sección de trazabilidad de lote del QIR está llena correctamente? Validar con el gaylord y el secador.",
+"en": "Is Lot Traceability section of QIR filled out correctly, validate with gaylor and dryer?"
+},
+"Is the fast respond board updated with CARs assigned?": {
+"es": "¿El tablero de respuesta rápida (fast respond) está actualizado con los CAR asignados?",
+"en": "Is the fast respond board updated with CARs assigned?"
+},
+"Validate that (*) questions from Level 1 were properly evaluated.": {
+"es": "Validar que las preguntas (*) del Nivel 1 se hayan evaluado correctamente.",
+"en": "Validate that (*) questions from Level 1 were properly evaluated."
+},
+"Go to receiving inspection area and validate inspection evaluation technique according to CP.": {
+"es": "Ir al área de inspección de recibo y validar la técnica de evaluación de inspección según el Plan de Control.",
+"en": "Go to receiving inspection area and validate inspection evaluation technique according to CP."
+},
+"Are Lost time / Medical aids investigated and action taken and measurables posted?": {
+"es": "¿Los accidentes con tiempo perdido / atención médica se investigan, se toman acciones y se publican los indicadores?",
+"en": "Are Lost time / Medical aids investigated and action taken and measurables posted?"
+},
+"Is Certification Matrix up to date & posted?": {
+"es": "¿La matriz de certificación está actualizada y publicada?",
+"en": "Is Certification Matrix up to date & posted?"
+},
+"Is all initial orientation up to date?": {
+"es": "¿Toda la orientación inicial está al día?",
+"en": "Is all initial orientation up to date?"
+},
+"Are cell meetings completed as per schedule?": {
+"es": "¿Las juntas de celda se realizan conforme al programa?",
+"en": "Are cell meetings completed as per schedule?"
+},
+"Is the weekly newsletter posted?": {
+"es": "¿El boletín semanal está publicado?",
+"en": "Is the weekly newsletter posted?"
+},
+"Is overtime equalization being updated by HR & Supervisors?": {
+"es": "¿RH y los supervisores están actualizando la equalización de tiempo extra?",
+"en": "Is overtime equalization being updated by HR & Supervisors?"
+},
+"Are cell boards up to date?": {
+"es": "¿Los tableros de celda están al día?",
+"en": "Are cell boards up to date?"
+},
+"Are weekly reports submitted and up to date?": {
+"es": "¿Los reportes semanales se entregan y están al día?",
+"en": "Are weekly reports submitted and up to date?"
+},
+"Are Probation / Performance reports up to date?": {
+"es": "¿Los reportes de periodo de prueba / desempeño están al día?",
+"en": "Are Probation / Performance reports up to date?"
+},
+"Is Salary Training Matrix up to date and training needs addressed?": {
+"es": "¿La matriz de capacitación del personal asalariado está al día y se atienden las necesidades de capacitación?",
+"en": "Is Salary Training Matrix up to date and training needs addressed?"
+},
+"Are Lunchroom and washrooms clean?": {
+"es": "¿El comedor y los baños están limpios?",
+"en": "Are Lunchroom and washrooms clean?"
+},
+"Are Health & Safety audits up to date?": {
+"es": "¿Las auditorías de Salud y Seguridad están al día?",
+"en": "Are Health & Safety audits up to date?"
+},
+"Defibrillator has been checked to ensure battery is charged (green light is flashing)?": {
+"es": "¿Se revisó el desfibrilador para asegurar que la batería esté cargada (la luz verde parpadea)?",
+"en": "Defibrillator has been checked to ensure battery is charged (green light is flashing)?"
+},
+"Has weekly inspection of Spill Kits been completed?": {
+"es": "¿Se completó la inspección semanal de los kits antiderrames?",
+"en": "Has weekly inspection of Spill Kits been completed?"
+},
+"Have monthly check of fire extinguishers, hoses, spill kits and eye wash stations occurred?": {
+"es": "¿Se realizó la revisión mensual de extintores, mangueras, kits antiderrames y estaciones lavaojos?",
+"en": "Have monthly check of fire extinguishers, hoses, spill kits and eye wash stations occurred?"
+},
+"Have all eye wash stations been inspected by the appropriate team member?": {
+"es": "¿Todas las estaciones lavaojos fueron inspeccionadas por el miembro del equipo correspondiente?",
+"en": "Have all eye wash stations been inspected by the appropriate team member?"
+},
+"Seleccionar 2 operadores del área auditada y confirmar EMS Política / Objetivos.": {
+"es": "Seleccionar 2 operadores del área auditada y confirmar EMS Política / Objetivos.",
+"en": "Select 2 operators from the audited area and confirm the EMS Policy / Objectives."
+},
+"Revisar con EHS registro de acciones correctivas de riesgos de Salud / Seguridad / Medioambiente.": {
+"es": "Revisar con EHS registro de acciones correctivas de riesgos de Salud / Seguridad / Medioambiente.",
+"en": "Review with EHS the record of corrective actions for Health / Safety / Environmental risks."
+},
+"Are Management Meetings happening on schedule?": {
+"es": "¿Las juntas de gerencia se realizan conforme al programa?",
+"en": "Are Management Meetings happening on schedule?"
+},
+"Is the Continuous Improvement Plan up to date?": {
+"es": "¿El Plan de Mejora Continua está actualizado?",
+"en": "Is the Continuous Improvement Plan up to date?"
+},
+"Is the plant clean and organized?": {
+"es": "¿La planta está limpia y ordenada?",
+"en": "Is the plant clean and organized?"
+},
+"Is the MUV investigated, action plans put in place?": {
+"es": "¿Se investigó el MUV y se establecieron planes de acción?",
+"en": "Is the MUV investigated, action plans put in place?"
+},
+"Is the Eff% chart investigated, action plans put in place?": {
+"es": "¿Se investigó la gráfica de Eff% y se establecieron planes de acción?",
+"en": "Is the Eff% chart investigated, action plans put in place?"
+},
+"Is the scrap chart investigated, action plans put in place?": {
+"es": "¿Se investigó la gráfica de scrap y se establecieron planes de acción?",
+"en": "Is the scrap chart investigated, action plans put in place?"
+},
+"Is 5S being followed in the production area?": {
+"es": "¿Se cumple 5S en el área de producción?",
+"en": "Is 5S being followed in the production area?"
+},
+"Is 5S being followed in the office area?": {
+"es": "¿Se cumple 5S en el área de oficinas?",
+"en": "Is 5S being followed in the office area?"
+},
+"Are plant performance measurables being met?": {
+"es": "¿Se están cumpliendo los indicadores de desempeño de la planta?",
+"en": "Are plant performance measurables being met?"
+},
+"Are the QIRs being reviewed by PEs daily and are out of spec conditions being investigated?": {
+"es": "¿Los PE revisan diariamente los QIR y se investigan las condiciones fuera de especificación?",
+"en": "Are the QIRs being reviewed by PEs daily and are out of spec conditions being investigated?"
+},
+"Are the 4D boards in compliance with the standard format and are T1 Communications being reviewed by all CL's?": {
+"es": "¿Los tableros 4D cumplen con el formato estándar y todos los líderes de celda (CL) revisan las comunicaciones T1?",
+"en": "Are the 4D boards in compliance with the standard format and are T1 Communications being reviewed by all CL's?"
+},
+"Are Level 2 and Level 1 corrective actions adequate?": {
+"es": "¿Las acciones correctivas de Nivel 2 y Nivel 1 son adecuadas?",
+"en": "Are Level 2 and Level 1 corrective actions adequate?"
+},
+"Are CARs closed within 3 weeks and permanent actions in place?": {
+"es": "¿Los CAR se cierran en 3 semanas y hay acciones permanentes implementadas?",
+"en": "Are CARs closed within 3 weeks and permanent actions in place?"
+},
+"Are all 5S programs being performed adequately and on time?": {
+"es": "¿Todos los programas de 5S se realizan adecuadamente y a tiempo?",
+"en": "Are all 5S programs being performed adequately and on time?"
+},
+"Does the part measure okay in the fixture?": {
+"es": "¿La pieza mide correctamente en el dispositivo (fixture)?",
+"en": "Does the part measure okay in the fixture?"
+},
+"Is the part colour okay to plaque?": {
+"es": "¿El color de la pieza está bien para hacer la placa (plaque)?",
+"en": "Is the part colour okay to plaque?"
+},
+"Are labelling standards being followed?": {
+"es": "¿Se están siguiendo los estándares de etiquetado?",
+"en": "Are labelling standards being followed?"
+},
+"Is there any excess flash?": {
+"es": "¿Hay exceso de rebaba (flash)?",
+"en": "Is there any excess flash?"
+},
+"Is there any sink?": {
+"es": "¿Hay rechupe (sink)?",
+"en": "Is there any sink?"
+},
+"Are all components in place (mylar, felt, labels, etc.)?": {
+"es": "¿Todos los componentes están en su lugar (mylar, fieltro, etiquetas, etc.)?",
+"en": "Are all components in place (mylar, felt, labels, etc.)?"
+},
+"All Clips in place and seated?": {
+"es": "¿Todos los clips están en su lugar y asentados?",
+"en": "All Clips in place and seated?"
+},
+"Are all screws in place and seated?": {
+"es": "¿Todos los tornillos están en su lugar y asentados?",
+"en": "Are all screws in place and seated?"
+},
+"Does part meet functional requirement such as effort?": {
+"es": "¿La pieza cumple con el requerimiento funcional, como el esfuerzo?",
+"en": "Does part meet functional requirement such as effort?"
+},
+"Does the part have any short shots?": {
+"es": "¿La pieza tiene piezas incompletas (short shots)?",
+"en": "Does the part have any short shots?"
+},
+"Is one piece flow being followed?": {
+"es": "¿Se está siguiendo el flujo de una pieza (one piece flow)?",
+"en": "Is one piece flow being followed?"
+},
+"¿Están los Red/Green rabbits disponibles para probar los Poka-Yokes?": {
+"es": "¿Están los Red/Green rabbits disponibles para probar los Poka-Yokes?",
+"en": "Are the Red/Green Rabbits available to test the Poka-Yokes?"
+},
+"Is all error proofing working?": {
+"es": "¿Todos los dispositivos a prueba de error funcionan?",
+"en": "Is all error proofing working?"
+},
+"Check the storage board for correct labeling.": {
+"es": "Revisar en el tablero de almacén que el etiquetado sea correcto.",
+"en": "Check the storage board for correct labeling."
+},
+"Revisar trazabilidad de la resina de lote, tolva y gaylor.": {
+"es": "Revisar trazabilidad de la resina de lote, tolva y gaylor.",
+"en": "Check the traceability of the resin lot, hopper and gaylord."
+},
+"¿Se ha realizado la prueba de secado de humedad de la resina? (Cambio de lote, molde, paro programado o no programado)": {
+"es": "¿Se ha realizado la prueba de secado de humedad de la resina? (Cambio de lote, molde, paro programado o no programado)",
+"en": "Has the resin moisture drying test been performed? (Lot change, mold change, scheduled or unscheduled stop)"
+},
+"Revisar formato de verificación de la prueba de humedad de la resina.": {
+"es": "Revisar formato de verificación de la prueba de humedad de la resina.",
+"en": "Review the resin moisture test verification form."
+},
+"Are safety rules followed?": {
+"es": "¿Se siguen las reglas de seguridad?",
+"en": "Are safety rules followed?"
+},
+"Are office areas clean & organized?": {
+"es": "¿Las áreas de oficina están limpias y ordenadas?",
+"en": "Are office areas clean & organized?"
+},
+"Are open issues complete and updated?": {
+"es": "¿Los temas abiertos (open issues) están completos y actualizados?",
+"en": "Are open issues complete and updated?"
+},
+"Is EMS system being followed?": {
+"es": "¿Se está siguiendo el sistema EMS?",
+"en": "Is EMS system being followed?"
+},
+"Are exits free and clear of obstruction?": {
+"es": "¿Las salidas están libres y sin obstrucciones?",
+"en": "Are exits free and clear of obstruction?"
+},
+"Are Environmental Impacts being identified on Purchase Requisitions?": {
+"es": "¿Se están identificando los impactos ambientales en las requisiciones de compra?",
+"en": "Are Environmental Impacts being identified on Purchase Requisitions?"
+},
+"Is the jewellery policy being followed?": {
+"es": "¿Se está cumpliendo la política de joyería?",
+"en": "Is the jewellery policy being followed?"
+},
+"Are the lift truck daily check complete?": {
+"es": "¿Se completó la revisión diaria del montacargas?",
+"en": "Are the lift truck daily check complete?"
+},
+"Has Supervisor been notified of unsafe work conditions?": {
+"es": "¿Se notificó al supervisor sobre condiciones de trabajo inseguras?",
+"en": "Has Supervisor been notified of unsafe work conditions?"
+}
+}

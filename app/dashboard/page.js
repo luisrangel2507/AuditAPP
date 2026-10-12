@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Bi from '@/components/Bi';
 import Shell from '@/components/Shell';
 import { api, fmtDate, DEPT, LAYER, scoreCls, getSiteCookie } from '@/lib/client';
 
@@ -57,7 +58,7 @@ function Inner() {
           <div className="sect">Preguntas que más fallan</div>
           <div className="card">{d.topFailing.length ? d.topFailing.map((r, i) => (
             <div key={i} className="row" style={{ padding: '6px 0', borderBottom: i < d.topFailing.length - 1 ? '1px solid var(--line)' : 0 }}>
-              <span className="pill nok">{r.fails}×</span><span style={{ fontSize: 14 }}>{r.question}</span></div>)) : <div className="sub">Sin hallazgos en el periodo</div>}</div>
+              <span className="pill nok">{r.fails}×</span><span style={{ fontSize: 14 }}><Bi text={r.question} /></span></div>)) : <div className="sub">Sin hallazgos en el periodo</div>}</div>
 
           <div className="sect">No realizadas — ventana cerrada ({d.missing.length})</div>
           <div className="card">{d.missing.length ? d.missing.map((m) => (

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Bi from '@/components/Bi';
 import Shell from '@/components/Shell';
 import { api, fmtDate, compressImage, useLocal, scoreCls, DEPT, LAYER } from '@/lib/client';
 import Ring from '@/components/Ring';
@@ -105,7 +106,7 @@ function Runner({ audit, onExit, onDone }) {
       </div>
       <div className="exec-body">
         <div className="qcat">{q.category || audit.template}</div>
-        <div className="qtext">{q.text}</div>
+        <div className="qtext"><Bi text={q.text} /></div>
         <div className="answers">
           {BTN.map(([k, sym, lbl, code]) => (
             <button key={k} className={`ans ${k} ${a.result === k ? 'sel' : ''}`} onClick={() => set({ result: k })}>
@@ -164,7 +165,7 @@ function Result({ audit }) {
       {audit.responses.map((r) => (
         <div key={r.id} className="card" style={{ marginBottom: 8 }}>
           <div className="row" style={{ alignItems: 'flex-start' }}>
-            <div className="grow" style={{ fontSize: 14 }}>{r.question}</div>
+            <div className="grow" style={{ fontSize: 14 }}><Bi text={r.question} /></div>
             <span className={`pill ${r.result === 'ok' ? 'ok' : r.result === 'nok' ? 'nok' : r.result === 'partial' ? 'warn' : ''}`}>{r.result === 'nok' ? 'X' : r.result === 'partial' ? 'Δ' : r.result === 'na' ? 'N/A' : 'OK'}</span>
           </div>
           {r.notes && <div className="sub">{r.notes}</div>}

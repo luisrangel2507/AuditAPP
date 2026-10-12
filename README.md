@@ -61,6 +61,11 @@ a los demás). Solo el admin puede cambiar zona, número de parte o auditor de u
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 
+## Preguntas en español e inglés
+Todas las preguntas se muestran en **español (arriba) e inglés (abajo)**: al contestar, en los resultados, en los issues y en el Panel.
+El banco completo está traducido en `data/question-i18n.json`; al arrancar, `npm start` convierte las preguntas existentes (idempotente) y las nuevas instalaciones ya nacen bilingües.
+En Admin → Preguntas, cada pregunta nueva pide los dos idiomas y "Editar" permite corregir ambos. Las respuestas ya registradas antes del cambio conservan su texto original.
+
 ## Contraseñas
 Cada persona entra con `nombre.apellido` y su **contraseña** (mín. 8 caracteres). El admin la asigna o restablece en Admin → Usuarios; al primer ingreso el sistema obliga a cambiarla.
 

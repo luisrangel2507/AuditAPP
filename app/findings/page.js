@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import OwnerPicker from '@/components/OwnerPicker';
 import { api, fmtDate } from '@/lib/client';
@@ -28,7 +29,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
     <div id={`oi-${f.id}`} className="card issue" style={{ marginBottom: 10, borderColor: overdue ? 'rgba(200,60,50,.5)' : undefined }}>
       <div className="row" style={{ alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
         <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
-        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span> {f.question}</div>
+        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span> <Bi text={f.question} /></div>
       </div>
       <div className="sub">{f.area}{f.part_number ? ` · N/P ${f.part_number}` : ''} · {fmtDate(f.audit_date)} · {f.auditor}</div>
       <div className="row wrap" style={{ marginTop: 8 }}>

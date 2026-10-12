@@ -3,6 +3,9 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const bank = require(path.join(__dirname, '../data/question-bank.json'));
+const i18n = require(path.join(__dirname, '../data/question-i18n.json'));
+// Texto bilingüe "español\ninglés"; si falta traducción se deja el original
+const biText = (orig) => { const t = i18n[orig]; return t && t.es && t.en && t.es !== t.en ? `${t.es}\n${t.en}` : orig; };
 const { ROSTER, REF_MONDAY, USERNAME_OVERRIDES } = require('../data/roster.js');
 
 const url = process.env.DATABASE_URL;
@@ -176,11 +179,21 @@ async function main() {
       );
       for (let i = 0; i < tpl.questions.length; i++) {
         await pool.query('INSERT INTO questions(template_id,text,category,sort_order) VALUES($1,$2,$3,$4)',
-          [rows[0].id, tpl.questions[i], tpl.zone, i]);
+          [rows[0].id, biText(tpl.questions[i]), tpl.zone, i]);
       }
     }
     console.log(`[setup] ${bank.length} plantillas cargadas`);
   }
+
+  // Preguntas existentes de una versión anterior (un solo idioma) -> bilingües. Idempotente: solo toca las que aún son el texto original.
+  let bi = 0;
+  for (const [orig] of Object.entries(i18n)) {
+    const nt = biText(orig);
+    if (nt === orig) continue;
+    const r = await pool.query('UPDATE questions SET text=$1 WHERE text=$2', [nt, orig]);
+    bi += r.rowCount;
+  }
+  if (bi) console.log(`[setup] ${bi} preguntas actualizadas a español + inglés`);
 
   // Usuarios
   const { rows: u } = await pool.query('SELECT COUNT(*)::int n FROM users');

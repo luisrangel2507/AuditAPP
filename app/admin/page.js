@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
+import Bi from '@/components/Bi';
 import { api, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
@@ -84,7 +85,7 @@ function Users({ templates }) {
 }
 
 function Questions({ templates, reloadTemplates }) {
-  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [text, setText] = useState(''), [err, setErr] = useState('');
+  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [es, setEs] = useState(''), [en, setEn] = useState(''), [edit, setEdit] = useState(null), [err, setErr] = useState('');
   const t = templates.find((x) => x.id === Number(tid));
   const load = () => tid && api(`/api/admin/templates/${tid}/questions`).then(setQs);
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tid]);
@@ -100,17 +101,31 @@ function Questions({ templates, reloadTemplates }) {
         <input className="inp" style={{ width: 80 }} type="number" min="1" max="50" defaultValue={t.per_audit} key={t.id}
           onBlur={(e) => run(() => api(`/api/admin/templates/${t.id}`, { method: 'PATCH', body: { per_audit: e.target.value } }))} />
       </div>}
-      <div className="row" style={{ marginBottom: 12 }}>
-        <input className="inp" placeholder="Nueva pregunta…" value={text} onChange={(e) => setText(e.target.value)} />
-        <button className="btn sm" disabled={!text.trim()} onClick={() => run(async () => { await api(`/api/admin/templates/${tid}/questions`, { method: 'POST', body: { text } }); setText(''); })}>Agregar</button>
+      <div className="bi-form">
+        <input className="inp" placeholder="Nueva pregunta en español…" value={es} onChange={(e) => setEs(e.target.value)} />
+        <input className="inp" placeholder="New question in English…" value={en} onChange={(e) => setEn(e.target.value)} />
+        <button className="btn sm" disabled={!es.trim() || !en.trim()} onClick={() => run(async () => { await api(`/api/admin/templates/${tid}/questions`, { method: 'POST', body: { text_es: es, text_en: en } }); setEs(''); setEn(''); })}>Agregar (español + inglés)</button>
       </div>
       {err && <div className="err">{err}</div>}
+      {edit && (
+        <div className="sheet-bg" onClick={() => setEdit(null)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+          <h2>Editar pregunta</h2>
+          <label className="lbl">Español</label>
+          <textarea className="inp" rows={3} value={edit.es} onChange={(e) => setEdit({ ...edit, es: e.target.value })} />
+          <label className="lbl">English</label>
+          <textarea className="inp" rows={3} value={edit.en} onChange={(e) => setEdit({ ...edit, en: e.target.value })} />
+          <div className="row" style={{ marginTop: 16 }}>
+            <button className="btn alt grow" onClick={() => setEdit(null)}>Cancelar</button>
+            <button className="btn grow" disabled={!edit.es.trim()} onClick={() => run(async () => { await api(`/api/admin/questions/${edit.id}`, { method: 'PATCH', body: { text_es: edit.es, text_en: edit.en } }); setEdit(null); })}>Guardar</button>
+          </div>
+        </div></div>
+      )}
       {qs.map((q) => (
         <div key={q.id} className="card" style={{ marginBottom: 8, opacity: q.active ? 1 : .5 }}>
-          <div style={{ fontSize: 14 }}>{q.text}</div>
+          <div style={{ fontSize: 14 }}><Bi text={q.text} /></div>
           <div className="row" style={{ marginTop: 8 }}>
             <button className="btn-ghost" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))}>{q.active ? 'Desactivar' : 'Activar'}</button>
-            <button className="btn-ghost" onClick={() => { const n = prompt('Editar pregunta', q.text); if (n) run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { text: n } })); }}>Editar</button>
+            <button className="btn-ghost" onClick={() => setEdit({ id: q.id, es: q.text_es, en: q.text_en })}>Editar</button>
             <button className="btn-ghost" style={{ color: 'var(--nok)' }} onClick={() => { if (confirm('¿Eliminar pregunta? Es mejor desactivarla.')) run(() => api(`/api/admin/questions/${q.id}`, { method: 'DELETE' })); }}>Eliminar</button>
           </div>
         </div>))}

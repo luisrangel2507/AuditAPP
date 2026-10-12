@@ -377,3 +377,8 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
 .asg-bar { position: sticky; bottom: calc(100px + env(safe-area-inset-bottom)); z-index: 15; display: flex; gap: 10px; align-items: center; padding: 10px 12px; margin-top: 14px; background: rgba(255,255,255,.95); backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
 @media (max-width: 520px) { .asg-row { grid-template-columns: 52px 1fr; } .asg-row .inp:last-child { grid-column: 2; } .asg-row .done { grid-column: 2; } }
 @media (min-width: 1100px) { .asg-bar { bottom: 20px; } }
+
+/* ── Preguntas bilingües ── */
+.bi-en { display: block; margin-top: 3px; font-size: .82em; font-weight: 400; font-style: italic; color: var(--sub); line-height: 1.35; }
+.qtext .bi-en { font-size: 16px; margin-top: 8px; }
+.bi-form { display: grid; gap: 8px; margin-bottom: 12px; }

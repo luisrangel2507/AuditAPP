@@ -1,11 +1,16 @@
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
+import { joinBi } from '@/lib/bi';
 
 export const PATCH = route(async (req, { params }) => {
   const b = await req.json();
   const sets = [], vals = [];
   const add = (c, v) => { vals.push(v); sets.push(`${c}=$${vals.length}`); };
-  if (typeof b.text === 'string' && b.text.trim()) add('text', b.text.trim());
+  if (b.text_es !== undefined || b.text_en !== undefined) {
+    const t = joinBi(b.text_es, b.text_en);
+    if (!t) return err('La pregunta no puede quedar vacía');
+    add('text', t);
+  } else if (typeof b.text === 'string' && b.text.trim()) add('text', b.text.trim());
   if (typeof b.category === 'string') add('category', b.category.trim());
   if (typeof b.active === 'boolean') add('active', b.active);
   if (!sets.length) return err('Nada que cambiar');
