@@ -39,7 +39,7 @@ export default function Login() {
     <div className="login2"><div className="login2-card">
       <div className="hero">
         <img className="hero-photo" src="/login-bg.jpg" alt="" />
-        <img className="hero-wedge" src="/login-wedge.webp" alt="" />
+        <span className="hero-wedge" aria-hidden="true" />
         <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
           <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />

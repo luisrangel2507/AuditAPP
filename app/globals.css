@@ -436,3 +436,18 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
   .login2 form { margin-top: 0; border-radius: 0; padding: 56px 44px 150px; }
   .login2 .hero::after { background: linear-gradient(180deg, rgba(7,26,72,.5) 0%, rgba(8,28,74,.8) 100%); }
 }
+
+/* Login: encabezado sin pellets (solo franja naranja) y velo más transparente */
+.login2 .hero .hero-wedge { position: absolute; right: 0; bottom: 0; width: 46%; max-width: 300px; aspect-ratio: 1 / 1; height: auto; z-index: 1; pointer-events: none;
+  background: linear-gradient(135deg, transparent 49.6%, rgba(242,106,10,.92) 50%, #d95a05 100%); -webkit-mask-image: none; mask-image: none; }
+.login2 .hero::after { background: linear-gradient(180deg, rgba(7,26,72,.18) 0%, rgba(8,28,74,.38) 55%, rgba(8,28,74,.55) 100%); }
+.login2 .hero-photo { filter: saturate(1.15) contrast(1.05) brightness(1.08); }
+@media (min-width: 900px) { .login2 .hero::after { background: linear-gradient(180deg, rgba(7,26,72,.18) 0%, rgba(8,28,74,.5) 100%); } .login2 .hero .hero-wedge { width: 40%; max-width: 280px; } }
+.login2 .hero::after { background:
+  radial-gradient(120% 70% at 0% 28%, rgba(6,24,66,.62) 0%, rgba(6,24,66,.34) 55%, transparent 80%),
+  linear-gradient(180deg, rgba(7,26,72,.16) 0%, rgba(8,28,74,.3) 55%, rgba(8,28,74,.48) 100%); }
+.login2 .hero-in h1, .login2 .hero-in .logo, .login2 .hero-in p { text-shadow: 0 2px 14px rgba(4,16,48,.45); }
+.login2 .hero-in .logo { filter: drop-shadow(0 2px 10px rgba(4,16,48,.45)); }
+@media (min-width: 900px) { .login2 .hero::after { background:
+  radial-gradient(90% 60% at 0% 50%, rgba(6,24,66,.6) 0%, rgba(6,24,66,.3) 55%, transparent 85%),
+  linear-gradient(180deg, rgba(7,26,72,.16) 0%, rgba(8,28,74,.42) 100%); } }
