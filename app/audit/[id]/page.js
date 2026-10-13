@@ -17,7 +17,8 @@ function Runner({ audit, onExit, onDone }) {
   const draft = useLocal(`lpa-draft-${audit.id}`, { answers: {}, idx: 0 });
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
   const [idx, setIdx] = useState(() => draft.read().idx || 0);
-  const [summary, setSummary] = useState(false);
+  const [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
+  const needArea = audit.layer >= 2;
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const qs = audit.questions;
   const users = useUsers();
@@ -37,7 +38,7 @@ function Runner({ audit, onExit, onDone }) {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { draft.write({ answers, idx, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx]);
+  useEffect(() => { draft.write({ answers, idx, area, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area]);
 
   const q = qs[Math.min(idx, qs.length - 1)];
   const a = answers[q?.id] || {};
@@ -55,7 +56,7 @@ function Runner({ audit, onExit, onDone }) {
     setBusy(true); setErr('');
     try {
       const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id] }));
-      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec } });
+      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined } });
       draft.clear(); onDone(res);
     } catch (e) { setErr(e.message); setBusy(false); }
   }
@@ -67,7 +68,7 @@ function Runner({ audit, onExit, onDone }) {
     const score = scored ? Math.round((c.ok / scored) * 1000) / 10 : 100;
     return (
       <div className="exec">
-        <div className="exec-top"><h2>Resumen</h2><div className="sub">{audit.area}{audit.part_number ? ` · N/P ${audit.part_number}` : ''} · {audit.template}</div></div>
+        <div className="exec-top"><h2>Resumen</h2><div className="sub">{needArea && !area ? "All Areas" : (needArea ? area : audit.area)}{audit.part_number ? ` · N/P ${audit.part_number}` : ''} · {audit.template}</div></div>
         <div className="exec-body">
           <div className="card" style={{ textAlign: 'center' }}>
             <Ring value={score} size={120} stroke={10} cls={scoreCls(score)} label={`${score}%`} sub="Score" />
@@ -85,11 +86,16 @@ function Runner({ audit, onExit, onDone }) {
                 <div className="sub">{(answers[x.id].owners || []).length ? 'Responsables: ' + answers[x.id].owners.map((id) => users.find((u) => u.id === id)?.name || id).join(', ') : 'Sin responsable asignado (un líder lo asignará)'}</div>
               </div>))}
           </>}
+          {needArea && <div className="card" style={{ marginBottom: 12 }}>
+            <div className="sect" style={{ marginTop: 0 }}>¿Qué área auditaste?</div>
+            <datalist id="aud-zones">{(audit.zones || []).map((z) => <option key={z} value={z} />)}</datalist>
+            <input className="inp" list="aud-zones" placeholder="Área auditada" value={area} onChange={(e) => setArea(e.target.value)} />
+          </div>}
           {err && <div className="err">{err}</div>}
         </div>
         <div className="exec-foot">
           <button className="btn alt" onClick={() => setSummary(false)}>‹ Revisar</button>
-          <button className="btn grow" disabled={busy} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
+          <button className="btn grow" disabled={busy || (needArea && !area.trim())} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
         </div>
       </div>
     );

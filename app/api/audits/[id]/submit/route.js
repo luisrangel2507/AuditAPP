@@ -6,7 +6,7 @@ import { mxToday, addDays, closesOn } from '@/lib/dates';
 const RESULTS = new Set(['ok', 'nok', 'partial', 'na']);
 
 export const POST = route(async (req, { params }, user) => {
-  const { responses, active_sec } = await req.json();
+  const { responses, active_sec, area } = await req.json();
   if (!Array.isArray(responses)) return err('responses requerido');
   const client = await pool.connect();
   try {
@@ -16,6 +16,14 @@ export const POST = route(async (req, { params }, user) => {
     if (!a) { await client.query('ROLLBACK'); return err('No encontrada', 404); }
     if (a.user_id !== user.id) { await client.query('ROLLBACK'); return err('Esta auditoría no es tuya', 403); }
     if (a.status === 'completed') { await client.query('ROLLBACK'); return err('Ya fue completada'); }
+    const { rows: [au] } = await client.query('SELECT layer FROM users WHERE id=$1', [a.user_id]);
+    if (au.layer >= 2) {
+      // Layer 2/3/4: el auditor escoge el área que auditó
+      const ar = String(area || '').trim().slice(0, 80);
+      if (!ar || ar === 'All Areas') { await client.query('ROLLBACK'); return err('Indica el área que auditaste'); }
+      await client.query('UPDATE audits SET area=$2 WHERE id=$1', [a.id, ar]);
+      a.area = ar;
+    }
     const today = mxToday();
     if (today < a.date) { await client.query('ROLLBACK'); return err(`Esta auditoría se habilita el ${a.date}`); }
     if (today > closesOn(a)) {

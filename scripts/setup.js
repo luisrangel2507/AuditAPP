@@ -147,8 +147,8 @@ INSERT INTO sites(code,name,active) VALUES ('MPQ','MPQ',TRUE),('MPS','MPS',FALSE
 UPDATE users SET site_id=(SELECT id FROM sites WHERE code='MPQ') WHERE site_id IS NULL AND access NOT IN ('admin','master');
 -- El administrador global anterior (sin planta) pasa a ser máster; los admins de planta se crean después
 UPDATE users SET access='master' WHERE access='admin' AND site_id IS NULL;
--- Layer 3 y 4: siempre All Areas y sin número de parte
-UPDATE audits SET area='All Areas', part_number='' WHERE status='pending' AND user_id IN (SELECT id FROM users WHERE layer>=3);
+-- Layer 2, 3 y 4: All Areas sin N/P (el auditor escoge el área al auditar)
+UPDATE audits SET area='All Areas', part_number='' WHERE status='pending' AND user_id IN (SELECT id FROM users WHERE layer>=2);
 -- Migra el responsable único anterior
 INSERT INTO finding_owners(finding_id,user_id,status,action)
   SELECT id, owner_id, CASE WHEN status='closed' THEN 'done' WHEN status='in_progress' THEN 'in_progress' ELSE 'open' END, COALESCE(action,'')

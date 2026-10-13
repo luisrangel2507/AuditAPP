@@ -19,7 +19,7 @@ export const GET = route(async (req, ctx, user) => {
     `SELECT a.id,a.user_id,a.date,a.due_date,a.area,a.part_number,a.status,
             u.name,u.dept,u.layer,u.pool,u.site_id, s.code AS site
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN sites s ON s.id=u.site_id
-      WHERE a.date BETWEEN $1 AND $2 AND ($3::int IS NULL OR u.site_id=$3)
+      WHERE a.date BETWEEN $1 AND $2 AND u.layer=1 AND ($3::int IS NULL OR u.site_id=$3)
       ORDER BY u.layer DESC,u.dept,u.name,a.date`, [monday, addDays(monday, 4), scope]);
   const zones = [...new Set(rows.flatMap((r) => r.pool || []).concat(rows.map((r) => r.area)).filter(Boolean))].sort();
   return json({ monday, today, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows, zones });
@@ -38,8 +38,8 @@ export const PUT = route(async (req, ctx, user) => {
       const { rows: [a] } = await client.query(
         `SELECT a.id,a.status,u.site_id,u.layer FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [Number(it.id)]);
       if (!a || a.status !== 'pending' || !sameSite(user, a.site_id)) { skipped++; continue; }
-      // Layer 3 y 4 siempre auditan todas las áreas y no llevan número de parte
-      const fixed = a.layer >= 3;
+      // Layer 2, 3 y 4 auditan todas las áreas (el auditor escoge el área al auditar) y no llevan N/P
+      const fixed = a.layer >= 2;
       await client.query('UPDATE audits SET area=$2, part_number=$3 WHERE id=$1',
         [a.id, fixed ? 'All Areas' : String(it.area ?? '').trim().slice(0, 80), fixed ? '' : String(it.part_number ?? '').trim().slice(0, 40)]);
       saved++;

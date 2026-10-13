@@ -395,7 +395,7 @@ function Assign() {
 
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. Layer 3 y 4 siempre auditan All Areas y no llevan N/P. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. Solo aplica a Layer 1; Layer 2, 3 y 4 auditan todas las áreas y escogen el área al auditar. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
