@@ -36,10 +36,12 @@ export const PUT = route(async (req, ctx, user) => {
     let saved = 0, skipped = 0;
     for (const it of items) {
       const { rows: [a] } = await client.query(
-        `SELECT a.id,a.status,u.site_id FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [Number(it.id)]);
+        `SELECT a.id,a.status,u.site_id,u.layer FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [Number(it.id)]);
       if (!a || a.status !== 'pending' || !sameSite(user, a.site_id)) { skipped++; continue; }
+      // Layer 3 y 4 siempre auditan todas las áreas y no llevan número de parte
+      const fixed = a.layer >= 3;
       await client.query('UPDATE audits SET area=$2, part_number=$3 WHERE id=$1',
-        [a.id, String(it.area ?? '').trim().slice(0, 80), String(it.part_number ?? '').trim().slice(0, 40)]);
+        [a.id, fixed ? 'All Areas' : String(it.area ?? '').trim().slice(0, 80), fixed ? '' : String(it.part_number ?? '').trim().slice(0, 40)]);
       saved++;
     }
     await client.query('COMMIT');

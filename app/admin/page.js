@@ -315,7 +315,7 @@ function parseAssignments(text, audits, days) {
       list = list.filter((a) => a.date === days[k] || a.date !== a.due_date);
       if (!list.length) return problems.push(`Línea ${i + 1}: ${name} no tiene auditoría ese día`);
     }
-    const pend = list.filter((a) => a.status === 'pending');
+    const pend = list.filter((a) => a.status === 'pending' && a.layer < 3);
     if (!pend.length) return problems.push(`Línea ${i + 1}: ${name} no tiene auditorías pendientes ahí`);
     pend.forEach((a) => { changes[a.id] = { ...(changes[a.id] || {}), ...(zone ? { area: zone } : {}), ...(part !== undefined && part !== '' ? { part_number: part } : {}) }; });
     rows++;
@@ -395,7 +395,7 @@ function Assign() {
 
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. Layer 3 y 4 siempre auditan All Areas y no llevan N/P. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
@@ -412,14 +412,14 @@ function Assign() {
           {people.map(({ id, a, list }) => (
             <div key={id} className="card asg-user">
               <div className="asg-head"><b>{a.name}</b><span className="sub">{LAYER[a.layer]} · {DEPT[a.dept]}{me.multi_site && a.site ? ` · ${a.site}` : ''}</span>
-                {list.filter((x) => x.status === 'pending').length > 1 && <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={() => fillWeek(list)}>Igual toda la semana</button>}</div>
+                {a.layer < 3 && list.filter((x) => x.status === 'pending').length > 1 && <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={() => fillWeek(list)}>Igual toda la semana</button>}</div>
               {list.map((x) => {
                 const v = val(x), done = x.status === 'completed', wide = x.date !== x.due_date;
                 const dayLbl = wide ? 'Semana' : `${DAYS_SHORT[data.days.indexOf(x.date)]} ${Number(x.date.slice(8))}`;
                 return (
                   <div key={x.id} className="asg-row">
                     <span className={`day ${x.date === data.today ? 'today' : ''}`}>{dayLbl}</span>
-                    {done ? <span className="done">✓ Completada · {x.area}{x.part_number ? ` · N/P ${x.part_number}` : ''}</span> : <>
+                    {done ? <span className="done">✓ Completada · {x.area}{x.part_number ? ` · N/P ${x.part_number}` : ''}</span> : x.layer >= 3 ? <span className="sub">All Areas · sin N/P</span> : <>
                       <input className="inp" list="zones" placeholder="Zona" value={v.area} onChange={(e) => set(x, 'area', e.target.value)} />
                       <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={v.part_number} onChange={(e) => set(x, 'part_number', e.target.value)} />
                     </>}
