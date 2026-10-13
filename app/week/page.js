@@ -32,14 +32,17 @@ function WeekInner() {
       if (!by.has(a.user_id)) by.set(a.user_id, { user: a, cells: {} });
       by.get(a.user_id).cells[a.date] = a;
     }
-    return [...by.values()];
+    return [...by.values()].sort((x, y) => y.user.layer - x.user.layer || (x.user.layer === 1 ? String(DEPT[x.user.dept]).localeCompare(DEPT[y.user.dept]) : 0) || x.user.name.localeCompare(y.user.name));
   }, [data, dept, layer, mine, user.id]);
 
   if (err) return <div className="err">{err}</div>;
   const today = data?.today;
   const status = (a) => a.status === 'completed' ? (a.late ? 'late' : 'completed') : a.window;
 
-  let lastLayer = null;
+  let lastGroup = null;
+  const gkey = (u) => (u.layer >= 2 ? `L${u.layer}` : `L1-${u.dept}`);
+  const gcount = (k) => rows.filter((r) => gkey(r.user) === k).length;
+  const glabel = (u) => (u.layer === 3 ? 'Layer 3 · GM' : u.layer === 2 ? 'Layer 2 · Gerentes' : u.layer === 4 ? 'Layer 4' : `Layer 1 · ${DEPT[u.dept]}`);
   return (
     <>
       <h1 className="title">{isAdmin(user) ? 'Programa semanal' : 'Mi semana'}</h1>
@@ -81,7 +84,7 @@ function WeekInner() {
             <thead><tr><th>Auditor</th>{data.days.map((d, i) => <th key={d} className={d === today ? 'today' : ''}>{DAYS_SHORT[i]} {Number(d.slice(8))}</th>)}</tr></thead>
             <tbody>
               {rows.map(({ user: u, cells }) => {
-                const head = lastLayer !== u.layer ? (lastLayer = u.layer, <tr key={'l' + u.layer} className="layer"><td colSpan={6}>{LAYER[u.layer]}{u.layer === 2 ? ' · Gerentes' : u.layer === 3 ? ' · GM' : ''}</td></tr>) : null;
+                const gk = gkey(u), head = lastGroup !== gk ? (lastGroup = gk, <tr key={'g' + gk} className="layer"><td colSpan={6}>{glabel(u)} <span style={{ opacity: .6, fontWeight: 500 }}>({gcount(gk)})</span></td></tr>) : null;
                 const nameCell = <td className="name">{u.name}<span>{DEPT[u.dept]} · {u.template}</span></td>;
                 const wide = u.layer >= 2 ? Object.values(cells)[0] : null;
                 return [head,
