@@ -451,3 +451,36 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
 @media (min-width: 900px) { .login2 .hero::after { background:
   radial-gradient(90% 60% at 0% 50%, rgba(6,24,66,.6) 0%, rgba(6,24,66,.3) 55%, transparent 85%),
   linear-gradient(180deg, rgba(7,26,72,.16) 0%, rgba(8,28,74,.42) 100%); } }
+
+/* ── Reporte imprimible / PDF (Panel → Descargar PDF) ── */
+.rep-head { display: none; }
+@page { size: A4 landscape; margin: 11mm; }
+@media print {
+  body.print-report { background: #fff !important; }
+  body.print-report .apphero, body.print-report .nav, body.print-report .norep, body.print-report .btn,
+  body.print-report .sheet-bg, body.print-report .guide-bg { display: none !important; }
+  body.print-report .page.sheetpage { margin: 0; padding: 0; max-width: none; background: none; box-shadow: none; border-radius: 0; min-height: 0; }
+  body.print-report * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.print-report .rep-head { display: grid; grid-template-columns: auto 1fr; gap: 6mm 8mm; align-items: center; padding-bottom: 4mm; border-bottom: 3px solid #e36a0a; margin-bottom: 4mm; }
+  .rep-head img { height: 11mm; width: auto; }
+  .rep-head h1 { margin: 0; font-size: 18pt; color: #0a2459; }
+  .rep-head div { font-size: 10pt; color: #44506b; }
+  .rep-kpis { grid-column: 1 / -1; display: flex; gap: 8mm; font-size: 10pt; color: #44506b; }
+  .rep-kpis b { font-size: 14pt; color: #0a2459; font-family: var(--mono); }
+  body.print-report .sect { margin: 5mm 0 2mm; font-size: 9.5pt; color: #0a2459; break-after: avoid; }
+  body.print-report .card, body.print-report .oi-list { box-shadow: none; }
+  body.print-report .pie svg { width: 52mm; height: 52mm; }
+  body.print-report .oi-row { break-inside: avoid; font-size: 8.6pt; padding: 2mm 3mm; }
+  body.print-report .oi-head { font-size: 7.6pt; }
+  body.print-report .oi-list { display: block; border: 1px solid #d3dbeb; border-radius: 3mm; }
+  body.print-report .oi-head, body.print-report .oi-row { display: grid; grid-template-columns: 22mm 34mm 1.5fr 1.5fr 20mm 30mm; gap: 3mm; align-items: start; }
+  body.print-report .oi-row > div::before { display: none; }
+  body.print-report .pdca span { width: 6.5mm; height: 6.5mm; font-size: 8pt; }
+}
+@media print {
+  body.print-report .oi-row > div { grid-column: auto !important; }
+  body.print-report .oi-row { grid-template-columns: 22mm 34mm 1.5fr 1.5fr 20mm 30mm; }
+  body.print-report .oi-row .partno { margin: 1mm 0 0; font-size: 7.5pt; padding: .6mm 2mm; }
+  body.print-report .oi-owner { margin-bottom: 1mm; }
+  body.print-report .oi-row .pill { font-size: 7pt; padding: .4mm 1.6mm; }
+}

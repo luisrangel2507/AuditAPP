@@ -51,7 +51,8 @@ export const GET = route(async (req, ctx, user) => {
         WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)
         ORDER BY f.due_date NULLS LAST, f.id LIMIT 100`, [scope]),
   ]);
-  return json({ today, from, weeks, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
+  const siteName = scope == null ? 'Todas las plantas' : (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || '';
+  return json({ today, from, weeks, siteName, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
     area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0],
     results: Object.fromEntries(['ok', 'na', 'partial', 'nok'].map((k) => [k, results.rows.find((r) => r.result === k)?.n || 0])), issues: issues.rows });
 }, { need: 'lead' });

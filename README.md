@@ -67,6 +67,8 @@ Al final del **Panel** (líderes y admin, solo de su planta) hay dos bloques, co
 - **Open issues · PDCA**: todos los hallazgos abiertos (vencidos primero) con fecha, ubicación (zona + N/P), hallazgo, responsables y acción, fecha compromiso y un avance
   **P** hallazgo registrado · **D** acción en ejecución · **C** todos los responsables terminaron · **A** cerrado.
 
+**Descargar PDF:** el botón sobre la gráfica genera un reporte (encabezado con logo y planta, indicadores, pastel y open issues en tabla, en hoja carta/A4 horizontal). Usa la impresión del navegador: en computadora elige "Guardar como PDF"; en iPhone, Compartir → Guardar en Archivos.
+
 ## Preguntas en español e inglés
 Todas las preguntas se muestran en **español (arriba) e inglés (abajo)**: al contestar, en los resultados, en los issues y en el Panel.
 El banco completo está traducido en `data/question-i18n.json`; al arrancar, `npm start` convierte las preguntas existentes (idempotente) y las nuevas instalaciones ya nacen bilingües.

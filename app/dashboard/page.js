@@ -93,6 +93,14 @@ function OpenIssues({ issues, today }) {
   );
 }
 
+// Descargar PDF: usa la impresión del navegador solo con el reporte (en celular: Compartir → Guardar como PDF)
+function printReport() {
+  document.body.classList.add('print-report');
+  const done = () => { document.body.classList.remove('print-report'); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  window.print();
+}
+
 function Inner() {
   const [weeks, setWeeks] = useState(4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
   // La TV usa la planta que ve el admin; un líder siempre ve la suya (lo resuelve el servidor)
@@ -100,21 +108,21 @@ function Inner() {
   useEffect(() => { setD(null); api(`/api/dashboard?weeks=${weeks}`).then(setD).catch((e) => setErr(e.message)); }, [weeks]);
   return (
     <>
-      <div className="row wrap"><h1 className="title grow">Panel de cumplimiento</h1><a className="btn alt sm" href={`/tv${siteTv}`} target="_blank" rel="noreferrer">Abrir pantalla TV</a></div>
-      <div className="seg" style={{ margin: '12px 0' }}>
+      <div className="row wrap norep"><h1 className="title grow">Panel de cumplimiento</h1><a className="btn alt sm" href={`/tv${siteTv}`} target="_blank" rel="noreferrer">Abrir pantalla TV</a></div>
+      <div className="seg norep" style={{ margin: '12px 0' }}>
         {[1, 4, 8, 12].map((w) => <button key={w} className={weeks === w ? 'on' : ''} onClick={() => setWeeks(w)}>{w === 1 ? 'Esta semana' : `${w} semanas`}</button>)}
       </div>
-      {err && <div className="err">{err}</div>}
+      {err && <div className="err norep">{err}</div>}
       {!d ? <div className="empty">Cargando…</div> : (
         <>
-          <div className="kpis">
+          <div className="kpis norep">
             <div className="kpi"><b>{pct(d.kpi.completed, d.kpi.scheduled)}%</b><span>Cumplimiento ({d.kpi.completed}/{d.kpi.scheduled})</span></div>
             <div className="kpi"><b className={`score ${scoreCls(d.kpi.avg_score || 0)}`}>{d.kpi.avg_score ?? '—'}{d.kpi.avg_score != null && '%'}</b><span>Score promedio</span></div>
             <div className="kpi"><b>{d.openFindings.n}</b><span>Hallazgos abiertos ({d.openFindings.overdue} vencidos)</span></div>
             <div className="kpi"><b>{d.kpi.late}</b><span>Hechas tarde</span></div>
           </div>
 
-          <div className="two">
+          <div className="two norep">
             <div>
               <div className="sect">Cumplimiento por capa</div>
               <div className="card"><Bars rows={d.layer} label={(r) => LAYER[r.layer]} value={(r) => pct(r.completed, r.scheduled)}
@@ -133,22 +141,38 @@ function Inner() {
             </div>
           </div>
 
-          <div className="sect">Preguntas que más fallan</div>
-          <div className="card">{d.topFailing.length ? d.topFailing.map((r, i) => (
+          <div className="sect norep">Preguntas que más fallan</div>
+          <div className="card norep">{d.topFailing.length ? d.topFailing.map((r, i) => (
             <div key={i} className="row" style={{ padding: '6px 0', borderBottom: i < d.topFailing.length - 1 ? '1px solid var(--line)' : 0 }}>
               <span className="pill nok">{r.fails}×</span><span style={{ fontSize: 14 }}><Bi text={r.question} /></span></div>)) : <div className="sub">Sin hallazgos en el periodo</div>}</div>
 
-          <div className="sect">No realizadas — ventana cerrada ({d.missing.length})</div>
-          <div className="card">{d.missing.length ? d.missing.map((m) => (
+          <div className="sect norep">No realizadas — ventana cerrada ({d.missing.length})</div>
+          <div className="card norep">{d.missing.length ? d.missing.map((m) => (
             <div key={m.id} className="row" style={{ padding: '6px 0', fontSize: 14 }}>
               <span className="pill nok">{fmtDate(m.date, { day: 'numeric', month: 'short' })}</span>
               <span className="grow">{m.name} <span className="sub">· {LAYER[m.layer]} {DEPT[m.dept]}</span></span><span className="sub">{m.area}</span></div>)) : <div className="sub">Sin auditorías faltantes.</div>}</div>
 
+          <div className="row wrap" style={{ marginTop: 22 }}>
+            <span className="grow" />
+            <button className="btn sm" onClick={printReport}>Descargar PDF</button>
+          </div>
+          <div id="report">
+            <div className="rep-head">
+              <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
+              <div><h1>LPA Summary · {d.siteName}</h1>
+                <div>{weeks === 1 ? 'Semana en curso' : `Últimas ${weeks} semanas`} · al {fmtDate(d.today, { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+              <div className="rep-kpis">
+                <span><b>{pct(d.kpi.completed, d.kpi.scheduled)}%</b> cumplimiento ({d.kpi.completed}/{d.kpi.scheduled})</span>
+                <span><b>{d.kpi.avg_score ?? '—'}{d.kpi.avg_score != null && '%'}</b> score promedio</span>
+                <span><b>{d.openFindings.n}</b> hallazgos abiertos ({d.openFindings.overdue} vencidos)</span>
+              </div>
+            </div>
           <div className="sect">Resultados de las auditorías · {weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
-          <div className="card"><ResultsPie results={d.results} /></div>
-
-          <div className="sect">Open issues · PDCA ({d.issues.length}{d.issues.length >= 100 ? '+' : ''}) · {d.openFindings.overdue} vencido(s)</div>
-          <OpenIssues issues={d.issues} today={d.today} />
+            <div className="card"><ResultsPie results={d.results} /></div>
+  
+            <div className="sect">Open issues · PDCA ({d.issues.length}{d.issues.length >= 100 ? '+' : ''}) · {d.openFindings.overdue} vencido(s)</div>
+            <OpenIssues issues={d.issues} today={d.today} />
+          </div>
         </>
       )}
     </>
