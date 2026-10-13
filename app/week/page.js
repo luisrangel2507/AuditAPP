@@ -89,7 +89,7 @@ function WeekInner() {
                     {nameCell}
                     {wide ? (
                       <td colSpan={5} className="cell">
-                        <Link href={`/audit/${wide.id}`} className={`chip ${status(wide)}`}>{wide.area}{wide.part_number ? ` · N/P ${wide.part_number}` : ''} · vence {fmtDate(wide.due_date, { weekday: 'short', day: 'numeric' })}{wide.status === 'completed' ? ` · ${Math.round(wide.score_pct)}%` : ''}</Link>
+                        <Link href={`/audit/${wide.id}`} className={`chip wide ${status(wide)}`}>{wide.area}{wide.part_number ? ` · N/P ${wide.part_number}` : ''} · vence {fmtDate(wide.due_date, { weekday: 'short', day: 'numeric' })}{wide.status === 'completed' ? ` · ${Math.round(wide.score_pct)}%` : ''}</Link>
                       </td>
                     ) : data.days.map((d) => {
                       const a = cells[d];
