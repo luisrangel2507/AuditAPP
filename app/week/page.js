@@ -79,6 +79,30 @@ function WeekInner() {
           </div>
         ) : <div className="card empty">No tienes auditorías programadas esta semana.</div>
       ) : !data ? <div className="empty">Cargando…</div> : (
+        <>
+        <div className="wk-cards">
+          {(() => { let lg = null; return rows.map(({ user: u, cells }) => {
+            const gk = gkey(u), head = lg !== gk ? (lg = gk, <div key={'h' + gk} className="wk-grp">{glabel(u)} <span>({gcount(gk)})</span></div>) : null;
+            const wide = u.layer >= 2 ? Object.values(cells)[0] : null;
+            return [head, (
+              <div key={u.user_id} className="wk-card">
+                <div className="wk-name"><b>{u.name}</b><span>{DEPT[u.dept]} · {u.template}</span></div>
+                {wide ? (
+                  <Link href={`/audit/${wide.id}`} className={`chip wide ${status(wide)}`}>{wide.area}{wide.part_number ? ` · N/P ${wide.part_number}` : ''} · vence {fmtDate(wide.due_date, { weekday: 'short', day: 'numeric' })}{wide.status === 'completed' ? ` · ${Math.round(wide.score_pct)}%` : ''}</Link>
+                ) : (
+                  <div className="wk-days">{data.days.map((d, i) => {
+                    const x = cells[d];
+                    return (
+                      <div key={d} className={`wk-day ${d === today ? 'today' : ''}`}>
+                        <small>{DAYS_SHORT[i]} {Number(d.slice(8))}</small>
+                        {x ? <Link href={`/audit/${x.id}`} className={`chip ${status(x)}`}>{x.area || '—'}{x.status === 'completed' ? <b>{Math.round(x.score_pct)}%</b> : null}</Link> : <span className="none">—</span>}
+                      </div>);
+                  })}</div>
+                )}
+              </div>)];
+          }); })()}
+          {!rows.length && <div className="empty">Sin auditorías esta semana</div>}
+        </div>
         <div className="matrix-wrap">
           <table className="matrix">
             <thead><tr><th>Auditor</th>{data.days.map((d, i) => <th key={d} className={d === today ? 'today' : ''}>{DAYS_SHORT[i]} {Number(d.slice(8))}</th>)}</tr></thead>
@@ -109,6 +133,7 @@ function WeekInner() {
           </table>
           {!rows.length && <div className="empty">Sin auditorías esta semana</div>}
         </div>
+        </>
       )}
       {isAdmin(user) && <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
         <span><span className="dot completed" />Completada</span><span><span className="dot open" />Programada</span><span><span className="dot last_day" />Último día</span><span><span className="dot missed" />No realizada</span><span><span className="dot" />Próxima</span>

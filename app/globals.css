@@ -829,3 +829,22 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 /* Campana de avisos */
 .bellbtn { position: relative; display: grid; place-items: center; }
 .bell-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #f26a21; color: #fff; font-size: 11px; display: grid; place-items: center; border: 2px solid #0a2459; }
+
+/* Semana (admin): en celular, tarjetas por persona con sus 5 días a la vista; en compu, la tabla */
+.wk-cards { display: none; }
+@media (max-width: 899px) {
+  .matrix-wrap { display: none; }
+  .wk-cards { display: block; }
+  .wk-grp { margin: 16px 2px 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--brand2, #1f5bd6); }
+  .wk-grp span { opacity: .6; font-weight: 600; }
+  .wk-card { background: var(--panel); border: 1px solid var(--line2); border-radius: 18px; padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow-s); }
+  .wk-name { display: flex; flex-direction: column; margin-bottom: 8px; }
+  .wk-name b { font-size: 15px; color: var(--ink); } .wk-name span { font-size: 12px; color: var(--sub); }
+  .wk-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .wk-day { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .wk-day small { font-size: 10.5px; text-align: center; color: var(--sub); font-weight: 600; }
+  .wk-day.today small { color: #f26a21; }
+  .wk-day .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 46px; padding: 4px 3px; border-radius: 10px; font-size: 10.5px; line-height: 1.15; white-space: normal; overflow: hidden; overflow-wrap: anywhere; }
+  .wk-day .chip b { font-size: 11px; margin-top: 2px; }
+  .wk-day .none { display: grid; place-items: center; min-height: 46px; color: var(--line); border: 1px dashed var(--line2); border-radius: 10px; }
+}
