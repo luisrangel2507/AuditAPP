@@ -300,7 +300,7 @@ const shiftDay = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(
 const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 const DAY_IDX = { lun: 0, lunes: 0, mar: 1, martes: 1, mie: 2, miercoles: 2, jue: 3, jueves: 3, vie: 4, viernes: 4 };
 
-// Convierte las filas pegadas (Nombre | Día | Zona | No. de parte) en cambios sobre las auditorías de la semana.
+// Convierte las filas pegadas (Nombre | Día | Zona) en cambios sobre las auditorías de la semana.
 function parseAssignments(text, audits, days) {
   const byName = {};
   audits.forEach((a) => { (byName[norm(a.name)] ||= []).push(a); });
@@ -312,18 +312,18 @@ function parseAssignments(text, audits, days) {
     const c = raw.split(raw.includes('\t') ? '\t' : ';').map((x) => x.trim());
     if (i === 0 && /^nombre/.test(norm(c[0]))) return;
     const [name, day, zone, part] = c;
-    // Tabla completa de Excel: Nombre + Lun..Vie (5 columnas de zona) o Nombre + (zona, N/P) x 5 días (11 columnas)
+    // Tabla completa de Excel: Nombre + Lun..Vie (una zona o máquina por día)
     const oldFmt = c.length <= 4 && (!norm(day) || ['todos', 'todo', 'semana'].includes(norm(day)) || DAY_IDX[norm(day)] !== undefined || /^[1-5]$/.test(norm(day)));
     if (!oldFmt && c.length >= 6) {
       let k0 = norm(name);
       if (!byName[k0]) { const hit = names.filter((n) => n.includes(k0) || k0.includes(n)); if (k0 && hit.length === 1) k0 = hit[0]; else return problems.push(`Línea ${i + 1}: ${hit.length > 1 ? 'nombre ambiguo' : 'no encontré a'} "${name || ''}"`); }
-      const pairs = c.length >= 11; let any = false;
+      const pairs = false; let any = false;
       for (let k = 0; k < 5; k++) {
         const z = pairs ? c[1 + 2 * k] : c[1 + k], pn = pairs ? c[2 + 2 * k] : '';
         if (!z && !pn) continue;
         const au = byName[k0].find((x) => x.date === days[k] && x.status === 'pending' && x.layer < 2);
         if (!au) continue;
-        changes[au.id] = { ...(changes[au.id] || {}), ...(z ? { area: z } : {}), ...(pn ? { part_number: pn } : {}) }; any = true;
+        changes[au.id] = { ...(changes[au.id] || {}), ...(z ? { area: z } : {}) }; any = true;
       }
       if (!any) return problems.push(`Línea ${i + 1}: ${name} no tiene días pendientes que cargar`);
       rows++; return;
@@ -344,7 +344,7 @@ function parseAssignments(text, audits, days) {
     }
     const pend = list.filter((a) => a.status === 'pending' && a.layer < 3);
     if (!pend.length) return problems.push(`Línea ${i + 1}: ${name} no tiene auditorías pendientes ahí`);
-    pend.forEach((a) => { changes[a.id] = { ...(changes[a.id] || {}), ...(zone ? { area: zone } : {}), ...(part !== undefined && part !== '' ? { part_number: part } : {}) }; });
+    pend.forEach((a) => { changes[a.id] = { ...(changes[a.id] || {}), ...(zone ? { area: zone } : {}) }; });
     rows++;
   });
   return { changes, problems, rows };
@@ -356,9 +356,9 @@ function PasteSheet({ data, onApply, onClose }) {
   return (
     <div className="sheet-bg" onClick={onClose}><div className="sheet" onClick={(e) => e.stopPropagation()}>
       <h2>Pegar desde Excel</h2>
-      <p className="sub">Puedes pegar <b>la tabla de la semana tal cual</b> desde Excel: <b>Nombre, Lun, Mar, Mié, Jue, Vie</b> (solo zona) o, si también llevas número de parte, <b>Nombre y luego Zona + N/P por cada día</b> (11 columnas). También sirve una fila por persona y día: <b>Nombre, Día, Zona, No. de parte</b>. Si dejas el Día vacío (o pones "Todos") aplica a todos sus días de esta semana. Los cambios se cargan en la tabla y no se guardan hasta que pulses Guardar.</p>
+      <p className="sub">Puedes pegar <b>la tabla de la semana tal cual</b> desde Excel: <b>Nombre, Lun, Mar, Mié, Jue, Vie</b> (la zona o máquina de cada día). También sirve una fila por persona y día: <b>Nombre, Día, Zona</b>. Si dejas el Día vacío (o pones "Todos") aplica a todos sus días de esta semana. Los cambios se cargan en la tabla y no se guardan hasta que pulses Guardar.</p>
       <details style={{ margin: '8px 0' }}><summary className="sub" style={{ cursor: 'pointer' }}>Ver ejemplo</summary>
-        <pre className="imp-ta" style={{ whiteSpace: 'pre-wrap', background: '#f1f4fa', borderRadius: 12, padding: 10 }}>{'Ana López\tLun\tLínea 1\t4521-AB\nAna López\tMié\tLínea 2\t7788-C\nBeto Ruiz\t\tAll Areas\t9001'}</pre></details>
+        <pre className="imp-ta" style={{ whiteSpace: 'pre-wrap', background: '#f1f4fa', borderRadius: 12, padding: 10 }}>{'Ana López\tLínea 1\tLínea 1\tLínea 2\tLínea 2\tLínea 3\nBeto Ruiz\t\tB1-4\t\t\t'}</pre></details>
       <textarea className="inp imp-ta" placeholder="Pega aquí…" value={text} onChange={(e) => { setText(e.target.value); setRes(null); }} />
       {res && <div className={res.problems.length ? 'err' : 'card'} style={{ marginTop: 12 }}>
         <b>{res.rows} fila(s) listas para aplicar.</b>
@@ -373,7 +373,7 @@ function PasteSheet({ data, onApply, onClose }) {
   );
 }
 
-// Asignaciones: por persona y por día, la zona y el número de parte a inspeccionar.
+// Asignaciones: por persona y por día, la zona o máquina a inspeccionar (el N/P lo captura el auditor).
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
 function Assign() {
   const me = useUser();
@@ -388,10 +388,10 @@ function Assign() {
     setEdits({}); setMsg(''); load(shiftDay(data.monday, n * 7));
   };
 
-  const val = (a) => ({ area: a.area, part_number: a.part_number, ...(edits[a.id] || {}) });
+  const val = (a) => ({ area: a.area, ...(edits[a.id] || {}) });
   const set = (a, k, v) => setEdits((e) => {
     const next = { ...(e[a.id] || {}), [k]: v };
-    const same = (next.area ?? a.area) === a.area && (next.part_number ?? a.part_number) === a.part_number;
+    const same = (next.area ?? a.area) === a.area;
     const { [a.id]: _drop, ...rest } = e;
     return same ? rest : { ...rest, [a.id]: next };
   });
@@ -399,8 +399,8 @@ function Assign() {
   const fillWeek = (list) => {
     const pend = list.filter((a) => a.status === 'pending');
     if (pend.length < 2) return;
-    const { area, part_number } = val(pend[0]);
-    pend.slice(1).forEach((a) => { set(a, 'area', area); set(a, 'part_number', part_number); });
+    const { area } = val(pend[0]);
+    pend.slice(1).forEach((a) => { set(a, 'area', area); });
   };
   async function save() {
     setBusy(true); setMsg('');
@@ -413,7 +413,7 @@ function Assign() {
   }
 
   const asg = { total: 0, done: 0 };
-  (data?.audits || []).filter((a) => a.status === 'pending').forEach((a) => { const v = val(a); asg.total++; if (v.area && v.part_number) asg.done++; });
+  (data?.audits || []).filter((a) => a.status === 'pending').forEach((a) => { const v = val(a); asg.total++; if (v.area) asg.done++; });
   const people = [];
   (data?.audits || []).forEach((a) => {
     if (qs && !a.name.toLowerCase().includes(qs.toLowerCase())) return;
@@ -424,7 +424,7 @@ function Assign() {
 
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona</b> y el <b>número de parte</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. Solo aplica a Layer 1; Layer 2, 3 y 4 auditan todas las áreas y escogen el área al auditar. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Carga a cada persona la <b>zona o máquina</b> que inspecciona cada día. Ellos solo lo ven; no pueden cambiarlo. El <b>número de parte</b> lo captura cada auditor en su auditoría. Solo aplica a Layer 1; Layer 2, 3 y 4 auditan todas las áreas y escogen el área al auditar. La zona ya viene sugerida por la rotación y puedes cambiarla.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
@@ -434,7 +434,7 @@ function Assign() {
         <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
         <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>Pegar desde Excel</button>
       </div>
-      {data && <div className="sub" style={{ margin: '0 0 8px' }}><b>{asg.done}</b> de {asg.total} asignadas (zona y N/P){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ' ✓'}</div>}
+      {data && <div className="sub" style={{ margin: '0 0 8px' }}><b>{asg.done}</b> de {asg.total} asignadas (zona / máquina){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ' ✓'}</div>}
       {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
@@ -449,18 +449,17 @@ function Assign() {
                   if (!x) return <td key={d} className="off" />;
                   const v = val(x);
                   if (x.status === 'completed') return <td key={d} className="doneC">✓ {x.area}{x.part_number ? <small>N/P {x.part_number}</small> : null}</td>;
-                  const miss = !v.area || !v.part_number;
+                  const miss = !v.area;
                   return (
                     <td key={d} className={miss ? 'miss' : ''}>
                       <input className="inp" list="zones" placeholder="Zona" value={v.area} onChange={(e) => set(x, 'area', e.target.value)} />
-                      <input className="inp" placeholder="N/P" maxLength={40} autoCapitalize="characters" value={v.part_number} onChange={(e) => set(x, 'part_number', e.target.value)} />
                     </td>);
                 })}
               </tr>))}</tbody>
           </table></div>
           {paste && <PasteSheet data={data} onClose={() => setPaste(false)} onApply={(ch) => {
             setEdits((e) => { const n = { ...e }; Object.entries(ch).forEach(([id, v]) => { const a = data.audits.find((x) => x.id === Number(id)); const m = { ...(n[id] || {}), ...v };
-              const same = (m.area ?? a.area) === a.area && (m.part_number ?? a.part_number) === a.part_number; if (same) delete n[id]; else n[id] = m; }); return n; });
+              const same = (m.area ?? a.area) === a.area; if (same) delete n[id]; else n[id] = m; }); return n; });
             setPaste(false); setMsg('');
           }} />}
           <div className="asg-bar">

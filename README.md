@@ -53,12 +53,12 @@ Variable opcional `HOME_SITE` (por defecto `MPQ`) = la planta que se usa mientra
 ## Guía de uso
 La primera vez que alguien entra (ya con su contraseña propia) ve una guía corta según su rol; se puede reabrir con el botón **?** del encabezado.
 
-## Asignaciones (zona y número de parte)
+## Asignaciones (zona / máquina)
 El auditor **no elige nada**: solo ve lo que le asignaron. En **Admin → Asignaciones** el admin carga, por persona y por día de la semana,
 la **zona** a inspeccionar y el **número de parte** (la zona viene sugerida por la rotación y se puede cambiar; "Igual toda la semana" copia el primer día
 a los demás). Solo el admin puede cambiar zona, número de parte o auditor de una auditoría pendiente; los líderes ya no pueden reasignar.
-**Solo Layer 1** lleva zona y número de parte asignados. Layer 2, 3 y 4 auditan "All Areas" sin N/P: al terminar la auditoría **escogen el área que auditaron** y esa queda registrada.
-La pantalla de Asignaciones es una **tabla semanal** (persona × Lun–Vie, como el programa en papel) con un contador "X de Y asignadas". "Pegar desde Excel" acepta la tabla tal cual: `Nombre, Lun..Vie` (solo zona) o `Nombre` + zona y N/P por cada día (11 columnas).
+**Solo Layer 1** lleva zona o máquina asignada por el admin; el **número de parte lo captura cada auditor** al terminar su auditoría (obligatorio). Layer 2, 3 y 4 auditan "All Areas" sin N/P: al terminar la auditoría **escogen el área que auditaron** y esa queda registrada.
+La pantalla de Asignaciones es una **tabla semanal** (persona × Lun–Vie, como el programa en papel) con un contador "X de Y asignadas". "Pegar desde Excel" acepta la tabla tal cual: `Nombre, Lun..Vie` (solo zona) (una zona o máquina por día).
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 

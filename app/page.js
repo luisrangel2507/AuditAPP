@@ -98,10 +98,10 @@ function AdminHome() {
   const done = l1.filter((a) => a.status === 'completed'), pend = l1.filter((a) => a.status !== 'completed');
   const mg = w.audits.filter((a) => a.layer >= 2), mgDone = mg.filter((a) => a.status === 'completed');
   const missed = w.audits.filter((a) => a.window === 'missed');
-  const noPart = pend.filter((a) => !a.part_number || !a.area);
+  const noPart = pend.filter((a) => !a.area);
   const open = iss?.findings || [], overdue = open.filter((f) => f.due_date && f.due_date < (iss?.today || today));
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
-  const unassigned = pend.filter((a) => !a.part_number || !a.area).length;
+  const unassigned = pend.filter((a) => !a.area).length;
   const dayPct = pct(done.length, l1.length);
   const rows = pend.filter((a) => !qs || `${a.name} ${a.area || ''} ${a.part_number || ''}`.toLowerCase().includes(qs.toLowerCase()));
   const ic = (d) => <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
@@ -131,7 +131,7 @@ function AdminHome() {
         <div className="ah-kpi"><i className="o">{P.clock}</i><div><b>{pend.length}</b><span>Pendientes</span></div></div>
         <div className="ah-kpi"><i className="v">{P.bars}</i><div><b>{mgDone.length}/{mg.length}</b><span>Auditorías semanales (gerencia)</span></div></div>
       </div>
-      {unassigned > 0 && <Link href="/admin" className="ah-alert"><i>{P.warn}</i><b>{unassigned} auditoría(s) sin zona o número de parte</b><span className="btn sm">Asignar ahora ›</span></Link>}
+      {unassigned > 0 && <Link href="/admin" className="ah-alert"><i>{P.warn}</i><b>{unassigned} auditoría(s) sin zona o máquina asignada</b><span className="btn sm">Asignar ahora ›</span></Link>}
       {missed.length > 0 && <Link href="/dashboard" className="ah-alert red"><i>{P.warn}</i><b>{missed.length} auditoría(s) no realizada(s) esta semana</b><span className="btn sm">Ver Panel ›</span></Link>}
       {overdue.length > 0 && <Link href="/findings" className="ah-alert red"><i>{P.warn}</i><b>{overdue.length} issue(s) vencido(s)</b><span className="btn sm">Ver Issues ›</span></Link>}
       <div className="ah-grid">
@@ -166,12 +166,12 @@ function AdminHome() {
             <ul className="ah-leg">
               <li><i className="g" />Completadas<b>{done.length}</b></li>
               <li><i className="o" />Pendientes<b>{pend.length}</b></li>
-              <li><i className="x" />Sin asignar (zona / parte)<b>{unassigned}</b></li>
+              <li><i className="x" />Sin zona asignada<b>{unassigned}</b></li>
             </ul>
           </section>
           <section className="ah-card">
             <div className="ah-head"><h2>Acciones rápidas</h2></div>
-            <Link href="/admin" className="ah-act main">{P.plus}<b>Asignar zonas y N/P</b><span>›</span></Link>
+            <Link href="/admin" className="ah-act main">{P.plus}<b>Asignar zonas</b><span>›</span></Link>
             <Link href="/dashboard" className="ah-act">{P.bars}<b>Abrir Panel</b><span>›</span></Link>
             <Link href="/findings" className="ah-act">{P.doc}<b>Ver issues</b><span>›</span></Link>
           </section>

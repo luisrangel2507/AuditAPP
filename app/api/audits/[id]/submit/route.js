@@ -7,7 +7,7 @@ const MIN_SEC = 600; // duración mínima esperada de una auditoría
 const RESULTS = new Set(['ok', 'nok', 'partial', 'na']);
 
 export const POST = route(async (req, { params }, user) => {
-  const { responses, active_sec, area } = await req.json();
+  const { responses, active_sec, area, part_number } = await req.json();
   if (!Array.isArray(responses)) return err('responses requerido');
   const client = await pool.connect();
   try {
@@ -24,6 +24,12 @@ export const POST = route(async (req, { params }, user) => {
       if (!ar || ar === 'All Areas') { await client.query('ROLLBACK'); return err('Indica el área que auditaste'); }
       await client.query('UPDATE audits SET area=$2 WHERE id=$1', [a.id, ar]);
       a.area = ar;
+    }
+    if (au.layer === 1) {
+      // Layer 1: la zona/máquina viene asignada; el auditor captura el N/P que revisó
+      const pn = String(part_number || '').trim().slice(0, 40);
+      if (!pn) { await client.query('ROLLBACK'); return err('Captura el número de parte que revisaste'); }
+      await client.query('UPDATE audits SET part_number=$2 WHERE id=$1', [a.id, pn]);
     }
     const today = mxToday();
     if (today < a.date) { await client.query('ROLLBACK'); return err(`Esta auditoría se habilita el ${a.date}`); }

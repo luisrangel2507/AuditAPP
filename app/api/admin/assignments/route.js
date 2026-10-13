@@ -38,10 +38,10 @@ export const PUT = route(async (req, ctx, user) => {
       const { rows: [a] } = await client.query(
         `SELECT a.id,a.status,u.site_id,u.layer FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [Number(it.id)]);
       if (!a || a.status !== 'pending' || !sameSite(user, a.site_id)) { skipped++; continue; }
-      // Layer 2, 3 y 4 auditan todas las áreas (el auditor escoge el área al auditar) y no llevan N/P
+      // Solo Layer 1 lleva zona/máquina asignada; el N/P lo captura el auditor al auditar
       const fixed = a.layer >= 2;
-      await client.query('UPDATE audits SET area=$2, part_number=$3 WHERE id=$1',
-        [a.id, fixed ? 'All Areas' : String(it.area ?? '').trim().slice(0, 80), fixed ? '' : String(it.part_number ?? '').trim().slice(0, 40)]);
+      await client.query('UPDATE audits SET area=$2 WHERE id=$1',
+        [a.id, fixed ? 'All Areas' : String(it.area ?? '').trim().slice(0, 80)]);
       saved++;
     }
     await client.query('COMMIT');
