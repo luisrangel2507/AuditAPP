@@ -87,7 +87,7 @@ function AdminHome() {
   const user = useUser(), master = isMaster(user);
   const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null);
   useEffect(() => {
-    if (master) api('/api/admin/sites').then(setPlants).catch(() => {});
+    if (master && user.multi_site) api('/api/admin/sites').then(setPlants).catch(() => {});
     api('/api/week').then(setW).catch((e) => setErr(e.message));
     api('/api/findings?status=open').then((d) => setIss(d)).catch(() => {});
   }, []);
@@ -105,7 +105,7 @@ function AdminHome() {
     <>
       <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-      {master && plants && (
+      {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
           <div className="ps-chips">{plants.map((p) => <span key={p.id} className={`ps-chip ${p.active ? 'on' : ''}`}>{p.code}<i>{p.active ? 'activa' : `${p.users} usuarios`}</i></span>)}</div>

@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'crypto';
 import { q } from '@/lib/db';
 import { getUser } from '@/lib/session';
 import { isAdmin, isMaster } from '@/lib/roles';
+import { MULTI_SITE, HOME_SITE } from '@/lib/config';
 import { siteScope } from '@/lib/site';
 import { json, err } from '@/lib/api';
 import { mxToday, mondayOf, addDays, windowState } from '@/lib/dates';
@@ -90,7 +91,7 @@ export async function GET(req) {
       status: a.status, window: a.window, score: a.score_pct, late: a.late, findings: a.nok_count + a.partial_count,
     });
     return json({
-      today, monday, site,
+      today, monday, site, multi: MULTI_SITE, home: HOME_SITE,
       kpi: {
         week_pct: counted.length ? Math.round((done.length / counted.length) * 100) : null,
         week_done: done.length, week_counted: counted.length,

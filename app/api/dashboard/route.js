@@ -1,6 +1,7 @@
 import { q } from '@/lib/db';
 import { route, json } from '@/lib/api';
 import { siteScope } from '@/lib/site';
+import { MULTI_SITE, HOME_SITE } from '@/lib/config';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
 
 export const GET = route(async (req, ctx, user) => {
@@ -62,7 +63,8 @@ export const GET = route(async (req, ctx, user) => {
                 WHERE u.active AND u.access NOT IN ('admin','master') AND u.template_id IS NOT NULL AND ($3::int IS NULL OR u.site_id=$3)
                 GROUP BY u.id) t`, [from, today, scope]),
   ]);
-  const siteName = scope == null ? 'Todas las plantas' : (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || '';
+  const siteName = scope != null ? (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || ''
+    : MULTI_SITE ? 'Todas las plantas' : ((await q('SELECT name FROM sites WHERE code=$1', [HOME_SITE])).rows[0]?.name || HOME_SITE);
   return json({ today, from, weeks, siteName, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
     area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0],
     users: ppl.rows[0],

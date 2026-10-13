@@ -28,9 +28,9 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       <h2>{isNew ? 'Nuevo usuario' : f.name}</h2>
       <label className="lbl">Nombre</label><input className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} />
       {isNew && <><label className="lbl">Usuario</label><input className="inp" autoCapitalize="none" value={f.username} onChange={(e) => set('username', e.target.value)} /></>}
-      <label className="lbl">Planta</label>
+      {me.multi_site && <><label className="lbl">Planta</label>
       <select className="inp" disabled={!master || f.access === 'master'} value={f.site_id || ''} onChange={(e) => set('site_id', e.target.value ? Number(e.target.value) : null)}>
-        <option value="">{f.access === 'master' ? 'Todas las plantas' : '—'}</option>{sites.map((s) => <option key={s.id} value={s.id}>{s.code}</option>)}</select>
+        <option value="">{f.access === 'master' ? 'Todas las plantas' : '—'}</option>{sites.map((s) => <option key={s.id} value={s.id}>{s.code}</option>)}</select></>}
       <div className="row wrap">
         <div className="grow"><label className="lbl">Departamento</label>
           <select className="inp" value={f.dept} onChange={(e) => set('dept', e.target.value)}>{Object.entries(DEPT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
@@ -40,7 +40,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       <div className="row wrap">
         <div className="grow"><label className="lbl">Acceso</label>
           <select className="inp" value={f.access} onChange={(e) => set('access', e.target.value)}>
-            <option value="auditor">Auditor</option><option value="lead">Líder (igual que auditor)</option><option value="admin">Administrador de planta</option>{master && <option value="master">Máster (todas las plantas)</option>}</select></div>
+            <option value="auditor">Auditor</option><option value="lead">Líder (igual que auditor)</option><option value="admin">{me.multi_site ? 'Administrador de planta' : 'Administrador'}</option>{master && me.multi_site && <option value="master">Máster (todas las plantas)</option>}</select></div>
         <div className="grow"><label className="lbl">Plantilla de preguntas</label>
           <select className="inp" value={f.template_id || ''} onChange={(e) => set('template_id', e.target.value)}>
             <option value="">—</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
@@ -66,7 +66,10 @@ function UserSheet({ u, templates, onClose, onSaved }) {
 }
 
 function Users({ templates }) {
-  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState('');
+  const me = useUser();
+  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState(''), [imp, setImp] = useState(null);
+  // Importar usuarios (pegar desde Excel): con una sola planta se hace desde aquí
+  const openImport = async () => { const s = await api('/api/sites'); setImp(s.find((x) => x.id === me.site_id) || s.find((x) => x.code === 'MPQ') || s[0]); };
   const load = () => api('/api/admin/users').then(setRows);
   useEffect(() => { load(); }, []);
   const list = (rows || []).filter((r) => (r.name + r.username).toLowerCase().includes(qs.toLowerCase()));
@@ -74,14 +77,16 @@ function Users({ templates }) {
     <>
       <div className="row" style={{ margin: '12px 0' }}>
         <input className="inp" placeholder="Buscar…" value={qs} onChange={(e) => setQs(e.target.value)} />
+        <button className="btn alt sm" onClick={openImport}>Importar</button>
         <button className="btn sm" onClick={() => setEdit({})}>+ Usuario</button>
       </div>
       {!rows ? <div className="empty">Cargando…</div> : list.map((u) => (
         <div key={u.id} className="card" style={{ marginBottom: 8, opacity: u.active ? 1 : .5 }} onClick={() => setEdit(u)}>
-          <div className="row"><b className="grow">{u.name}</b>{u.access === 'master' ? <span className="pill warn">Máster</span> : u.access === 'admin' && <span className="pill gold">Admin</span>}{u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
+          <div className="row"><b className="grow">{u.name}</b>{u.access === 'master' ? <span className="pill warn">{me.multi_site ? 'Máster' : 'Admin'}</span> : u.access === 'admin' && <span className="pill gold">Admin</span>}{me.multi_site && u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
           <div className="sub">{u.username} · {u.template || 'sin plantilla'} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((d) => DAYS_SHORT[d - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
         </div>))}
       {edit && <UserSheet u={edit} templates={templates} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }} />}
+      {imp && <ImportSheet site={imp} onClose={() => setImp(null)} onDone={load} />}
     </>
   );
 }
@@ -344,6 +349,7 @@ function PasteSheet({ data, onApply, onClose }) {
 // Asignaciones: por persona y por día, la zona y el número de parte a inspeccionar.
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
 function Assign() {
+  const me = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
   const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false);
   const dirty = Object.keys(edits).length;
@@ -405,7 +411,7 @@ function Assign() {
           <datalist id="zones">{data.zones.map((z) => <option key={z} value={z} />)}</datalist>
           {people.map(({ id, a, list }) => (
             <div key={id} className="card asg-user">
-              <div className="asg-head"><b>{a.name}</b><span className="sub">{LAYER[a.layer]} · {DEPT[a.dept]}{a.site ? ` · ${a.site}` : ''}</span>
+              <div className="asg-head"><b>{a.name}</b><span className="sub">{LAYER[a.layer]} · {DEPT[a.dept]}{me.multi_site && a.site ? ` · ${a.site}` : ''}</span>
                 {list.filter((x) => x.status === 'pending').length > 1 && <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={() => fillWeek(list)}>Igual toda la semana</button>}</div>
               {list.map((x) => {
                 const v = val(x), done = x.status === 'completed', wide = x.date !== x.due_date;
@@ -446,9 +452,9 @@ function Inner() {
       <div className="seg" style={{ margin: '12px 0' }}>
         <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
-        {master && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
+        {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
-        <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>
+        {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
       {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>

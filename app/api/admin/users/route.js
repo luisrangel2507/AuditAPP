@@ -4,6 +4,7 @@ import { route, json, err } from '@/lib/api';
 import { passwordError } from '@/lib/password';
 import { siteScope } from '@/lib/site';
 import { isMaster } from '@/lib/roles';
+import { MULTI_SITE, HOME_SITE } from '@/lib/config';
 
 export const GET = route(async (req, ctx, user) => {
   const scope = await siteScope(user);
@@ -27,7 +28,8 @@ export const POST = route(async (req, ctx, user) => {
   const layer = Number(b.layer) || 1;
   if (![1, 2, 3, 4].includes(layer)) return err('Capa inválida (1 a 4)');
   // El máster elige la planta; el administrador solo crea usuarios de su planta
-  const siteId = isMaster(user) ? (b.site_id ? Number(b.site_id) : await siteScope(user)) : user.site_id;
+  let siteId = isMaster(user) ? (b.site_id ? Number(b.site_id) : await siteScope(user)) : user.site_id;
+  if (!siteId && !MULTI_SITE) siteId = (await q('SELECT id FROM sites WHERE code=$1', [HOME_SITE])).rows[0]?.id; // una sola planta: MPQ
   if (!siteId && access !== 'master') return err('Elige la planta del usuario');
   try {
     const { rows } = await q(

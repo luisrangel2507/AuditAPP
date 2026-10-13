@@ -31,6 +31,7 @@ y en el programa semanal de la planta (Layer 1 / 2 / 3).
 |---|---|
 | `DATABASE_URL` | Postgres (Railway la inyecta) |
 | `SESSION_SECRET` | string largo aleatorio (obligatorio en producción) |
+| `MULTI_SITE` | (opcional) `true` para activar varias plantas; por defecto operas solo MPQ |
 | `ADMIN_PASSWORD` | contraseña del usuario `admin`, que es el **máster** (mín. 8 caracteres); se crea en el primer arranque. En despliegues anteriores, el `admin` existente pasa a máster solo |
 | `SEED_PASSWORD` | (opcional) contraseña temporal común de los usuarios sembrados. Sin ella, cada usuario nace con una contraseña aleatoria y el admin asigna la de cada quien en Admin → Usuarios |
 | `TV_KEY` | clave para la pantalla LPA TV (`/tv?key=…`); sin ella, la TV solo abre con sesión de líder |
@@ -44,17 +45,10 @@ npm run build && npm start   # start corre scripts/setup.js (migraciones + seed 
 ```
 En Railway: servicio Node + plugin PostgreSQL, build `npm run build`, start `npm start`.
 
-## Plantas (MPQ, MPS, MPC, UMW, MPD)
-Una sola app para todas las plantas. Cada usuario pertenece a una planta y solo ve la suya (auditorías, issues, panel, TV, usuarios);
-el **admin** no tiene planta y cambia de vista con el selector del encabezado ("Todas las plantas" o una en particular).
-Lo que ya existía queda como **MPQ**. Las demás nacen sin activar: no generan auditorías ni cuentan en el cumplimiento hasta ponerlas en marcha.
-
-**Onboarding de una planta** (Admin → Plantas):
-1. **Importar usuarios**: pega desde Excel una fila por persona (`Nombre, Depto, Capa, Plantilla, Días, Áreas, Acceso`; varias áreas con `|`).
-   "Revisar" valida todo antes de crear nada. Sin contraseña inicial, cada persona recibe una aleatoria distinta que se muestra **una sola vez** (botón "Copiar").
-2. Entregar las contraseñas; cada quien la cambia en su primer ingreso.
-3. **Poner en marcha** con la fecha de arranque (desde ese día se generan las auditorías de la planta).
-La pantalla TV de cada planta: `/tv?key=TV_KEY&site=MPQ` (o `/tv?site=MPQ` con sesión de líder).
+## Una sola planta (MPQ) y cómo expandirse
+**Hoy LPApp opera solo con MPQ.** Todo lo de varias plantas (selector, pestaña Plantas, etiquetas de planta, rol Máster) está **oculto** mientras `MULTI_SITE` no sea `true`. Con una planta, tu usuario `admin` se ve y funciona como **Administrador**, y los usuarios nuevos se crean en MPQ automáticamente.
+La base de datos y el código ya traen la estructura de plantas (MPQ, MPS, MPC, UMW y MPD; solo MPQ está activa), así que **para expandirte** basta con poner `MULTI_SITE=true` en las variables de Railway: aparecen el selector, Admin → Plantas (activar con fecha de arranque, importar sus usuarios), el rol Máster y todo queda aislado por planta. No hay que migrar datos.
+Variable opcional `HOME_SITE` (por defecto `MPQ`) = la planta que se usa mientras sea una sola.
 
 ## Guía de uso
 La primera vez que alguien entra (ya con su contraseña propia) ve una guía corta según su rol; se puede reabrir con el botón **?** del encabezado.

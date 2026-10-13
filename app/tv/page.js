@@ -90,7 +90,7 @@ export default function TV() {
         <div className="tvx-clock"><b>{now ? now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : ''}</b>
           <span>{data ? cap(fmt(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })) : ''}</span></div>
         <h1>Estatus de auditorías por capas</h1>
-        <div className="tvx-chips"><ThemeToggle className="tvx-theme" defaultTheme="dark" /><span className="tvx-chip">▦ {data?.site ? data.site.name : 'Todas las plantas'}</span><span className="tvx-chip">▤ Esta semana</span></div>
+        <div className="tvx-chips"><ThemeToggle className="tvx-theme" defaultTheme="dark" /><span className="tvx-chip">▦ {data?.site ? data.site.name : data?.multi ? 'Todas las plantas' : data?.home}</span><span className="tvx-chip">▤ Esta semana</span></div>
       </header>
 
       {err && <div className="tvx-err">{err}</div>}
