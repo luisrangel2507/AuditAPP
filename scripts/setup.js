@@ -105,6 +105,11 @@ CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 -- Tiempos de auditoría (estadísticas admin)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
+-- Auditorías de proceso de los QEs (2 diarias): mismo esquema, con tipo y número de turno
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'lpa';
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS slot INT NOT NULL DEFAULT 1;
+ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_audits_slot ON audits(user_id,date,kind,slot);
 CREATE TABLE IF NOT EXISTS notifications (
   id         SERIAL PRIMARY KEY,
   site_id    INT,

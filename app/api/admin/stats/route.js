@@ -23,7 +23,7 @@ export const GET = route(async (req, ctx, user) => {
             to_char(a.started_at AT TIME ZONE ${TZ},'HH24:MI') AS start_time,
             CASE WHEN a.started_at IS NOT NULL THEN GREATEST(0, EXTRACT(EPOCH FROM (a.completed_at - a.started_at))::int) END AS elapsed_sec
        FROM audits a JOIN users u ON u.id=a.user_id
-      WHERE a.status='completed' AND a.completed_at IS NOT NULL AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2)
+      WHERE a.kind='lpa' AND a.status='completed' AND a.completed_at IS NOT NULL AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2)
       ORDER BY a.completed_at DESC`, [from, scope]);
 
   const list = rows.map((r) => ({

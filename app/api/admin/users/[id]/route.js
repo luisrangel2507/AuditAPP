@@ -35,7 +35,7 @@ export const PATCH = route(async (req, { params }, user) => {
   // Quita las auditorías pendientes que ya no le corresponden (cambio de días, capa, rol o baja)
   await q(
     `DELETE FROM audits a USING users u
-      WHERE a.user_id=u.id AND u.id=$1 AND a.status='pending' AND a.date>=$2
+      WHERE a.user_id=u.id AND u.id=$1 AND a.kind='lpa' AND a.status='pending' AND a.date>=$2
         AND (NOT u.active OR u.access IN ('admin','master')
           OR (u.layer=1 AND (a.date<>a.due_date OR NOT (EXTRACT(ISODOW FROM a.date)::int = ANY(u.days))))
           OR (u.layer>=2 AND a.date=a.due_date))`, [params.id, mxToday()]);

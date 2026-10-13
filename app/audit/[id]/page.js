@@ -18,7 +18,7 @@ function Runner({ audit, onExit, onDone }) {
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
   const [idx, setIdx] = useState(() => draft.read().idx || 0);
   const [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
-  const needArea = audit.layer >= 2, needPart = audit.layer === 1;
+  const needArea = audit.layer >= 2 || audit.kind === 'process', needPart = audit.layer === 1 && audit.kind !== 'process';
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const qs = audit.questions;

@@ -12,7 +12,7 @@ export const GET = route(async (req, ctx, user) => {
     `SELECT a.id,a.date,a.due_date,a.area,a.part_number,a.status,a.score_pct,a.late,a.nok_count,a.partial_count,
             t.name AS template, COALESCE(array_length(a.question_ids,1),0) AS total_questions
        FROM audits a LEFT JOIN templates t ON t.id=a.template_id
-      WHERE a.user_id=$1 AND a.date >= $2 AND a.date <= $3 AND a.date >= $5
+      WHERE a.kind='lpa' AND a.user_id=$1 AND a.date >= $2 AND a.date <= $3 AND a.date >= $5
         AND (a.date >= $4 OR a.status='pending')
       ORDER BY a.date`,
     [user.id, addDays(monday, -14), addDays(monday, 4), monday, gl]

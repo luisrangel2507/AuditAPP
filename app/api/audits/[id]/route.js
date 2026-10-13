@@ -28,7 +28,7 @@ export const GET = route(async (req, { params }, user) => {
     `SELECT id,text,category FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
   const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
   let zones = [];
-  if (a.layer >= 2) {
+  if (a.layer >= 2 || a.kind === 'process') {
     const { rows: z } = await q(
       `SELECT DISTINCT x AS z FROM users u, unnest(u.pool) x WHERE u.layer=1 AND u.active AND u.site_id IS NOT DISTINCT FROM $1 ORDER BY 1`, [a.site_id]);
     zones = z.map((r) => r.z).filter((v) => v && v !== 'All Areas');

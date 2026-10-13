@@ -18,14 +18,15 @@ export const POST = route(async (req, { params }, user) => {
     if (a.user_id !== user.id) { await client.query('ROLLBACK'); return err('Esta auditoría no es tuya', 403); }
     if (a.status === 'completed') { await client.query('ROLLBACK'); return err('Ya fue completada'); }
     const { rows: [au] } = await client.query('SELECT layer FROM users WHERE id=$1', [a.user_id]);
-    if (au.layer >= 2) {
+    const proc = a.kind === 'process';
+    if (au.layer >= 2 || proc) {
       // Layer 2/3/4: el auditor escoge el área que auditó
       const ar = String(area || '').trim().slice(0, 80);
       if (!ar || ar === 'All Areas') { await client.query('ROLLBACK'); return err('Indica el área que auditaste'); }
       await client.query('UPDATE audits SET area=$2 WHERE id=$1', [a.id, ar]);
       a.area = ar;
     }
-    if (au.layer === 1) {
+    if (au.layer === 1 && !proc) {
       // Layer 1: la zona/máquina viene asignada; el auditor captura el N/P que revisó
       const pn = String(part_number || '').trim().slice(0, 40);
       if (!pn) { await client.query('ROLLBACK'); return err('Captura el número de parte que revisaste'); }
@@ -89,7 +90,7 @@ export const POST = route(async (req, { params }, user) => {
       `UPDATE audits SET status='completed',completed_at=NOW(),started_at=COALESCE(started_at,NOW()),active_sec=$8,late=$1,ok_count=$2,nok_count=$3,partial_count=$4,na_count=$5,score_pct=$6 WHERE id=$7`,
       [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act]);
     // Auditoría muy corta (menos de 10 min de tiempo activo): se avisa al administrador
-    if (act !== null && act < MIN_SEC) {
+    if (act !== null && act < MIN_SEC && !proc) {
       const { rows: [au2] } = await client.query('SELECT name,site_id FROM users WHERE id=$1', [a.user_id]);
       const mm = Math.floor(act / 60), ss = String(act % 60).padStart(2, '0');
       await client.query(

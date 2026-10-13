@@ -870,3 +870,11 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 @media (max-width: 899px) { .ah-simple .ah-tr { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; row-gap: 0; } .ah-simple .ah-tr .z { grid-column: 1; font-size: 12.5px; } .ah-simple .ah-tr .pill, .ah-simple .ah-tr > b.score { grid-column: 2; grid-row: 1 / span 2; } }
 @media (min-width: 900px) { .ah-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } .ah-grid { display: block; } }
 @media (min-width: 900px) { .ah-simple { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; } }
+
+/* QEs: auditorías de proceso (2 diarias) */
+.qes-day { margin-bottom: 14px; }
+.qes-d { font-weight: 800; color: var(--ink); margin: 0 2px 6px; text-transform: capitalize; } .qes-d span { font-weight: 500; color: var(--sub); font-size: 13px; text-transform: none; }
+.qes-d.today { color: #f26a21; }
+.qes-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qes-slot { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line2); box-shadow: var(--shadow-s); color: var(--ink); }
+.qes-slot.off { opacity: .55; } .qes-slot .pill { align-self: flex-start; margin-top: 4px; }

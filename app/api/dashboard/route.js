@@ -20,26 +20,26 @@ export const GET = route(async (req, ctx, user) => {
     q(`SELECT COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score,
               COUNT(*) FILTER (WHERE a.status='completed' AND a.late)::int late
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC}`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND ${due} ${SC}`, P),
     q(`SELECT u.layer, COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT u.dept, COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT (a.date - (EXTRACT(ISODOW FROM a.date)::int - 1))::text AS week,
               COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND ${due} ${SC} GROUP BY 1 ORDER BY 1`, P),
     q(`SELECT a.area, COUNT(*) FILTER (WHERE a.status='completed')::int audits,
               COALESCE(SUM(a.nok_count + a.partial_count),0)::int findings,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.date >= $1 AND a.status='completed' AND a.area <> 'All Areas' AND ($2::int IS NULL OR u.site_id=$2)
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND a.status='completed' AND a.area <> 'All Areas' AND ($2::int IS NULL OR u.site_id=$2)
          GROUP BY 1 HAVING COUNT(*) > 0 ORDER BY avg_score NULLS LAST, findings DESC LIMIT 10`, [from, scope]),
     q(`SELECT r.question, COUNT(*)::int fails FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
         WHERE a.date >= $1 AND r.result IN ('nok','partial') AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1 ORDER BY 2 DESC LIMIT 8`, [from, scope]),
     q(`SELECT a.id,a.date,a.area,u.name,u.dept,u.layer FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope]),
+        WHERE a.kind='lpa' AND a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope]),
     q(`SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`, [today, scope]),
     // Distribución de resultados (todas las respuestas de auditorías completadas en el periodo)
     q(`SELECT r.result, COUNT(*)::int n FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
@@ -59,7 +59,7 @@ export const GET = route(async (req, ctx, user) => {
          FROM (SELECT u.id,
                       COUNT(a.id) FILTER (WHERE a.status='completed' AND a.date >= $1)::int AS done,
                       COUNT(a.id) FILTER (WHERE a.status='pending' AND a.due_date < $2::date AND a.date >= $1)::int AS missed
-                 FROM users u LEFT JOIN audits a ON a.user_id=u.id
+                 FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='lpa'
                 WHERE u.active AND u.access NOT IN ('admin','master') AND u.template_id IS NOT NULL AND ($3::int IS NULL OR u.site_id=$3)
                 GROUP BY u.id) t`, [from, today, scope]),
   ]);

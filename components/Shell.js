@@ -68,6 +68,7 @@ export default function Shell({ children, need }) {
   const lead = isAdmin(user);
   const items = [
     ['/', 'Hoy', I.home], ['/week', 'Semana', I.calendar], ['/findings', 'Issues', I.chart],
+    ...(user.dept === 'quality' && user.layer === 1 && !lead ? [['/qes', 'QEs', I.grid]] : []),
     ...(lead ? [['/dashboard', 'Panel', I.grid]] : []),
     ...(isAdmin(user) ? [['/admin', 'Admin', I.settings]] : []),
   ];

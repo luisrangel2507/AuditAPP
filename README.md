@@ -103,3 +103,6 @@ Admin → **Tiempos**: hora de registro, duración activa (pantalla abierta, sin
 
 ## Avisos al administrador
 Si una auditoría se termina con menos de **10 minutos de tiempo activo**, se crea un aviso para el administrador de esa planta (campana 🔔 en la cabecera, con contador de nuevos). Al abrirla se marcan como leídos y cada aviso lleva a la auditoría. El umbral es `MIN_SEC` en `app/api/audits/[id]/submit/route.js`.
+
+## QEs · Auditorías de proceso
+Los QEs (Calidad, Layer 1) tienen una pestaña extra **QEs** (solo ellos la ven) con **2 auditorías de proceso al día**, de lunes a viernes, con las preguntas de la plantilla *Process Audit*. Son aparte de su LPA: no cuentan en el Panel, la TV, Semana ni en los cumplimientos de LPA. Al terminar el auditor escoge el **área auditada**; los hallazgos (X / Δ) se abren en **Issues** igual que en cualquier auditoría. En la base se guardan en `audits` con `kind='process'` y `slot` 1 o 2.
