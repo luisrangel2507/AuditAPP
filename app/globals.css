@@ -553,3 +553,35 @@ body:has(.tvx) { background: #050d24; }
   .tvx-head h1 { font-size: 26px; } .tvx-clock b { font-size: 24px; }
 }
 .tvx-kpi b { white-space: nowrap; }
+
+/* ═══ Login · diseño de computadora (foto a pantalla completa + tarjeta flotante) ═══ */
+.remrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; font-size: 14px; color: var(--ink); }
+.remrow label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; } .remrow input { width: 18px; height: 18px; accent-color: #1f5bd6; }
+.linkbtn { border: 0; background: none; color: var(--brand2); font-size: 14px; padding: 0; cursor: pointer; text-align: right; }
+.forgot-msg { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #eaf0fc; color: var(--ink); font-size: 13px; line-height: 1.4; }
+.hero-feats { display: none; }
+@media (min-width: 900px) {
+  .login2 { padding: 0; align-items: stretch; background: #071536; }
+  .login2-card { max-width: none; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; display: grid; grid-template-columns: 1fr minmax(420px, 480px); align-items: center; gap: 0 3vw; padding: 0 6vw 0 0; background: none; overflow: hidden; position: relative; }
+  .login2-card .hero { position: absolute; inset: 0; z-index: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 0 0 7vw; background: #071536; overflow: hidden; }
+  .login2 .hero::after { background: linear-gradient(90deg, rgba(5,14,40,.78) 0%, rgba(7,26,72,.55) 45%, rgba(7,26,72,.25) 100%); }
+  .login2 .hero-photo { object-position: 50% 55%; }
+  .login2 .hero .hero-wedge { left: 38%; right: auto; bottom: 0; width: 34vw; max-width: 560px; height: 34vh; aspect-ratio: auto; background: linear-gradient(135deg, #ff7a14, #ee5b05); clip-path: polygon(0 100%, 100% 0, 100% 100%); opacity: .96; }
+  .login2 .hero .lang { top: 24px; right: 32px; z-index: 5; }
+  .login2 .hero-in { max-width: 46vw; }
+  .login2 .hero-in .logo { height: 64px; } .login2 .hero-in h1 { font-size: clamp(64px, 7.4vw, 124px); margin-top: 28px; }
+  .login2 .hero-in p.sub1 { font-size: clamp(24px, 2.2vw, 34px); font-weight: 700; } .login2 .hero-in p.dim { font-size: clamp(20px, 1.9vw, 30px); }
+  .hero-feats { display: flex; gap: 14px; list-style: none; padding: 0; margin: 40px 0 0 0; position: relative; z-index: 2; }
+  .hero-feats li { display: grid; justify-items: center; gap: 2px; width: 118px; padding: 12px 8px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); text-align: center; color: #ff8a2b; backdrop-filter: blur(6px); }
+  .hero-feats b { color: #fff; font-size: 14px; margin-top: 6px; } .hero-feats span { color: #b9c7e6; font-size: 12.5px; }
+  .login2 form { grid-column: 2; position: relative; z-index: 3; margin: 0; border-radius: 28px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.6); padding: 44px 40px 44px; flex: none; min-height: 0; overflow: hidden; background: #fff; }
+  .login2 .ttl { font-size: 34px; }
+  .form-pellets { width: 52%; right: 0; left: auto; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%); mask-image: linear-gradient(90deg, transparent 0%, #000 45%); opacity: .95; }
+  .login2 .note { padding-right: 30%; margin-top: 18px; }
+}
+@media (min-width: 900px) and (max-height: 760px) { .hero-feats { margin-top: 20px; } .login2 .hero-in h1 { font-size: 64px; } .login2 form { padding: 30px 36px; } }
+@media (min-width: 900px) {
+  .login2 .hero::after { background: linear-gradient(90deg, rgba(4,14,46,.9) 0%, rgba(8,32,92,.68) 48%, rgba(10,40,110,.42) 100%), linear-gradient(180deg, rgba(5,20,70,.25), rgba(5,20,70,.45)); mix-blend-mode: normal; }
+  .login2 .hero-photo { filter: saturate(.9) contrast(1.1) brightness(.92); }
+}
+@media (max-width: 899px) { .remrow { font-size: 13px; } .linkbtn { font-size: 13px; } }

@@ -8,7 +8,7 @@ const tries = globalThis.__loginTries || (globalThis.__loginTries = new Map());
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
+    const { username, password, remember } = await req.json();
     const un = String(username || '').trim().toLowerCase();
     if (!un || !password) return err('Usuario y contraseña requeridos');
     const t = tries.get(un);
@@ -21,7 +21,7 @@ export async function POST(req) {
       return err('Usuario o contraseña incorrectos', 401);
     }
     tries.delete(un);
-    await createSession(rows[0].id);
+    await createSession(rows[0].id, remember !== false);
     return json({ ok: true, must_change: rows[0].must_change });
   } catch (e) {
     console.error(e);

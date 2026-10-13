@@ -61,6 +61,9 @@ a los demás). Solo el admin puede cambiar zona, número de parte o auditor de u
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 
+## Inicio de sesión
+En computadora ocupa toda la pantalla (foto de planta, marca, cuatro beneficios y tarjeta flotante); en celular es la versión vertical. **Recordar mi sesión** (marcado por defecto) mantiene la sesión 14 días; sin marcar, se cierra al cerrar el navegador y vence a las 12 h. **¿Olvidaste tu contraseña?** indica que el admin la restablece en Admin → Usuarios (la app no envía correos).
+
 ## Panel: resultados y Open issues PDCA
 Al final del **Panel** (líderes y admin, solo de su planta) hay dos bloques, como el resumen LPA del Excel:
 - **Gráfica de pastel** con el % de respuestas **OK, N/A, Puede mejorar (Δ) y No OK (X)** del periodo elegido (1, 4, 8 o 12 semanas), con la tabla de conteos y porcentajes.
