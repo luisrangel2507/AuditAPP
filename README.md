@@ -100,3 +100,6 @@ Usuarios = `nombre.apellido` sin acentos (ej. `luis.rangel`).
 
 ## Estadísticas de tiempo (solo admin)
 Admin → **Tiempos**: hora de registro, duración activa (pantalla abierta, sin pausas > 60 s), hora típica por auditor, histograma por hora y marca "muy rápida" (< 5 s por pregunta). Las auditorías previas a esta función no traen duración.
+
+## Avisos al administrador
+Si una auditoría se termina con menos de **10 minutos de tiempo activo**, se crea un aviso para el administrador de esa planta (campana 🔔 en la cabecera, con contador de nuevos). Al abrirla se marcan como leídos y cada aviso lleva a la auditoría. El umbral es `MIN_SEC` en `app/api/audits/[id]/submit/route.js`.

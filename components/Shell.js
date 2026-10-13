@@ -40,7 +40,7 @@ function PasswordGate({ onDone }) {
 
 export default function Shell({ children, need }) {
   const [user, setUser] = useState(null), [issues, setIssues] = useState(0);
-  const [guide, setGuide] = useState(false), [sites, setSites] = useState([]), [siteSel, setSiteSel] = useState('ALL');
+  const [notif, setNotif] = useState(null), [bell, setBell] = useState(false), [guide, setGuide] = useState(false), [sites, setSites] = useState([]), [siteSel, setSiteSel] = useState('ALL');
   const path = usePathname();
   const router = useRouter();
 
@@ -48,6 +48,9 @@ export default function Shell({ children, need }) {
   useEffect(() => { if (isMaster(user) && user.multi_site) api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
   // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
+  const loadNotif = () => api('/api/admin/notifications').then(setNotif).catch(() => {});
+  useEffect(() => { if (user && isAdmin(user)) loadNotif(); }, [user, path]);
+  async function openBell() { setBell(true); if (notif?.unread) { await api('/api/admin/notifications', { method: 'POST' }).catch(() => {}); } }
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
     if (user && (need === 'lead' || need === 'admin') && !isAdmin(user)) router.replace('/');
@@ -77,6 +80,9 @@ export default function Shell({ children, need }) {
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
             <div className="who"><b>{user.name}</b><span>{isAdmin(user) ? `${roleLabel(user)}${user.multi_site && user.site_code ? ' · ' + user.site_code : ''}` : `${user.site_code ? user.site_code + ' · ' : ''}${ROLE[user.dept] || ''} · ${LAYER[user.layer]}`}</span></div>
+            {isAdmin(user) && <button className="helpbtn bellbtn" onClick={openBell} aria-label="Avisos" title="Avisos">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 17h12l-1.6-2.3V10a4.4 4.4 0 0 0-8.8 0v4.7zM10 20a2 2 0 0 0 4 0" /></svg>
+              {notif?.unread > 0 && <b className="bell-dot">{notif.unread > 9 ? '9+' : notif.unread}</b>}</button>}
             <ThemeToggle className="helpbtn" />
             <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
@@ -100,6 +106,16 @@ export default function Shell({ children, need }) {
           <Link key={href} href={href} className={path === href ? 'on' : ''}><span className="ni">{icon(22)}{href === '/findings' && issues > 0 && <b className="badge">{issues > 9 ? '9+' : issues}</b>}</span><span>{label}</span></Link>
         ))}
       </nav>
+      {bell && <div className="sheet-bg" onClick={() => { setBell(false); loadNotif(); }}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <h2>Avisos</h2>
+        <p className="sub">Auditorías que se terminaron en menos de 10 minutos de tiempo activo.</p>
+        {!notif?.items?.length ? <div className="empty">Sin avisos.</div> : notif.items.map((n) => (
+          <Link key={n.id} href={`/audit/${n.audit_id}`} className="card" style={{ display: 'block', marginBottom: 8 }} onClick={() => setBell(false)}>
+            <div style={{ fontSize: 14 }}>⚠️ {n.message}</div>
+            <div className="sub">{new Date(n.created_at).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{n.read ? '' : ' · nuevo'}</div>
+          </Link>))}
+        <button className="btn alt block" style={{ marginTop: 12 }} onClick={() => { setBell(false); loadNotif(); }}>Cerrar</button>
+      </div></div>}
       {guide && !user.must_change && <Guide user={user} onClose={closeGuide} />}
       {user.must_change && <PasswordGate onDone={() => setUser({ ...user, must_change: false })} />}
     </UserCtx.Provider>

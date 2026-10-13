@@ -105,6 +105,17 @@ CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 -- Tiempos de auditoría (estadísticas admin)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
+CREATE TABLE IF NOT EXISTS notifications (
+  id         SERIAL PRIMARY KEY,
+  site_id    INT,
+  type       TEXT NOT NULL,
+  audit_id   INT REFERENCES audits(id) ON DELETE CASCADE,
+  user_id    INT,
+  message    TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  read_at    TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_notif_site ON notifications(site_id, created_at DESC);
 -- Número de parte a inspeccionar (lo asigna el admin junto con la zona/área)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS part_number TEXT NOT NULL DEFAULT '';
 

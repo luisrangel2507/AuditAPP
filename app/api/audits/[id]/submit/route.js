@@ -3,6 +3,7 @@ import { route, json, err } from '@/lib/api';
 import { addOwner, logUpdate } from '@/lib/issues';
 import { mxToday, addDays, closesOn } from '@/lib/dates';
 
+const MIN_SEC = 600; // duración mínima esperada de una auditoría
 const RESULTS = new Set(['ok', 'nok', 'partial', 'na']);
 
 export const POST = route(async (req, { params }, user) => {
@@ -81,6 +82,14 @@ export const POST = route(async (req, { params }, user) => {
     await client.query(
       `UPDATE audits SET status='completed',completed_at=NOW(),started_at=COALESCE(started_at,NOW()),active_sec=$8,late=$1,ok_count=$2,nok_count=$3,partial_count=$4,na_count=$5,score_pct=$6 WHERE id=$7`,
       [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act]);
+    // Auditoría muy corta (menos de 10 min de tiempo activo): se avisa al administrador
+    if (act !== null && act < MIN_SEC) {
+      const { rows: [au2] } = await client.query('SELECT name,site_id FROM users WHERE id=$1', [a.user_id]);
+      const mm = Math.floor(act / 60), ss = String(act % 60).padStart(2, '0');
+      await client.query(
+        `INSERT INTO notifications(site_id,type,audit_id,user_id,message) VALUES($1,'short_audit',$2,$3,$4)`,
+        [au2.site_id, a.id, a.user_id, `${au2.name} terminó "${a.area}" en ${mm} min ${ss} s (menos de ${MIN_SEC / 60} min)`]);
+    }
     await client.query('COMMIT');
     return json({ ok: true, score, ...c, findings: c.nok + c.partial });
   } catch (e) {

@@ -825,3 +825,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .lgrp-h b { flex: 1; }
 .lgrp-h i { font-style: normal; font-size: 22px; line-height: 1; color: var(--sub); transition: transform .15s; }
 .lgrp-h.on i { transform: rotate(90deg); }
+
+/* Campana de avisos */
+.bellbtn { position: relative; display: grid; place-items: center; }
+.bell-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #f26a21; color: #fff; font-size: 11px; display: grid; place-items: center; border: 2px solid #0a2459; }
