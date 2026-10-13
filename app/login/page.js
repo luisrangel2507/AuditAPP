@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const T = {
   es: { sub1: 'Auditorías por capas', sub2: 'Mitchell Plastics', title: 'Iniciar sesión', lead: 'Ingresa tus credenciales para continuar',
@@ -48,7 +49,7 @@ export default function Login() {
       <div className="hero">
         <img className="hero-photo" src="/login-bg.jpg" alt="" />
         <span className="hero-wedge" aria-hidden="true" />
-        <div className="lang"><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
+        <div className="lang"><ThemeToggle className="lang-theme" /><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
           <img className="logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
           <h1>LP<span className="app-accent">App</span></h1>

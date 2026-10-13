@@ -61,6 +61,9 @@ a los demás). Solo el admin puede cambiar zona, número de parte o auditor de u
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 
+## Modo claro / oscuro
+Todas las pantallas (incluido el inicio de sesión y la pantalla TV) tienen modo **claro** y **oscuro**. Botón sol/luna junto al "?" del encabezado (en el login, junto a ES/EN; en la TV, junto a los filtros). La primera vez sigue la preferencia del teléfono o la computadora, y la elección se guarda en ese dispositivo. La TV arranca oscura si no hay una elección guardada. Los PDF siempre salen en claro.
+
 ## Inicio de sesión
 En computadora ocupa toda la pantalla (foto de planta, marca, cuatro beneficios y tarjeta flotante); en celular es la versión vertical. **Recordar mi sesión** (marcado por defecto) mantiene la sesión 14 días; sin marcar, se cierra al cerrar el navegador y vence a las 12 h. **¿Olvidaste tu contraseña?** indica que el admin la restablece en Admin → Usuarios (la app no envía correos).
 

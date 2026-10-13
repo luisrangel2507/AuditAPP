@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
 import Guide from '@/components/Guide';
+import ThemeToggle from '@/components/ThemeToggle';
 import { HeroArt } from '@/components/Art';
 import { I } from '@/components/Icons';
 
@@ -75,6 +76,7 @@ export default function Shell({ children, need }) {
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
             <div className="who"><b>{user.name}</b><span>{user.site_code ? user.site_code + ' · ' : ''}{ROLE[user.dept] || ''} · {LAYER[user.layer]}</span></div>
+            <ThemeToggle className="helpbtn" />
             <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
             <button className="logout" onClick={logout}>{I.logout(18)}<span>Salir</span></button>
