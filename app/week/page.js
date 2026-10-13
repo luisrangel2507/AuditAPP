@@ -59,7 +59,22 @@ function WeekInner() {
         <label className="row" style={{ fontSize: 14 }}><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Solo yo</label>
       </div>
       )}
-      {!data ? <div className="empty">Cargando…</div> : (
+      {data && user.access !== 'admin' ? (
+        data.audits.length ? (
+          <div className="mydays">
+            {[...data.audits].sort((a, b) => a.date.localeCompare(b.date)).map((a) => {
+              const wide = a.date !== a.due_date, st = status(a), isToday = a.date === today || (wide && today >= a.date && today <= a.due_date);
+              const [label, cls] = ({ completed: ['Completada', 'ok'], late: ['Completada tarde', 'warn'], open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'], upcoming: ['Próxima', ''] })[st] || ['', ''];
+              return (
+                <Link key={a.id} href={`/audit/${a.id}`} className={`myday ${isToday ? 'today' : ''}`}>
+                  <div className="myday-d">{wide ? <><b>Semana</b><span>vence {fmtDate(a.due_date, { weekday: 'short', day: 'numeric' })}</span></> : <><b>{fmtDate(a.date, { weekday: 'long' })}</b><span>{fmtDate(a.date, { day: 'numeric', month: 'short' })}</span></>}</div>
+                  <div className="myday-z">{a.area || 'Sin zona asignada'}{a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}</div>
+                  <div className="myday-s"><span className={`pill ${cls}`}>{label}</span>{a.status === 'completed' && <b className="myday-sc">{Math.round(a.score_pct)}%</b>}</div>
+                </Link>);
+            })}
+          </div>
+        ) : <div className="card empty">No tienes auditorías programadas esta semana.</div>
+      ) : !data ? <div className="empty">Cargando…</div> : (
         <div className="matrix-wrap">
           <table className="matrix">
             <thead><tr><th>Auditor</th>{data.days.map((d, i) => <th key={d} className={d === today ? 'today' : ''}>{DAYS_SHORT[i]} {Number(d.slice(8))}</th>)}</tr></thead>
@@ -91,9 +106,9 @@ function WeekInner() {
           {!rows.length && <div className="empty">Sin auditorías esta semana</div>}
         </div>
       )}
-      <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
+      {user.access === 'admin' && <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
         <span><span className="dot completed" />Completada</span><span><span className="dot open" />Programada</span><span><span className="dot last_day" />Último día</span><span><span className="dot missed" />No realizada</span><span><span className="dot" />Próxima</span>
-      </div>
+      </div>}
     </>
   );
 }
