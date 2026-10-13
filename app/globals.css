@@ -791,3 +791,17 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ah-kpi { min-width: 0; padding: 12px; gap: 10px; } .ah-kpi b { font-size: 28px; }
 .ah i.b, .ah i.g, .ah i.o, .ah i.v { width: 44px; height: 44px; }
 @media (min-width: 900px) { .ah-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } .ah-grid { grid-template-columns: minmax(0, 1fr) 340px; } .ah-kpi { padding: 14px 16px; gap: 14px; } .ah i.b, .ah i.g, .ah i.o, .ah i.v { width: 52px; height: 52px; } }
+
+/* Computadora: cabecera a todo lo ancho; logo, LPApp y menú en una sola línea */
+@media (min-width: 1100px) {
+  .apphero { padding: 14px 32px 52px; }
+  .apphero-in, .page.sheetpage { max-width: none; }
+  .page.sheetpage { margin-top: -34px; padding: 30px 40px 48px; border-radius: 30px 30px 0 0; }
+  .apphero-bottom { position: absolute; left: 190px; top: 0; height: 44px; display: flex; align-items: center; padding-left: 20px; border-left: 1px solid rgba(255,255,255,.28); }
+  .apphero .appname { margin: 0; font-size: 32px; }
+  .apphero .who { display: none; }
+  .nav { left: 440px; transform: none; top: 14px; }
+}
+@media (min-width: 1100px) and (max-width: 1279px) { .apphero-bottom { display: none; } .nav { left: 230px; } }
+@media (min-width: 1280px) { .apphero .who { display: block; } .apphero .who b { max-width: 220px; } }
+.ah .ah-leg li i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
