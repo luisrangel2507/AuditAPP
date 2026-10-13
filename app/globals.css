@@ -505,3 +505,11 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
 .myday-s { display: grid; gap: 6px; justify-items: end; }
 .myday-sc { font-family: var(--mono); font-size: 15px; color: var(--ok); }
 @media (max-width: 420px) { .myday { grid-template-columns: 78px 1fr; } .myday-s { grid-column: 1 / -1; justify-items: start; grid-auto-flow: column; justify-content: space-between; } }
+
+/* ── Inicio del admin ── */
+.admin-alerts { display: grid; gap: 8px; margin-top: 14px; }
+.alert-row { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-radius: 16px; font-size: 14px; color: var(--ink); }
+.alert-row b { font-family: var(--mono); font-size: 16px; } .alert-row span { margin-left: auto; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.alert-row.warn { background: var(--partial-bg); } .alert-row.nok { background: var(--nok-bg); }
+.adm-pend { padding: 9px 0; border-bottom: 1px solid var(--line2); color: inherit; font-size: 14.5px; }
+.adm-pend:last-child { border-bottom: 0; }

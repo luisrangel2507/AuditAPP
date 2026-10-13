@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Bi from '@/components/Bi';
-import Shell from '@/components/Shell';
+import Shell, { useUser } from '@/components/Shell';
 import { api, fmtDate, scoreCls } from '@/lib/client';
 import Ring from '@/components/Ring';
 import { I } from '@/components/Icons';
@@ -43,7 +43,7 @@ function Ticket({ a, today }) {
   );
 }
 
-export default function Home() {
+function MyHome() {
   const [data, setData] = useState(null), [err, setErr] = useState(''), [iss, setIss] = useState([]);
   useEffect(() => { api('/api/my').then(setData).catch((e) => setErr(e.message)); api('/api/findings?status=mine').then((d) => setIss(d.findings.slice(0, 3).map((f) => ({ ...f, overdue: f.due_date && f.due_date < d.today })))).catch(() => {}); }, []);
   if (err) return <Shell><div className="err">{err}</div></Shell>;
@@ -51,7 +51,7 @@ export default function Home() {
   const by = (w) => list.filter((a) => w.includes(a.window));
   const todo = by(['last_day', 'open']).sort((a, b) => (a.window === 'last_day' ? -1 : 1) - (b.window === 'last_day' ? -1 : 1));
   return (
-    <Shell>
+    <>
       <div className="row"><h1 className="title grow">Mis auditorías</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{data ? fmtDate(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</div>
       {!data ? <div className="empty">Cargando…</div> : (
@@ -77,6 +77,65 @@ export default function Home() {
           {by(['missed']).length > 0 && <><div className="sect">No realizadas</div>{by(['missed']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
         </>
       )}
-    </Shell>
+    </>
   );
 }
+
+// Inicio del admin: no audita, así que ve el resumen del día de la planta
+function AdminHome() {
+  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState('');
+  useEffect(() => {
+    api('/api/week').then(setW).catch((e) => setErr(e.message));
+    api('/api/findings?status=open').then((d) => setIss(d)).catch(() => {});
+  }, []);
+  if (err) return <div className="err">{err}</div>;
+  if (!w) return <div className="empty">Cargando…</div>;
+  const today = w.today;
+  const l1 = w.audits.filter((a) => a.layer === 1 && a.date === today);
+  const done = l1.filter((a) => a.status === 'completed'), pend = l1.filter((a) => a.status !== 'completed');
+  const mg = w.audits.filter((a) => a.layer >= 2), mgDone = mg.filter((a) => a.status === 'completed');
+  const missed = w.audits.filter((a) => a.window === 'missed');
+  const noPart = pend.filter((a) => !a.part_number || !a.area);
+  const open = iss?.findings || [], overdue = open.filter((f) => f.due_date && f.due_date < (iss?.today || today));
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  return (
+    <>
+      <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
+      <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      <div className="kpis" style={{ marginTop: 14 }}>
+        <div className="kpi"><b>{l1.length}</b><span>Auditorías programadas hoy</span></div>
+        <div className="kpi"><b className="score good">{done.length}</b><span>Completadas hoy ({pct(done.length, l1.length)}%)</span></div>
+        <div className="kpi"><b>{pend.length}</b><span>Pendientes hoy</span></div>
+        <div className="kpi"><b>{mgDone.length}/{mg.length}</b><span>Gerencia: auditoría semanal</span></div>
+      </div>
+      {(noPart.length > 0 || missed.length > 0 || overdue.length > 0) && (
+        <div className="admin-alerts">
+          {noPart.length > 0 && <Link href="/admin" className="alert-row warn"><b>{noPart.length}</b> auditoría(s) de hoy sin zona o número de parte <span>Asignar ›</span></Link>}
+          {missed.length > 0 && <Link href="/dashboard" className="alert-row nok"><b>{missed.length}</b> auditoría(s) no realizada(s) esta semana <span>Ver Panel ›</span></Link>}
+          {overdue.length > 0 && <Link href="/findings" className="alert-row nok"><b>{overdue.length}</b> issue(s) vencido(s) <span>Ver Issues ›</span></Link>}
+        </div>)}
+      <div className="sect">Pendientes hoy ({pend.length})</div>
+      {pend.length ? (
+        <div className="card">{pend.map((a) => (
+          <Link key={a.id} href={`/audit/${a.id}`} className="row adm-pend">
+            <span className="grow"><b>{a.name}</b><span className="sub"> · {a.area || 'Sin zona'}{a.part_number ? ` · N/P ${a.part_number}` : ''}</span></span>
+            <span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
+          </Link>))}</div>
+      ) : <div className="card empty">{l1.length ? 'Todas las auditorías de hoy están completadas. 🎉' : 'Hoy no hay auditorías programadas.'}</div>}
+      {done.length > 0 && <>
+        <div className="sect">Completadas hoy ({done.length})</div>
+        <div className="card">{done.map((a) => (
+          <Link key={a.id} href={`/audit/${a.id}`} className="row adm-pend">
+            <span className="grow"><b>{a.name}</b><span className="sub"> · {a.area}{a.part_number ? ` · N/P ${a.part_number}` : ''}</span></span>
+            <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b>
+          </Link>))}</div></>}
+      <div className="row wrap" style={{ marginTop: 18 }}>
+        <Link href="/admin" className="btn sm">Asignar zonas y N/P</Link>
+        <Link href="/dashboard" className="btn alt sm">Abrir Panel</Link>
+      </div>
+    </>
+  );
+}
+
+function HomeSwitch() { const user = useUser(); return user.access === 'admin' ? <AdminHome /> : <MyHome />; }
+export default function Home() { return <Shell><HomeSwitch /></Shell>; }
