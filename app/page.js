@@ -85,7 +85,7 @@ function MyHome() {
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
 function AdminHome() {
   const user = useUser(), master = isMaster(user);
-  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null);
+  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null), [qs, setQs] = useState('');
   useEffect(() => {
     if (master && user.multi_site) api('/api/admin/sites').then(setPlants).catch(() => {});
     api('/api/week').then(setW).catch((e) => setErr(e.message));
@@ -101,48 +101,83 @@ function AdminHome() {
   const noPart = pend.filter((a) => !a.part_number || !a.area);
   const open = iss?.findings || [], overdue = open.filter((f) => f.due_date && f.due_date < (iss?.today || today));
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const unassigned = pend.filter((a) => !a.part_number || !a.area).length;
+  const dayPct = pct(done.length, l1.length);
+  const rows = pend.filter((a) => !qs || `${a.name} ${a.area || ''} ${a.part_number || ''}`.toLowerCase().includes(qs.toLowerCase()));
+  const ic = (d) => <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+  const P = {
+    cal: ic(<><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></>),
+    ok: ic(<><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.8 2.8L16.5 9.5" /></>),
+    clock: ic(<><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></>),
+    bars: ic(<path d="M6 20v-7M12 20V6M18 20v-11" />),
+    warn: ic(<><path d="M12 3.5 2.8 19.5h18.4z" /><path d="M12 10v4.5M12 17.2v.1" /></>),
+    plus: ic(<><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></>),
+    pin: ic(<><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></>),
+    doc: ic(<><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></>),
+    dots: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>,
+  };
   return (
-    <>
+    <div className="ah">
       <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
       {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
           <div className="ps-chips">{plants.map((p) => <span key={p.id} className={`ps-chip ${p.active ? 'on' : ''}`}>{p.code}<i>{p.active ? 'activa' : `${p.users} usuarios`}</i></span>)}</div>
-          {plants.some((p) => !p.active) && <div className="sub">Faltan por poner en marcha: {plants.filter((p) => !p.active).map((p) => p.code).join(', ')}</div>}
         </Link>)}
-      <div className="kpis" style={{ marginTop: 14 }}>
-        <div className="kpi"><b>{l1.length}</b><span>Auditorías programadas hoy</span></div>
-        <div className="kpi"><b className="score good">{done.length}</b><span>Completadas hoy ({pct(done.length, l1.length)}%)</span></div>
-        <div className="kpi"><b>{pend.length}</b><span>Pendientes hoy</span></div>
-        <div className="kpi"><b>{mgDone.length}/{mg.length}</b><span>Gerencia: auditoría semanal</span></div>
+      <div className="ah-kpis">
+        <div className="ah-kpi"><i className="b">{P.cal}</i><div><b>{l1.length}</b><span>Auditorías programadas</span></div></div>
+        <div className="ah-kpi"><i className="g">{P.ok}</i><div><b>{done.length}</b><span>Completadas ({dayPct}%)</span></div></div>
+        <div className="ah-kpi"><i className="o">{P.clock}</i><div><b>{pend.length}</b><span>Pendientes</span></div></div>
+        <div className="ah-kpi"><i className="v">{P.bars}</i><div><b>{mgDone.length}/{mg.length}</b><span>Auditorías semanales (gerencia)</span></div></div>
       </div>
-      {(noPart.length > 0 || missed.length > 0 || overdue.length > 0) && (
-        <div className="admin-alerts">
-          {noPart.length > 0 && <Link href="/admin" className="alert-row warn"><b>{noPart.length}</b> auditoría(s) de hoy sin zona o número de parte <span>Asignar ›</span></Link>}
-          {missed.length > 0 && <Link href="/dashboard" className="alert-row nok"><b>{missed.length}</b> auditoría(s) no realizada(s) esta semana <span>Ver Panel ›</span></Link>}
-          {overdue.length > 0 && <Link href="/findings" className="alert-row nok"><b>{overdue.length}</b> issue(s) vencido(s) <span>Ver Issues ›</span></Link>}
-        </div>)}
-      <div className="sect">Pendientes hoy ({pend.length})</div>
-      {pend.length ? (
-        <div className="card">{pend.map((a) => (
-          <Link key={a.id} href={`/audit/${a.id}`} className="row adm-pend">
-            <span className="grow"><b>{a.name}</b><span className="sub"> · {a.area || 'Sin zona'}{a.part_number ? ` · N/P ${a.part_number}` : ''}</span></span>
-            <span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
-          </Link>))}</div>
-      ) : <div className="card empty">{l1.length ? 'Todas las auditorías de hoy están completadas. 🎉' : 'Hoy no hay auditorías programadas.'}</div>}
-      {done.length > 0 && <>
-        <div className="sect">Completadas hoy ({done.length})</div>
-        <div className="card">{done.map((a) => (
-          <Link key={a.id} href={`/audit/${a.id}`} className="row adm-pend">
-            <span className="grow"><b>{a.name}</b><span className="sub"> · {a.area}{a.part_number ? ` · N/P ${a.part_number}` : ''}</span></span>
-            <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b>
-          </Link>))}</div></>}
-      <div className="row wrap" style={{ marginTop: 18 }}>
-        <Link href="/admin" className="btn sm">Asignar zonas y N/P</Link>
-        <Link href="/dashboard" className="btn alt sm">Abrir Panel</Link>
+      {unassigned > 0 && <Link href="/admin" className="ah-alert"><i>{P.warn}</i><b>{unassigned} auditoría(s) sin zona o número de parte</b><span className="btn sm">Asignar ahora ›</span></Link>}
+      {missed.length > 0 && <Link href="/dashboard" className="ah-alert red"><i>{P.warn}</i><b>{missed.length} auditoría(s) no realizada(s) esta semana</b><span className="btn sm">Ver Panel ›</span></Link>}
+      {overdue.length > 0 && <Link href="/findings" className="ah-alert red"><i>{P.warn}</i><b>{overdue.length} issue(s) vencido(s)</b><span className="btn sm">Ver Issues ›</span></Link>}
+      <div className="ah-grid">
+        <section className="ah-card ah-main">
+          <div className="ah-head"><i className="b sm">{P.cal}</i><h2>Auditorías pendientes <small>({pend.length})</small></h2>
+            <input className="inp ah-search" placeholder="Buscar auditor o zona…" value={qs} onChange={(e) => setQs(e.target.value)} /></div>
+          {rows.length ? (
+            <div className="ah-table">
+              <div className="ah-tr ah-th"><span>#</span><span>Auditor</span><span>Zona / área</span><span>Estado</span><span /></div>
+              {rows.map((a, k) => (
+                <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr">
+                  <span className="n">{k + 1}</span><b>{a.name}</b>
+                  <span className="z">{a.area || <em>Sin zona</em>}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
+                  <span><span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span></span>
+                  <span className="dots">{P.dots}</span>
+                </Link>))}
+            </div>
+          ) : <div className="empty">{pend.length ? 'Sin resultados.' : l1.length ? 'Todas las auditorías de hoy están completadas. 🎉' : 'Hoy no hay auditorías programadas.'}</div>}
+          {done.length > 0 && <>
+            <h3 className="ah-sub">Completadas hoy ({done.length})</h3>
+            <div className="ah-table">{done.map((a) => (
+              <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr done">
+                <span className="n">✓</span><b>{a.name}</b>
+                <span className="z">{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
+                <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b><span />
+              </Link>))}</div></>}
+        </section>
+        <aside className="ah-side">
+          <section className="ah-card">
+            <div className="ah-head"><i className="b sm">{P.bars}</i><h2>Progreso del día</h2></div>
+            <div style={{ display: 'grid', placeItems: 'center', margin: '8px 0 14px' }}><Ring value={dayPct} size={150} stroke={16} cls="good" label={`${dayPct}%`} sub={`${done.length} de ${l1.length} completadas`} /></div>
+            <ul className="ah-leg">
+              <li><i className="g" />Completadas<b>{done.length}</b></li>
+              <li><i className="o" />Pendientes<b>{pend.length}</b></li>
+              <li><i className="x" />Sin asignar (zona / parte)<b>{unassigned}</b></li>
+            </ul>
+          </section>
+          <section className="ah-card">
+            <div className="ah-head"><h2>Acciones rápidas</h2></div>
+            <Link href="/admin" className="ah-act main">{P.plus}<b>Asignar zonas y N/P</b><span>›</span></Link>
+            <Link href="/dashboard" className="ah-act">{P.bars}<b>Abrir Panel</b><span>›</span></Link>
+            <Link href="/findings" className="ah-act">{P.doc}<b>Ver issues</b><span>›</span></Link>
+          </section>
+        </aside>
       </div>
-    </>
+    </div>
   );
 }
 
