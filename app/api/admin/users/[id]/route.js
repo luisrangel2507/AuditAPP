@@ -3,6 +3,7 @@ import { q } from '@/lib/db';
 import { passwordError } from '@/lib/password';
 import { route, json, err } from '@/lib/api';
 import { isMaster, isAdmin } from '@/lib/roles';
+import { mxToday } from '@/lib/dates';
 
 const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id'];
 
@@ -31,5 +32,12 @@ export const PATCH = route(async (req, { params }, user) => {
     return err('No puedes quitarte tu propio acceso de administración');
   vals.push(params.id);
   await q(`UPDATE users SET ${sets.join(',')} WHERE id=$${vals.length}`, vals);
+  // Quita las auditorías pendientes que ya no le corresponden (cambio de días, capa, rol o baja)
+  await q(
+    `DELETE FROM audits a USING users u
+      WHERE a.user_id=u.id AND u.id=$1 AND a.status='pending' AND a.date>=$2
+        AND (NOT u.active OR u.access IN ('admin','master')
+          OR (u.layer=1 AND (a.date<>a.due_date OR NOT (EXTRACT(ISODOW FROM a.date)::int = ANY(u.days))))
+          OR (u.layer>=2 AND a.date=a.due_date))`, [params.id, mxToday()]);
   return json({ ok: true });
 }, { need: 'admin' });
