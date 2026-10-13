@@ -84,6 +84,7 @@ export default function Shell({ children, need }) {
           </div>
           <div className="apphero-bottom">
             <div className="appname">LP<span className="app-accent">App</span></div>
+            <div className="who-m"><b>{user.name}</b><span>{isAdmin(user) ? roleLabel(user) : `${ROLE[user.dept] || ''} · ${LAYER[user.layer]}`}</span></div>
             {isMaster(user) && user.multi_site && sites.length > 0 && (
               <select className="sitesel" value={siteSel} onChange={(e) => pickSite(e.target.value)} aria-label="Planta">
                 <option value="ALL">Todas las plantas</option>
