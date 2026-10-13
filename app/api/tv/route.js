@@ -66,6 +66,24 @@ export async function GET(req) {
         WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`,
       [today, scope]);
 
+    // Semana anterior (para el cambio vs. semana pasada): todo lo que ya cerró su ventana
+    const pm = addDays(monday, -7);
+    const { rows: pr } = await q(
+      `SELECT a.status, a.score_pct FROM audits a JOIN users u ON u.id=a.user_id
+        WHERE a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4)
+          AND (a.status='completed' OR a.due_date < $5::date)`,
+      [pm, addDays(pm, 4), gl, scope, today]);
+    const pDone = pr.filter((a) => a.status === 'completed');
+    const pScores = pDone.map((a) => Number(a.score_pct)).filter((n) => !isNaN(n));
+    const prev = {
+      week_pct: pr.length ? Math.round((pDone.length / pr.length) * 100) : null,
+      avg_score: pScores.length ? Math.round((pScores.reduce((x, y) => x + y, 0) / pScores.length) * 10) / 10 : null,
+    };
+    // Personas por capa esta semana (para las pestañas)
+    const people = {};
+    for (const a of wk) (people[a.layer] ||= new Set()).add(a.name);
+    const layerCounts = Object.fromEntries([1, 2, 3].map((l) => [l, people[l]?.size || 0]));
+
     const slim = (a) => ({
       id: a.id, name: a.name, dept: a.dept, layer: a.layer, area: a.area, part: a.part_number, date: a.date, due_date: a.due_date,
       status: a.status, window: a.window, score: a.score_pct, late: a.late, findings: a.nok_count + a.partial_count,
@@ -80,7 +98,7 @@ export async function GET(req) {
         avg_score: scores.length ? Math.round((scores.reduce((x, y) => x + y, 0) / scores.length) * 10) / 10 : null,
         findings_open: f[0].open, findings_overdue: f[0].overdue,
       },
-      byLayer,
+      byLayer, prev, layerCounts,
       scheduled: scheduled.map(slim), doneToday: doneTodayList.map(slim), mgmt: mgmt.map(slim), missed: missed.map(slim),
     });
   } catch (e) {

@@ -67,6 +67,8 @@ Al final del **Panel** (líderes y admin, solo de su planta) hay dos bloques, co
 - **Open issues · PDCA**: todos los hallazgos abiertos (vencidos primero) con fecha, ubicación (zona + N/P), hallazgo, responsables y acción, fecha compromiso y un avance
   **P** hallazgo registrado · **D** acción en ejecución · **C** todos los responsables terminaron · **A** cerrado.
 
+**Pantalla TV (`/tv`):** diseño oscuro tipo tablero — indicadores con anillos y cambio contra la semana anterior, pestañas por capa con conteo, "Le toca hoy" con avatares, completadas, no realizadas y cumplimiento por capa. En celular es de una columna con "Ver todas"; en pantalla grande (≥1200 px) rota las listas solas cada 10 s.
+
 **Usuarios al corriente:** % de los usuarios activos de la planta (con auditorías asignadas) que completaron al menos una auditoría en el periodo y no tienen ninguna vencida sin hacer. Sale como indicador en el Panel, con barra junto al pastel y en el reporte PDF.
 
 **Descargar PDF:** el botón sobre la gráfica genera un reporte (encabezado con logo y planta, indicadores, pastel y open issues en tabla, en hoja carta/A4 horizontal). Usa la impresión del navegador: en computadora elige "Guardar como PDF"; en iPhone, Compartir → Guardar en Archivos.
