@@ -48,7 +48,7 @@ export default function Shell({ children, need }) {
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
-    if (user && need === 'lead' && !['lead', 'admin'].includes(user.access)) router.replace('/');
+    if (user && need === 'lead' && user.access !== 'admin') router.replace('/');
     if (user && need === 'admin' && user.access !== 'admin') router.replace('/');
   }, [user, need, router]);
 
@@ -60,7 +60,7 @@ export default function Shell({ children, need }) {
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   if (!user) return <div className="empty" style={{ paddingTop: 120 }}>Cargando…</div>;
 
-  const lead = ['lead', 'admin'].includes(user.access);
+  const lead = user.access === 'admin';
   const items = [
     ['/', 'Hoy', I.home], ['/week', 'Semana', I.calendar], ['/findings', 'Issues', I.chart],
     ...(lead ? [['/dashboard', 'Panel', I.grid]] : []),

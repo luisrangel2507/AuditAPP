@@ -27,7 +27,7 @@ export async function GET(req) {
     } else {
       const u = await getUser();
       if (!u) return err('No autorizado', 401);
-      if (!['lead', 'admin'].includes(u.access)) return err('Sin permiso', 403);
+      if (u.access !== 'admin') return err('Sin permiso', 403);
       scope = u.access === 'admin' && code ? await byCode() : await siteScope(u);
     }
     const site = scope == null ? null : (await q('SELECT code,name FROM sites WHERE id=$1', [scope])).rows[0] || null;

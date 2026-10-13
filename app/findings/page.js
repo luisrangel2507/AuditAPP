@@ -87,7 +87,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
 
 function Inner() {
   const user = useUser();
-  const lead = ['lead', 'admin'].includes(user.access);
+  const lead = user.access === 'admin';
   const [status, setStatus] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
   const focus = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('oi')) || null : null;
   // Vista inicial: "Mis issues" si tienes alguno a cargo; si no, abiertos
