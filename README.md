@@ -58,6 +58,7 @@ El auditor **no elige nada**: solo ve lo que le asignaron. En **Admin → Asigna
 la **zona** a inspeccionar y el **número de parte** (la zona viene sugerida por la rotación y se puede cambiar; "Igual toda la semana" copia el primer día
 a los demás). Solo el admin puede cambiar zona, número de parte o auditor de una auditoría pendiente; los líderes ya no pueden reasignar.
 **Solo Layer 1** lleva zona y número de parte asignados. Layer 2, 3 y 4 auditan "All Areas" sin N/P: al terminar la auditoría **escogen el área que auditaron** y esa queda registrada.
+La pantalla de Asignaciones es una **tabla semanal** (persona × Lun–Vie, como el programa en papel) con un contador "X de Y asignadas". "Pegar desde Excel" acepta la tabla tal cual: `Nombre, Lun..Vie` (solo zona) o `Nombre` + zona y N/P por cada día (11 columnas).
 Para cargar muchos de una vez: **Pegar desde Excel** (columnas `Nombre, Día, Zona, No. de parte`; sin día = todos los días de la semana). Revisa los avisos por fila y los cambios quedan en la tabla hasta que pulses Guardar.
 El número de parte se muestra en Hoy, en la auditoría, en Semana, en Issues y en la pantalla TV.
 

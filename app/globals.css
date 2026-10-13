@@ -697,3 +697,18 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .login2 .hero::after { background: linear-gradient(90deg, rgba(4,14,46,.86) 0%, rgba(8,32,92,.7) 50%, rgba(10,40,110,.6) 100%); }
   .login2 .hero-photo { filter: saturate(.85) contrast(1.05) brightness(.95); }
 }
+
+/* Asignaciones: tabla semanal (persona × día) */
+.asg-mx-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.asg-mx{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+.asg-mx th,.asg-mx td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
+.asg-mx thead th{position:sticky;top:0;font-size:12px;text-align:center;background:var(--panel)}
+.asg-mx thead th.today{color:#f26a21}
+.asg-mx .asg-who{min-width:130px;position:sticky;left:0;background:var(--panel);z-index:1}
+.asg-mx .asg-who span{display:block;font-weight:400}
+.asg-mx td{min-width:118px}
+.asg-mx td .inp{padding:6px 8px;font-size:13px;margin-bottom:4px;min-height:0;height:32px}
+.asg-mx td.off{background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.14) 6px 7px)}
+.asg-mx td.miss{background:rgba(242,106,33,.08)}
+.asg-mx td.doneC{color:#1e9e5a;font-weight:600}
+.asg-mx td.doneC small{display:block;font-weight:400;opacity:.8}
