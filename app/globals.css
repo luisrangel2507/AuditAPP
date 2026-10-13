@@ -818,3 +818,10 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .who-m span { display: block; font-size: 12.5px; color: rgba(255,255,255,.78); }
 }
 @media (min-width: 1100px) { .who-m { display: none; } }
+
+/* Usuarios: grupos plegables por Layer */
+.lgrp { margin-bottom: 10px; }
+.lgrp-h { width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px 16px; margin-bottom: 8px; border-radius: 18px; border: 1px solid var(--line2); background: var(--panel); color: var(--ink); font-size: 16px; box-shadow: var(--shadow-s); text-align: left; }
+.lgrp-h b { flex: 1; }
+.lgrp-h i { font-style: normal; font-size: 22px; line-height: 1; color: var(--sub); transition: transform .15s; }
+.lgrp-h.on i { transform: rotate(90deg); }

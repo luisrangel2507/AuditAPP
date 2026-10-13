@@ -67,7 +67,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
 
 function Users({ templates }) {
   const me = useUser();
-  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState(''), [imp, setImp] = useState(null);
+  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState(''), [imp, setImp] = useState(null), [openL, setOpenL] = useState({});
   // Importar usuarios (pegar desde Excel): con una sola planta se hace desde aquí
   const openImport = async () => { const s = await api('/api/sites'); setImp(s.find((x) => x.id === me.site_id) || s.find((x) => x.code === 'MPQ') || s[0]); };
   const load = () => api('/api/admin/users').then(setRows);
@@ -80,11 +80,22 @@ function Users({ templates }) {
         <button className="btn alt sm" onClick={openImport}>Importar</button>
         <button className="btn sm" onClick={() => setEdit({})}>+ Usuario</button>
       </div>
-      {!rows ? <div className="empty">Cargando…</div> : list.map((u) => (
+      {!rows ? <div className="empty">Cargando…</div> : [4, 3, 2, 1].map((L) => {
+        const g = list.filter((u) => u.layer === L);
+        if (!g.length) return null;
+        const open = !!qs || openL[L];
+        return (
+          <div key={L} className="lgrp">
+            <button className={`lgrp-h ${open ? 'on' : ''}`} onClick={() => setOpenL({ ...openL, [L]: !openL[L] })} aria-expanded={open}>
+              <b>{LAYER[L]}{L === 3 ? ' · GM' : L === 2 ? ' · Gerentes' : ''}</b><span className="pill">{g.length}</span><i aria-hidden="true">›</i>
+            </button>
+            {open && g.map((u) => (
         <div key={u.id} className="card" style={{ marginBottom: 8, opacity: u.active ? 1 : .5 }} onClick={() => setEdit(u)}>
           <div className="row"><b className="grow">{u.name}</b>{u.access === 'master' ? <span className="pill warn">{me.multi_site ? 'Máster' : 'Admin'}</span> : u.access === 'admin' && <span className="pill gold">Admin</span>}{me.multi_site && u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
           <div className="sub">{u.username} · {u.template || 'sin plantilla'} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((d) => DAYS_SHORT[d - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
         </div>))}
+          </div>);
+      })}
       {edit && <UserSheet u={edit} templates={templates} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }} />}
       {imp && <ImportSheet site={imp} onClose={() => setImp(null)} onDone={load} />}
     </>
