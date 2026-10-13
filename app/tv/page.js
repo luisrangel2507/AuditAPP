@@ -55,7 +55,7 @@ export default function TV() {
   const sorted = (l) => [...l].sort((a, b) => (a.status === 'completed') - (b.status === 'completed') || a.layer - b.layer || a.name.localeCompare(b.name));
   const tabs = useMemo(() => data ? [
     { l: 0, label: 'Todas', n: Object.values(data.layerCounts).reduce((s, x) => s + x, 0) },
-    ...[1, 2, 3].map((l) => ({ l, label: `Layer ${l}`, n: data.layerCounts[l] })),
+    ...[1, 2, 3, 4].map((l) => ({ l, label: `Layer ${l}`, n: data.layerCounts[l] })),
   ] : [], [data]);
   const todayRows = useMemo(() => data ? sorted([...data.scheduled, ...data.mgmt]).filter((a) => !tab || a.layer === tab) : [], [data, tab]);
   const pendingN = todayRows.filter((a) => a.status !== 'completed').length;

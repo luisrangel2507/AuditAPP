@@ -1,15 +1,17 @@
 import bcrypt from 'bcryptjs';
 import { pool, q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
+import { sameSite } from '@/lib/site';
 import { passwordError } from '@/lib/password';
 import { parseRoster, usernameFor, randomPassword } from '@/lib/import';
 
 // Importa usuarios a una planta. dry_run=true solo valida y muestra lo que se crearía.
 // Sin "password", cada usuario recibe una contraseña aleatoria (se devuelve UNA sola vez).
-export const POST = route(async (req, { params }) => {
+export const POST = route(async (req, { params }, user) => {
   const b = await req.json();
   const { rows: [site] } = await q('SELECT id,code FROM sites WHERE id=$1', [params.id]);
   if (!site) return err('Planta no encontrada', 404);
+  if (!sameSite(user, site.id)) return err('Sin permiso en esa planta', 403);
   const { rows: templates } = await q('SELECT id,name FROM templates');
   const rows = parseRoster(b.text, templates);
   if (!rows.length) return err('No hay filas para importar');

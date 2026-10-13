@@ -12,7 +12,12 @@ y en el programa semanal de la planta (Layer 1 / 2 / 3).
   N preguntas (default 10) que va rotando para cubrir todo el banco. Editable en Admin → Preguntas.
 - **Resultados:** ✓ OK / ✕ No cumple / Δ Parcial / N/A. X y Δ exigen comentario, aceptan acción inmediata y foto.
   Score = OK / (OK + X + Δ). Cada X o Δ abre un **hallazgo** (7 días de compromiso) con responsable, acción y cierre.
-- **Roles de acceso:** quien **no es admin solo ve su información** (sus auditorías, su semana y los issues que levantó o que tiene a cargo). El **admin no audita**: su inicio (Hoy) es un resumen del día de la planta (programadas, completadas y pendientes, avisos de zonas o N/P sin asignar, no realizadas e issues vencidos). En **Semana**, cada persona ve únicamente tarjetas con los días en que le toca auditar (zona, número de parte y estado). Solo el **admin** ve el programa de toda la planta, el Panel, la pantalla TV, las asignaciones, usuarios y preguntas. El acceso `lead` se conserva en la base pero hoy se comporta igual que `auditor`.
+- **Roles (de mayor a menor):**
+  - **Máster** (global, sin planta): ve todas las plantas con el selector del encabezado, **activa y pausa las plantas**, da de alta a los administradores y administra el banco de preguntas (es el mismo para todas). Es el usuario `admin` creado con `ADMIN_PASSWORD`.
+  - **Administrador** (de una planta): gestiona **usuarios y roles** de su planta, contraseñas, importaciones, asignaciones de zona y N/P, y ve el Panel, la Semana completa, los Issues y la TV de **su** planta. No puede activar plantas, crear máster, tocar otras plantas ni editar preguntas.
+  - **Líder y auditor**: solo ven su información (sus auditorías, su semana y los issues propios o a su cargo). `lead` hoy se comporta igual que `auditor`.
+  - Máster y administradores **no audita**n: no se les programan auditorías.
+- **Capas:** de Layer 1 a **Layer 4**. Layer 1 audita un día fijo; Layer 2, 3 y 4 hacen una auditoría semanal en "All Areas".
 - **Panel:** cumplimiento por capa/depto/semana, áreas con menor score, preguntas que más fallan, faltantes.
 - **Ventana de registro:** una auditoría solo se puede hacer **el mismo día programado**
   (Layer 2/3, que es semanal: de lunes a viernes). Después queda como **No realizada** y el servidor rechaza el envío.
@@ -26,7 +31,7 @@ y en el programa semanal de la planta (Layer 1 / 2 / 3).
 |---|---|
 | `DATABASE_URL` | Postgres (Railway la inyecta) |
 | `SESSION_SECRET` | string largo aleatorio (obligatorio en producción) |
-| `ADMIN_PASSWORD` | contraseña del usuario `admin` (mín. 8 caracteres); se crea en el primer arranque |
+| `ADMIN_PASSWORD` | contraseña del usuario `admin`, que es el **máster** (mín. 8 caracteres); se crea en el primer arranque. En despliegues anteriores, el `admin` existente pasa a máster solo |
 | `SEED_PASSWORD` | (opcional) contraseña temporal común de los usuarios sembrados. Sin ella, cada usuario nace con una contraseña aleatoria y el admin asigna la de cada quien en Admin → Usuarios |
 | `TV_KEY` | clave para la pantalla LPA TV (`/tv?key=…`); sin ella, la TV solo abre con sesión de líder |
 | `LPA_GO_LIVE` | (opcional) fecha `YYYY-MM-DD` de arranque; antes de ella no hay "faltantes". Default: día del primer arranque |

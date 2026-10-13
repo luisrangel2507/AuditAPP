@@ -1,5 +1,6 @@
 import { q } from '@/lib/db';
 import { route, json } from '@/lib/api';
+import { isAdmin } from '@/lib/roles';
 import { ensureWeek } from '@/lib/schedule';
 import { siteScope } from '@/lib/site';
 import { mxToday, mondayOf, addDays, windowState } from '@/lib/dates';
@@ -19,7 +20,7 @@ export const GET = route(async (req, ctx, user) => {
             a.nok_count,a.partial_count,t.name AS template
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id
       WHERE a.date BETWEEN $1 AND $2 AND ($3::int IS NULL OR u.site_id=$3) AND ($4::boolean OR a.user_id=$5) ORDER BY u.layer DESC,u.dept,u.name,a.date`,
-    [monday, addDays(monday, 4), scope, user.access === 'admin', user.id]
+    [monday, addDays(monday, 4), scope, isAdmin(user), user.id]
   );
   return json({ monday, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows.map((a) => ({ ...a, window: windowState(a, today) })), today });
 });

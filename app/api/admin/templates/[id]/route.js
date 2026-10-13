@@ -6,4 +6,4 @@ export const PATCH = route(async (req, { params }) => {
   if (!(per >= 1 && per <= 50)) return err('Preguntas por auditoría: entre 1 y 50');
   await q('UPDATE templates SET per_audit=$1 WHERE id=$2', [per, params.id]);
   return json({ ok: true });
-}, { need: 'admin' });
+}, { need: 'master' });

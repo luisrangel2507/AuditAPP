@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
 import Guide from '@/components/Guide';
 import ThemeToggle from '@/components/ThemeToggle';
+import { isAdmin, isMaster, ROLE_LABEL } from '@/lib/roles';
 import { HeroArt } from '@/components/Art';
 import { I } from '@/components/Icons';
 
@@ -44,13 +45,13 @@ export default function Shell({ children, need }) {
   const router = useRouter();
 
   useEffect(() => { api('/api/auth/me').then(setUser).catch(() => {}); setSiteSel(getSiteCookie()); }, []);
-  useEffect(() => { if (user?.access === 'admin') api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
+  useEffect(() => { if (isMaster(user)) api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
   // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
-    if (user && need === 'lead' && user.access !== 'admin') router.replace('/');
-    if (user && need === 'admin' && user.access !== 'admin') router.replace('/');
+    if (user && (need === 'lead' || need === 'admin') && !isAdmin(user)) router.replace('/');
+    if (user && need === 'master' && !isMaster(user)) router.replace('/');
   }, [user, need, router]);
 
   function closeGuide() {
@@ -61,11 +62,11 @@ export default function Shell({ children, need }) {
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   if (!user) return <div className="empty" style={{ paddingTop: 120 }}>Cargando…</div>;
 
-  const lead = user.access === 'admin';
+  const lead = isAdmin(user);
   const items = [
     ['/', 'Hoy', I.home], ['/week', 'Semana', I.calendar], ['/findings', 'Issues', I.chart],
     ...(lead ? [['/dashboard', 'Panel', I.grid]] : []),
-    ...(user.access === 'admin' ? [['/admin', 'Admin', I.settings]] : []),
+    ...(isAdmin(user) ? [['/admin', 'Admin', I.settings]] : []),
   ];
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   return (
@@ -75,7 +76,7 @@ export default function Shell({ children, need }) {
         <div className="apphero-in">
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
-            <div className="who"><b>{user.name}</b><span>{user.site_code ? user.site_code + ' · ' : ''}{ROLE[user.dept] || ''} · {LAYER[user.layer]}</span></div>
+            <div className="who"><b>{user.name}</b><span>{isAdmin(user) ? `${ROLE_LABEL[user.access]}${user.site_code ? ' · ' + user.site_code : ''}` : `${user.site_code ? user.site_code + ' · ' : ''}${ROLE[user.dept] || ''} · ${LAYER[user.layer]}`}</span></div>
             <ThemeToggle className="helpbtn" />
             <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
@@ -83,7 +84,7 @@ export default function Shell({ children, need }) {
           </div>
           <div className="apphero-bottom">
             <div className="appname">LP<span className="app-accent">App</span></div>
-            {user.access === 'admin' && sites.length > 0 && (
+            {isMaster(user) && sites.length > 0 && (
               <select className="sitesel" value={siteSel} onChange={(e) => pickSite(e.target.value)} aria-label="Planta">
                 <option value="ALL">Todas las plantas</option>
                 {sites.map((s) => <option key={s.id} value={s.code}>{s.code}{s.active ? '' : ' (sin activar)'}</option>)}

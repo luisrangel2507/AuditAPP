@@ -4,6 +4,7 @@ import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import OwnerPicker from '@/components/OwnerPicker';
 import { api, fmtDate } from '@/lib/client';
+import { isAdmin } from '@/lib/roles';
 
 const OWN = { open: ['Pendiente', ''], in_progress: ['En proceso', 'gold'], done: ['Terminó', 'ok'] };
 const KIND = { opened: '●', assign: '＋', unassign: '－', progress: '◐', done: '✓', comment: '✎', closed: '■', reopened: '↺' };
@@ -87,7 +88,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
 
 function Inner() {
   const user = useUser();
-  const lead = user.access === 'admin';
+  const lead = isAdmin(user);
   const [status, setStatus] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
   const focus = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('oi')) || null : null;
   // Vista inicial: "Mis issues" si tienes alguno a cargo; si no, abiertos

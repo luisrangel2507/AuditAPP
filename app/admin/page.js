@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Shell from '@/components/Shell';
+import Shell, { useUser } from '@/components/Shell';
+import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
 import { api, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
+  const me = useUser(), master = isMaster(me);
   const isNew = !u.id;
   const [f, setF] = useState({ name: '', username: '', dept: 'production', layer: 1, access: 'auditor', template_id: '', days: [], pool: [], start_idx: 0, rotate_daily: false, active: true, ...u });
   const [pool, setPool] = useState((u.pool || []).join(', ')), [pin, setPin] = useState(''), [err, setErr] = useState('');
@@ -27,18 +29,18 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       <label className="lbl">Nombre</label><input className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} />
       {isNew && <><label className="lbl">Usuario</label><input className="inp" autoCapitalize="none" value={f.username} onChange={(e) => set('username', e.target.value)} /></>}
       <label className="lbl">Planta</label>
-      <select className="inp" value={f.site_id || ''} onChange={(e) => set('site_id', e.target.value ? Number(e.target.value) : null)}>
-        <option value="">—</option>{sites.map((s) => <option key={s.id} value={s.id}>{s.code}</option>)}</select>
+      <select className="inp" disabled={!master || f.access === 'master'} value={f.site_id || ''} onChange={(e) => set('site_id', e.target.value ? Number(e.target.value) : null)}>
+        <option value="">{f.access === 'master' ? 'Todas las plantas' : '—'}</option>{sites.map((s) => <option key={s.id} value={s.id}>{s.code}</option>)}</select>
       <div className="row wrap">
         <div className="grow"><label className="lbl">Departamento</label>
           <select className="inp" value={f.dept} onChange={(e) => set('dept', e.target.value)}>{Object.entries(DEPT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
         <div className="grow"><label className="lbl">Capa</label>
-          <select className="inp" value={f.layer} onChange={(e) => set('layer', e.target.value)}>{[1, 2, 3].map((n) => <option key={n} value={n}>{LAYER[n]}</option>)}</select></div>
+          <select className="inp" value={f.layer} onChange={(e) => set('layer', e.target.value)}>{[1, 2, 3, 4].map((n) => <option key={n} value={n}>{LAYER[n]}</option>)}</select></div>
       </div>
       <div className="row wrap">
         <div className="grow"><label className="lbl">Acceso</label>
           <select className="inp" value={f.access} onChange={(e) => set('access', e.target.value)}>
-            <option value="auditor">Auditor</option><option value="lead">Líder (igual que auditor)</option><option value="admin">Admin</option></select></div>
+            <option value="auditor">Auditor</option><option value="lead">Líder (igual que auditor)</option><option value="admin">Administrador de planta</option>{master && <option value="master">Máster (todas las plantas)</option>}</select></div>
         <div className="grow"><label className="lbl">Plantilla de preguntas</label>
           <select className="inp" value={f.template_id || ''} onChange={(e) => set('template_id', e.target.value)}>
             <option value="">—</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
@@ -76,7 +78,7 @@ function Users({ templates }) {
       </div>
       {!rows ? <div className="empty">Cargando…</div> : list.map((u) => (
         <div key={u.id} className="card" style={{ marginBottom: 8, opacity: u.active ? 1 : .5 }} onClick={() => setEdit(u)}>
-          <div className="row"><b className="grow">{u.name}</b>{u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
+          <div className="row"><b className="grow">{u.name}</b>{u.access === 'master' ? <span className="pill warn">Máster</span> : u.access === 'admin' && <span className="pill gold">Admin</span>}{u.site && <span className="pill ok">{u.site}</span>}<span className="pill gold">{LAYER[u.layer]}</span><span className="pill">{DEPT[u.dept]}</span></div>
           <div className="sub">{u.username} · {u.template || 'sin plantilla'} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((d) => DAYS_SHORT[d - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
         </div>))}
       {edit && <UserSheet u={edit} templates={templates} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }} />}
@@ -234,6 +236,7 @@ function ImportSheet({ site, onClose, onDone }) {
 }
 
 function Sites() {
+  const me = useUser(), master = isMaster(me);
   const [rows, setRows] = useState(null), [imp, setImp] = useState(null), [err, setErr] = useState(''), [date, setDate] = useState({});
   const load = () => api('/api/admin/sites').then(setRows);
   useEffect(() => { load(); }, []);
@@ -250,8 +253,8 @@ function Sites() {
         <div key={s.id} className="card site-card">
           <div className="row"><b className="grow" style={{ fontSize: 18 }}>{s.code}</b>
             <span className={`pill ${s.active ? 'ok' : ''}`}>{s.active ? `En marcha${s.go_live ? ' desde ' + s.go_live : ''}` : 'Sin poner en marcha'}</span></div>
-          <label className="lbl">Nombre de la planta</label>
-          <input className="inp" defaultValue={s.name} key={s.name} onBlur={(e) => e.target.value.trim() && e.target.value !== s.name && patch(s, { name: e.target.value })} />
+          {master && <><label className="lbl">Nombre de la planta</label>
+          <input className="inp" defaultValue={s.name} key={s.name} onBlur={(e) => e.target.value.trim() && e.target.value !== s.name && patch(s, { name: e.target.value })} /></>}
           <ul className="checks">
             <Step ok={s.users > 0}>{s.users > 0 ? `Usuarios cargados: ${s.users} (${s.layer1} Layer 1, ${s.managers} gerentes)` : 'Cargar los usuarios de la planta'}</Step>
             <Step ok={s.users > 0 && s.no_template === 0}>{s.no_template > 0 ? `${s.no_template} usuario(s) sin plantilla de preguntas` : 'Plantilla de preguntas asignada a todos'}</Step>
@@ -263,13 +266,13 @@ function Sites() {
             <button className="btn alt sm" onClick={() => verUsuarios(s)}>Ver usuarios</button>
             <a className="btn alt sm" href={`/tv?site=${s.code}`} target="_blank" rel="noreferrer">Pantalla TV</a>
           </div>
-          <div className="row wrap" style={{ marginTop: 12 }}>
+          {master ? <div className="row wrap" style={{ marginTop: 12 }}>
             {s.active
               ? <button className="btn alt sm" onClick={() => confirm(`¿Pausar ${s.code}? Dejará de generar auditorías nuevas.`) && patch(s, { active: false })}>Pausar planta</button>
               : <><span className="sub">Arranca el</span>
                   <input className="inp" type="date" style={{ width: 170 }} value={date[s.id] || todayStr()} onChange={(e) => setDate({ ...date, [s.id]: e.target.value })} />
                   <button className="btn sm" onClick={() => patch(s, { active: true, go_live: date[s.id] || todayStr() })}>Poner en marcha</button></>}
-          </div>
+          </div> : !s.active && <div className="sub" style={{ marginTop: 12 }}>La planta la pone en marcha el máster.</div>}
         </div>))}
       {imp && <ImportSheet site={imp} onClose={() => setImp(null)} onDone={load} />}
     </>
@@ -433,6 +436,7 @@ function Assign() {
 }
 
 function Inner() {
+  const me = useUser(), master = isMaster(me);
   const [tab, setTab] = useState('assign'), [templates, setTemplates] = useState(null);
   const loadT = () => api('/api/admin/templates').then(setTemplates);
   useEffect(() => { loadT(); }, []);
@@ -442,9 +446,9 @@ function Inner() {
       <div className="seg" style={{ margin: '12px 0' }}>
         <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
-        <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>
+        {master && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
-        <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>Plantas</button>
+        <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>
       </div>
       {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>

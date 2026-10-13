@@ -507,7 +507,7 @@ body:has(.tvx) { background: #050d24; }
 .tvx-tabs button { flex: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--gb); background: var(--g); color: #d4def5; border-radius: 14px; padding: 11px 16px; font-size: 15px; font-weight: 600; }
 .tvx-tabs button.on { background: linear-gradient(135deg, #1457d8, #2c7bff); border-color: #5b95ff; color: #fff; box-shadow: 0 8px 22px -10px rgba(44,123,255,.9); }
 .tvx-tabs em { font-style: normal; min-width: 24px; height: 24px; display: inline-grid; place-items: center; border-radius: 99px; font-size: 12.5px; font-weight: 700; background: rgba(255,255,255,.14); color: #fff; padding: 0 6px; }
-.tvx-tabs em.n1 { background: #2f6bff; } .tvx-tabs em.n2 { background: #1fb589; } .tvx-tabs em.n3 { background: #f0a21b; color: #20160a; }
+.tvx-tabs em.n1 { background: #2f6bff; } .tvx-tabs em.n2 { background: #1fb589; } .tvx-tabs em.n3 { background: #f0a21b; color: #20160a; } .tvx-tabs em.n4 { background: #7c4dde; }
 .tvx-grid { display: grid; gap: 14px; } .tvx-col { display: grid; gap: 14px; align-content: start; }
 .tvx-panel { background: var(--g); border: 1px solid var(--gb); border-radius: 24px; padding: 16px 14px; min-width: 0; }
 .tvx-panel.alert { background: rgba(220,60,70,.10); border-color: rgba(240,90,100,.3); }
@@ -520,7 +520,7 @@ body:has(.tvx) { background: #050d24; }
 .tvx-name { grid-area: name; font-weight: 600; font-size: 16px; line-height: 1.2; min-width: 0; } .tvx-name span { display: block; font-weight: 400; font-size: 13px; color: #9fb0d4; }
 .tvx-area { grid-area: area; color: #cdd8f1; font-size: 14px; } .tvx-area small { display: block; font-family: var(--mono); font-size: 12px; color: #ffb36b; }
 .tvx-cap { grid-area: cap; justify-self: end; font-weight: 700; font-size: 12.5px; padding: 3px 10px; border-radius: 9px; background: #1d4fbf; color: #cfe0ff; }
-.tvx-cap.l2 { background: #0f7a5c; color: #c8f6e6; } .tvx-cap.l3 { background: #a8680c; color: #ffe7c0; }
+.tvx-cap.l2 { background: #0f7a5c; color: #c8f6e6; } .tvx-cap.l3 { background: #a8680c; color: #ffe7c0; } .tvx-cap.l4 { background: #5d36b8; color: #e5d9ff; }
 .tvx-st { grid-area: st; justify-self: end; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; padding: 7px 14px; border-radius: 99px; background: rgba(255,255,255,.1); color: #d4def5; white-space: nowrap; }
 .tvx-st i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 .tvx-st.pend, .tvx-st.nok { background: rgba(190,45,60,.45); color: #ffd5d8; } .tvx-st.warn { background: rgba(214,150,30,.35); color: #ffe3ad; } .tvx-st.ok { background: rgba(40,190,140,.28); color: #9bf0cf; font-family: var(--mono); }
@@ -682,3 +682,18 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 :root[data-theme="dark"] .ticket.s-open, :root[data-theme="dark"] .ticket.s-last_day { background-image: none; }
 :root[data-theme="dark"] .ticket .chev { background: var(--panel2); }
 :root[data-theme="dark"] .badge { box-shadow: 0 0 0 2px #0e1830; }
+
+/* Máster: resumen de plantas */
+.plants-strip { display: block; margin-top: 14px; padding: 14px 16px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line2); box-shadow: var(--shadow-s); color: inherit; }
+.ps-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; } .ps-top span { color: var(--brand2); font-weight: 600; font-size: 13px; }
+.ps-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 6px; }
+.ps-chip { display: inline-flex; flex-direction: column; min-width: 64px; padding: 7px 12px; border-radius: 14px; background: var(--na-bg); color: var(--sub); font-weight: 700; font-size: 14px; }
+.ps-chip i { font-style: normal; font-weight: 500; font-size: 11px; }
+.ps-chip.on { background: var(--ok-bg); color: var(--ok); }
+
+/* Login de computadora: la cuña naranja cruza hasta el borde derecho (sin corte vertical) y el velo azul es parejo */
+@media (min-width: 900px) {
+  .login2 .hero .hero-wedge { left: 36%; right: 0; width: auto; max-width: none; height: 46vh; clip-path: polygon(0 100%, 100% 18%, 100% 100%); background: linear-gradient(135deg, #ff7a14, #ee5b05); }
+  .login2 .hero::after { background: linear-gradient(90deg, rgba(4,14,46,.86) 0%, rgba(8,32,92,.7) 50%, rgba(10,40,110,.6) 100%); }
+  .login2 .hero-photo { filter: saturate(.85) contrast(1.05) brightness(.95); }
+}

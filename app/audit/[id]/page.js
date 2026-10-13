@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Bi from '@/components/Bi';
+import { isAdmin } from '@/lib/roles';
 import Shell from '@/components/Shell';
 import { api, fmtDate, compressImage, useLocal, scoreCls, DEPT, LAYER } from '@/lib/client';
 import Ring from '@/components/Ring';
@@ -150,7 +151,7 @@ function Result({ audit }) {
   const dur = (s) => s == null ? '—' : s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`;
   return (
     <>
-      {user?.access === 'admin' && audit.completed_at && (
+      {isAdmin(user) && audit.completed_at && (
         <div className="card" style={{ marginBottom: 10 }}>
           <div className="sub" style={{ margin: 0 }}>Registrada a las <b>{mx(audit.completed_at)}</b>{audit.started_at ? ` · inició ${mx(audit.started_at)}` : ''} · duración activa <b>{dur(audit.active_sec)}</b></div>
         </div>)}

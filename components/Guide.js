@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { I } from '@/components/Icons';
+import { isAdmin, isMaster } from '@/lib/roles';
 
 // Guía de uso (onboarding interno): pasos cortos según el rol de quien entra.
 function stepsFor(user) {
-  const admin = user.access === 'admin', mgr = user.layer >= 2;
+  const admin = isAdmin(user), master = isMaster(user), mgr = user.layer >= 2;
   const out = [
     { icon: I.home, title: `Bienvenido a LPApp${user.site_code ? ' · ' + user.site_code : ''}`,
       text: 'Aquí haces tus auditorías por capas (LPA) desde el teléfono o la computadora y das seguimiento a los hallazgos. Esta guía toma un minuto.' },
@@ -16,7 +17,8 @@ function stepsFor(user) {
   ];
   if (admin) out.push({ icon: I.grid, title: 'Semana y Panel', text: 'Semana es el programa de toda la planta. Panel muestra cumplimiento por capa y departamento, la gráfica de resultados, los open issues en PDCA, áreas con menor score, preguntas que más fallan y quién no hizo su auditoría. Desde Panel abres la pantalla TV de planta.' });
   else out.push({ icon: I.calendar, title: 'Mi semana', text: 'En Semana ves tus propias auditorías de la semana: qué día te toca, tu zona y tu número de parte. Solo ves tu información; el administrador es quien asigna y consulta el resto.' });
-  if (admin) out.push({ icon: I.settings, title: 'Administración', text: 'En Admin manejas usuarios y rotación, el banco de preguntas, los tiempos de las auditorías y las Plantas: ahí das de alta una planta, importas sus usuarios y la pones en marcha. El selector de planta del encabezado cambia lo que ves en toda la app.' });
+  if (master) out.push({ icon: I.settings, title: 'Rol máster', text: 'Eres el máster: ves todas las plantas con el selector del encabezado y eres quien las activa y las pausa en Admin → Plantas. También das de alta a los administradores de cada planta y administras el banco de preguntas, que es el mismo para todas.' });
+  else if (admin) out.push({ icon: I.settings, title: 'Administración de tu planta', text: 'Eres el administrador de tu planta: en Admin gestionas usuarios y roles, cargas las contraseñas, importas usuarios y asignas la zona y el número de parte de cada día. Solo ves tu planta; el máster es quien la pone en marcha.' });
   out.push({ icon: I.lock, title: 'Tu contraseña es personal', text: 'No la compartas: todo lo que registres queda a tu nombre. Para dudas, habla con tu líder o con Calidad. Puedes volver a abrir esta guía con el botón ? del encabezado.' });
   return out;
 }

@@ -144,7 +144,9 @@ CREATE INDEX IF NOT EXISTS idx_users_site ON users(site_id);
 INSERT INTO sites(code,name,active) VALUES ('MPQ','MPQ',TRUE),('MPS','MPS',FALSE),('MPC','MPC',FALSE),('UMW','UMW',FALSE),('MPD','MPD',FALSE)
   ON CONFLICT (code) DO NOTHING;
 -- Todo lo que existía antes de multi-planta es de MPQ
-UPDATE users SET site_id=(SELECT id FROM sites WHERE code='MPQ') WHERE site_id IS NULL AND access <> 'admin';
+UPDATE users SET site_id=(SELECT id FROM sites WHERE code='MPQ') WHERE site_id IS NULL AND access NOT IN ('admin','master');
+-- El administrador global anterior (sin planta) pasa a ser máster; los admins de planta se crean después
+UPDATE users SET access='master' WHERE access='admin' AND site_id IS NULL;
 -- Migra el responsable único anterior
 INSERT INTO finding_owners(finding_id,user_id,status,action)
   SELECT id, owner_id, CASE WHEN status='closed' THEN 'done' WHEN status='in_progress' THEN 'in_progress' ELSE 'open' END, COALESCE(action,'')
@@ -226,7 +228,7 @@ async function main() {
   if (adminPin && !a.length) {
     await pool.query(
       `INSERT INTO users(name,username,pin_hash,must_change,dept,layer,access,days,pool)
-       VALUES('Administrador','admin',$1,FALSE,'quality',2,'admin','{}','{}')`,
+       VALUES('Máster','admin',$1,FALSE,'quality',2,'master','{}','{}')`,
       [await bcrypt.hash(adminPin, 10)]
     );
     console.log('[setup] usuario admin creado');

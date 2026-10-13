@@ -1,5 +1,6 @@
 import { q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
+import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
 import { mxToday, windowState, closesOn } from '@/lib/dates';
 
@@ -15,7 +16,7 @@ export const GET = route(async (req, { params }, user) => {
   if (!a) return err('No encontrada', 404);
   if (a.user_id !== user.id && !(isLead(user) && sameSite(user, a.site_id))) return err('Sin permiso', 403);
   const today = mxToday();
-  if (user.access !== 'admin') { delete a.started_at; delete a.active_sec; }
+  if (!isAdmin(user)) { delete a.started_at; delete a.active_sec; }
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };
   if (a.status === 'completed') {
     const { rows } = await q(

@@ -1,6 +1,7 @@
 import { q } from '@/lib/db';
 import { getUser } from '@/lib/session';
 import { sameSite } from '@/lib/site';
+import { isAdmin } from '@/lib/roles';
 
 export async function GET(req, { params }) {
   const user = await getUser();
@@ -11,7 +12,7 @@ export async function GET(req, { params }) {
        FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id WHERE r.id=$1`, [params.id, user.id]);
   const r = rows[0];
   if (!r || !r.evidence) return new Response('No encontrada', { status: 404 });
-  if (r.user_id !== user.id && !r.is_owner && !(user.access === 'admin' && sameSite(user, r.site_id))) return new Response('Sin permiso', { status: 403 });
+  if (r.user_id !== user.id && !r.is_owner && !(isAdmin(user) && sameSite(user, r.site_id))) return new Response('Sin permiso', { status: 403 });
   const m = /^data:(image\/[a-z+.-]+);base64,(.*)$/s.exec(r.evidence);
   if (!m) return new Response('Formato inválido', { status: 500 });
   return new Response(Buffer.from(m[2], 'base64'), {

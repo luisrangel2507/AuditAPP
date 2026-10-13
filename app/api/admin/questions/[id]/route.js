@@ -17,10 +17,10 @@ export const PATCH = route(async (req, { params }) => {
   vals.push(params.id);
   await q(`UPDATE questions SET ${sets.join(',')} WHERE id=$${vals.length}`, vals);
   return json({ ok: true });
-}, { need: 'admin' });
+}, { need: 'master' });
 
 // Las respuestas históricas guardan el texto, así que borrar es seguro; se prefiere desactivar.
 export const DELETE = route(async (req, { params }) => {
   await q('DELETE FROM questions WHERE id=$1', [params.id]);
   return json({ ok: true });
-}, { need: 'admin' });
+}, { need: 'master' });

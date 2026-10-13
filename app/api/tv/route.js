@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { timingSafeEqual } from 'crypto';
 import { q } from '@/lib/db';
 import { getUser } from '@/lib/session';
+import { isAdmin, isMaster } from '@/lib/roles';
 import { siteScope } from '@/lib/site';
 import { json, err } from '@/lib/api';
 import { mxToday, mondayOf, addDays, windowState } from '@/lib/dates';
@@ -27,8 +28,8 @@ export async function GET(req) {
     } else {
       const u = await getUser();
       if (!u) return err('No autorizado', 401);
-      if (u.access !== 'admin') return err('Sin permiso', 403);
-      scope = u.access === 'admin' && code ? await byCode() : await siteScope(u);
+      if (!isAdmin(u)) return err('Sin permiso', 403);
+      scope = isMaster(u) && code ? await byCode() : await siteScope(u);
     }
     const site = scope == null ? null : (await q('SELECT code,name FROM sites WHERE id=$1', [scope])).rows[0] || null;
     const today = mxToday();
@@ -55,7 +56,7 @@ export async function GET(req) {
     // Cumplimiento semanal: solo cuenta lo completado o lo que ya no se puede hacer
     const counted = wk.filter((a) => a.status === 'completed' || a.window === 'missed');
     const done = counted.filter((a) => a.status === 'completed');
-    const byLayer = [1, 2, 3].map((l) => {
+    const byLayer = [1, 2, 3, 4].map((l) => {
       const c = counted.filter((a) => a.layer === l);
       return { layer: l, counted: c.length, done: c.filter((a) => a.status === 'completed').length };
     });
@@ -82,7 +83,7 @@ export async function GET(req) {
     // Personas por capa esta semana (para las pestañas)
     const people = {};
     for (const a of wk) (people[a.layer] ||= new Set()).add(a.name);
-    const layerCounts = Object.fromEntries([1, 2, 3].map((l) => [l, people[l]?.size || 0]));
+    const layerCounts = Object.fromEntries([1, 2, 3, 4].map((l) => [l, people[l]?.size || 0]));
 
     const slim = (a) => ({
       id: a.id, name: a.name, dept: a.dept, layer: a.layer, area: a.area, part: a.part_number, date: a.date, due_date: a.due_date,

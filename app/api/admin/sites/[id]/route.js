@@ -20,7 +20,7 @@ export const PATCH = route(async (req, { params }) => {
   if (typeof b.active === 'boolean') {
     if (b.active) {
       const { rows: [c] } = await q(
-        `SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE template_id IS NULL)::int nt FROM users WHERE site_id=$1 AND active AND access <> 'admin'`, [s.id]);
+        `SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE template_id IS NULL)::int nt FROM users WHERE site_id=$1 AND active AND access NOT IN ('admin','master')`, [s.id]);
       if (!c.n) return err('Carga primero los usuarios de la planta');
       if (c.nt) return err(`Hay ${c.nt} usuario(s) sin plantilla de preguntas`);
       if (!s.go_live && b.go_live === undefined) add('go_live', mxToday());
@@ -31,4 +31,4 @@ export const PATCH = route(async (req, { params }) => {
   vals.push(s.id);
   await q(`UPDATE sites SET ${sets.join(',')} WHERE id=$${vals.length}`, vals);
   return json({ ok: true });
-}, { need: 'admin' });
+}, { need: 'master' });

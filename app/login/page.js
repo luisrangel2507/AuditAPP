@@ -9,12 +9,12 @@ const T = {
     user: 'USUARIO', userPh: 'nombre.apellido', pin: 'CONTRASEÑA', go: 'Entrar', busy: 'Validando…', noteT: 'Uso interno',
     note: 'Las auditorías solo pueden registrarse el mismo día programado.', remember: 'Recordar mi sesión', forgot: '¿Olvidaste tu contraseña?',
     forgotMsg: 'Pide a tu administrador que restablezca tu contraseña (Admin → Usuarios). Al entrar con la nueva, la cambias por una tuya.',
-    feats: [['Capas', 'L1 - L3'], ['Calidad', 'en tiempo real'], ['Visibilidad', 'por planta'], ['Equipos', 'más fuertes']] },
+    feats: [['Capas', 'L1 - L4'], ['Calidad', 'en tiempo real'], ['Visibilidad', 'por planta'], ['Equipos', 'más fuertes']] },
   en: { sub1: 'Layered Process Audits', sub2: 'Mitchell Plastics', title: 'Sign in', lead: 'Enter your credentials to continue',
     user: 'USERNAME', userPh: 'name.lastname', pin: 'PASSWORD', go: 'Sign in', busy: 'Checking…', noteT: 'Internal use only',
     note: 'Audits can only be recorded on the scheduled day.', remember: 'Remember me', forgot: 'Forgot your password?',
     forgotMsg: 'Ask your administrator to reset your password (Admin → Users). Then change it to a personal one when you sign in.',
-    feats: [['Layers', 'L1 - L3'], ['Quality', 'in real time'], ['Visibility', 'by plant'], ['Stronger', 'teams']] },
+    feats: [['Layers', 'L1 - L4'], ['Quality', 'in real time'], ['Visibility', 'by plant'], ['Stronger', 'teams']] },
 };
 const Icon = {
   user: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg>,

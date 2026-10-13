@@ -6,6 +6,7 @@ import Shell, { useUser } from '@/components/Shell';
 import { api, fmtDate, scoreCls } from '@/lib/client';
 import Ring from '@/components/Ring';
 import { I } from '@/components/Icons';
+import { isAdmin, isMaster } from '@/lib/roles';
 
 const STATE = {
   open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'],
@@ -83,8 +84,10 @@ function MyHome() {
 
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
 function AdminHome() {
-  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState('');
+  const user = useUser(), master = isMaster(user);
+  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null);
   useEffect(() => {
+    if (master) api('/api/admin/sites').then(setPlants).catch(() => {});
     api('/api/week').then(setW).catch((e) => setErr(e.message));
     api('/api/findings?status=open').then((d) => setIss(d)).catch(() => {});
   }, []);
@@ -102,6 +105,12 @@ function AdminHome() {
     <>
       <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      {master && plants && (
+        <Link href="/admin" className="plants-strip">
+          <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
+          <div className="ps-chips">{plants.map((p) => <span key={p.id} className={`ps-chip ${p.active ? 'on' : ''}`}>{p.code}<i>{p.active ? 'activa' : `${p.users} usuarios`}</i></span>)}</div>
+          {plants.some((p) => !p.active) && <div className="sub">Faltan por poner en marcha: {plants.filter((p) => !p.active).map((p) => p.code).join(', ')}</div>}
+        </Link>)}
       <div className="kpis" style={{ marginTop: 14 }}>
         <div className="kpi"><b>{l1.length}</b><span>Auditorías programadas hoy</span></div>
         <div className="kpi"><b className="score good">{done.length}</b><span>Completadas hoy ({pct(done.length, l1.length)}%)</span></div>
@@ -137,5 +146,5 @@ function AdminHome() {
   );
 }
 
-function HomeSwitch() { const user = useUser(); return user.access === 'admin' ? <AdminHome /> : <MyHome />; }
+function HomeSwitch() { const user = useUser(); return isAdmin(user) ? <AdminHome /> : <MyHome />; }
 export default function Home() { return <Shell><HomeSwitch /></Shell>; }
