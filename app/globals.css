@@ -848,3 +848,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .wk-day .chip b { font-size: 11px; margin-top: 2px; }
   .wk-day .none { display: grid; place-items: center; min-height: 46px; color: var(--line); border: 1px dashed var(--line2); border-radius: 10px; }
 }
+/* Login celular: el hero se estira y el formulario se queda abajo (sin hueco blanco arriba) */
+@media (max-width: 899px) {
+  .login2 .hero { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+  .login2 form { flex: 0 0 auto; justify-content: flex-start; }
+}
