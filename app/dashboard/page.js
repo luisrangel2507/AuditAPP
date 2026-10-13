@@ -118,6 +118,7 @@ function Inner() {
           <div className="kpis norep">
             <div className="kpi"><b>{pct(d.kpi.completed, d.kpi.scheduled)}%</b><span>Cumplimiento ({d.kpi.completed}/{d.kpi.scheduled})</span></div>
             <div className="kpi"><b className={`score ${scoreCls(d.kpi.avg_score || 0)}`}>{d.kpi.avg_score ?? '—'}{d.kpi.avg_score != null && '%'}</b><span>Score promedio</span></div>
+            <div className="kpi"><b>{pct(d.users.completed, d.users.total)}%</b><span>Usuarios al corriente ({d.users.completed}/{d.users.total})</span></div>
             <div className="kpi"><b>{d.openFindings.n}</b><span>Hallazgos abiertos ({d.openFindings.overdue} vencidos)</span></div>
             <div className="kpi"><b>{d.kpi.late}</b><span>Hechas tarde</span></div>
           </div>
@@ -163,12 +164,16 @@ function Inner() {
                 <div>{weeks === 1 ? 'Semana en curso' : `Últimas ${weeks} semanas`} · al {fmtDate(d.today, { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
               <div className="rep-kpis">
                 <span><b>{pct(d.kpi.completed, d.kpi.scheduled)}%</b> cumplimiento ({d.kpi.completed}/{d.kpi.scheduled})</span>
+                <span><b>{pct(d.users.completed, d.users.total)}%</b> usuarios al corriente ({d.users.completed} de {d.users.total})</span>
                 <span><b>{d.kpi.avg_score ?? '—'}{d.kpi.avg_score != null && '%'}</b> score promedio</span>
                 <span><b>{d.openFindings.n}</b> hallazgos abiertos ({d.openFindings.overdue} vencidos)</span>
               </div>
             </div>
           <div className="sect">Resultados de las auditorías · {weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
-            <div className="card"><ResultsPie results={d.results} /></div>
+            <div className="card"><ResultsPie results={d.results} />
+            <div className="usr-bar"><div className="usr-top"><span>Usuarios al corriente</span><b>{pct(d.users.completed, d.users.total)}% · {d.users.completed} de {d.users.total}</b></div>
+              <div className="track"><i style={{ width: `${pct(d.users.completed, d.users.total)}%` }} /></div>
+              <div className="sub">Completaron al menos una auditoría en el periodo y no tienen ninguna vencida sin hacer.{d.users.with_missed > 0 && ` ${d.users.with_missed} usuario(s) con auditorías no realizadas.`}</div></div></div>
   
             <div className="sect">Open issues · PDCA ({d.issues.length}{d.issues.length >= 100 ? '+' : ''}) · {d.openFindings.overdue} vencido(s)</div>
             <OpenIssues issues={d.issues} today={d.today} />

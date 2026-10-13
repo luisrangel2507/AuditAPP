@@ -15,7 +15,7 @@ export const GET = route(async (req, ctx, user) => {
   const P = [from, today, scope];
   const SC = `AND ($3::int IS NULL OR u.site_id=$3)`;
 
-  const [kpi, layer, dept, week, area, fail, missing, open, results, issues] = await Promise.all([
+  const [kpi, layer, dept, week, area, fail, missing, open, results, issues, ppl] = await Promise.all([
     q(`SELECT COUNT(*)::int scheduled, COUNT(*) FILTER (WHERE a.status='completed')::int completed,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score,
               COUNT(*) FILTER (WHERE a.status='completed' AND a.late)::int late
@@ -50,9 +50,21 @@ export const GET = route(async (req, ctx, user) => {
          FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
         WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)
         ORDER BY f.due_date NULLS LAST, f.id LIMIT 100`, [scope]),
+    // Usuarios al corriente: de todos los usuarios activos con auditorías asignadas, los que ya completaron
+    // al menos una en el periodo y no tienen ninguna vencida sin hacer
+    q(`SELECT COUNT(*)::int total,
+              COUNT(*) FILTER (WHERE done > 0 AND missed = 0)::int completed,
+              COUNT(*) FILTER (WHERE missed > 0)::int with_missed
+         FROM (SELECT u.id,
+                      COUNT(a.id) FILTER (WHERE a.status='completed' AND a.date >= $1)::int AS done,
+                      COUNT(a.id) FILTER (WHERE a.status='pending' AND a.due_date < $2::date AND a.date >= $1)::int AS missed
+                 FROM users u LEFT JOIN audits a ON a.user_id=u.id
+                WHERE u.active AND u.access <> 'admin' AND u.template_id IS NOT NULL AND ($3::int IS NULL OR u.site_id=$3)
+                GROUP BY u.id) t`, [from, today, scope]),
   ]);
   const siteName = scope == null ? 'Todas las plantas' : (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || '';
   return json({ today, from, weeks, siteName, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
     area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0],
+    users: ppl.rows[0],
     results: Object.fromEntries(['ok', 'na', 'partial', 'nok'].map((k) => [k, results.rows.find((r) => r.result === k)?.n || 0])), issues: issues.rows });
 }, { need: 'lead' });

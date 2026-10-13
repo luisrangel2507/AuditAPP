@@ -484,3 +484,13 @@ table.matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-wi
   body.print-report .oi-owner { margin-bottom: 1mm; }
   body.print-report .oi-row .pill { font-size: 7pt; padding: .4mm 1.6mm; }
 }
+
+.usr-bar { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line2); }
+.usr-top { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; margin-bottom: 6px; }
+.usr-top b { font-family: var(--mono); }
+.usr-bar .track { height: 12px; background: rgba(32,52,90,.08); border-radius: 10px; overflow: hidden; }
+.usr-bar .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), #3fae82); border-radius: 10px; }
+.usr-bar .sub { margin-top: 6px; font-size: 12px; }
+@media (min-width: 700px) { .kpis { grid-template-columns: repeat(5, 1fr); } }
+@media print { body.print-report .usr-bar { break-inside: avoid; } }
+@media (min-width: 900px) { .oi-row > div:nth-child(3), .oi-row > div:nth-child(4) { grid-column: auto; } }
