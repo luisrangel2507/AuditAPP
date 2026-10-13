@@ -853,3 +853,20 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .login2 .hero { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
   .login2 form { flex: 0 0 auto; justify-content: flex-start; }
 }
+
+/* Inicio admin simplificado: tarjetas chicas y lista de una línea por persona */
+.ah-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.ah-kpi { padding: 10px 12px; gap: 10px; border-radius: 16px; }
+.ah-kpi b { font-size: 24px; } .ah-kpi span { font-size: 12px; }
+.ah i.b, .ah i.g, .ah i.o, .ah i.v { width: 38px; height: 38px; border-radius: 12px; } .ah-kpi i svg { width: 20px; height: 20px; }
+.ah-kpi.ah-ring { padding: 6px 12px; } .ah-kpi.ah-ring b { font-size: 15px; }
+.ah-alert { margin-top: 8px; padding: 10px 14px; border-radius: 14px; gap: 10px; } .ah-alert b { font-size: 14px; } .ah-alert > i svg { width: 20px; height: 20px; }
+.ah-main { margin-top: 12px; padding: 14px; }
+.ah-head { margin-bottom: 8px; } .ah-head h2 { font-size: 17px; }
+.ah-simple .ah-tr { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; padding: 9px 6px; gap: 8px; }
+.ah-simple .ah-tr b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ah-simple .ah-tr .z { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ah-simple .ah-tr .pill { font-size: 11px; padding: 3px 9px; }
+@media (max-width: 899px) { .ah-simple .ah-tr { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; row-gap: 0; } .ah-simple .ah-tr .z { grid-column: 1; font-size: 12.5px; } .ah-simple .ah-tr .pill, .ah-simple .ah-tr > b.score { grid-column: 2; grid-row: 1 / span 2; } }
+@media (min-width: 900px) { .ah-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } .ah-grid { display: block; } }
+@media (min-width: 900px) { .ah-simple { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; } }
