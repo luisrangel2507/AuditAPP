@@ -14,6 +14,8 @@ export default function Report() {
   if (!a) return <div style={{ padding: 24 }}>Cargando…</div>;
   if (a.status !== 'completed') return <div style={{ padding: 24 }}>La auditoría aún no se completa.</div>;
   const finds = (a.responses || []).filter((r) => r.result === 'nok' || r.result === 'partial');
+  const hr = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Mexico_City', hour: '2-digit', hour12: false }).format(new Date(a.completed_at || Date.now())));
+  const hi = hr < 12 ? 'Buen día' : hr < 19 ? 'Buena tarde' : 'Buena noche';
   const es = (t) => String(t || '').split('\n')[0];
   async function print() {
     setBusy(true);
@@ -45,6 +47,7 @@ export default function Report() {
           <div className="t"><b>Reporte de auditoría de proceso</b><span>LPApp · {a.template}</span></div>
           <div className={`sc ${a.score_pct >= 90 ? 'ok' : a.score_pct >= 75 ? 'warn' : 'nok'}`}><b>{Math.round(a.score_pct)}%</b><span>Score</span></div>
         </header>
+        <p className="hi">{hi}. Realicé una auditoría y estos son los resultados:</p>
         <div className="meta">
           <div><Ic d={I.user} /><p><i>Auditor</i><b>{a.auditor}</b></p></div>
           <div><Ic d={I.cal} /><p><i>Fecha</i><b>{fmtDate(a.date, { day: 'numeric', month: 'short', year: 'numeric' })}</b></p></div>
@@ -78,6 +81,7 @@ export default function Report() {
         .rep .sc { text-align: center; border-radius: 14px; padding: 8px 18px; color: #fff; } .rep .sc b { display: block; font-size: 32px; line-height: 1.05; } .rep .sc span { font-size: 14px; }
         .rep .sc.ok { background: #22a867; } .rep .sc.warn { background: #e3a21a; } .rep .sc.nok { background: #d92f3a; }
         .ric { width: 44px; height: 44px; border-radius: 50%; background: #eef2fb; color: #2c3a5e; display: grid; place-items: center; flex: none; }
+        .rep .hi { margin: 12px 0 0; font-size: 18px; font-weight: 600; }
         .rep .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; margin: 16px 0; }
         .rep .meta > div { display: flex; align-items: center; gap: 10px; min-width: 0; } .rep .meta .res { grid-column: span 2; }
         .rep .meta p { margin: 0; display: flex; flex-direction: column; min-width: 0; } .rep .meta i { font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7a9b; } .rep .meta b { font-size: 18px; overflow-wrap: anywhere; }
@@ -97,6 +101,7 @@ export default function Report() {
           html, body { background: #fff !important; } .rep-wrap { background: none; padding: 0; min-height: 0; } .rep-bar { display: none; }
           .rep { box-shadow: none; max-width: none; padding: 0; border-radius: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .rep header { padding-bottom: 7px; gap: 10px; } .rep header img { height: 28px; } .rep .t b { font-size: 16px; } .rep .t span { font-size: 11px; margin-top: 1px; } .rep .sc { padding: 3px 11px; border-radius: 9px; } .rep .sc b { font-size: 19px; } .rep .sc span { font-size: 9px; }
+          .rep .hi { font-size: 12px; margin: 6px 0 0; }
           .ric { width: 26px; height: 26px; } .ric svg { width: 14px; height: 14px; } .rep .meta { grid-template-columns: repeat(3, 1fr) !important; gap: 6px 8px; margin: 8px 0; } .rep .meta .res { grid-column: span 2 !important; } .rep .meta i { font-size: 8.5px; } .rep .meta b { font-size: 12px; }
           .rep .none { padding: 10px; border-radius: 10px; } .rep .none b { font-size: 16px; } .rep .none span { font-size: 11px; }
           .rep .find { padding: 8px; gap: 10px; border-radius: 10px; margin-bottom: 6px; flex-direction: row !important; } .rep .ft h4 { font-size: 11px; margin-bottom: 3px; } .rep .ft h4 em { font-size: 12px; padding: 2px 8px; border-radius: 6px; } .rep .ft h4 span { padding: 2px 8px; border-radius: 7px; }
