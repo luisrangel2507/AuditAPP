@@ -1076,3 +1076,10 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .d-toolroom.uc-av, .ugd-dot.d-toolroom { background: rgb(var(--d-toolroom)); } .dtag.d-toolroom { background: rgba(var(--d-toolroom),.14); color: rgb(var(--d-toolroom)); } .ugd-h.d-toolroom { box-shadow: inset 4px 0 0 rgb(var(--d-toolroom)); }
 .d-program.uc-av, .ugd-dot.d-program { background: rgb(var(--d-program)); } .dtag.d-program { background: rgba(var(--d-program),.14); color: rgb(var(--d-program)); } .ugd-h.d-program { box-shadow: inset 4px 0 0 rgb(var(--d-program)); }
 .d-management.uc-av, .ugd-dot.d-management { background: rgb(var(--d-management)); } .dtag.d-management { background: rgba(var(--d-management),.14); color: rgb(var(--d-management)); } .ugd-h.d-management { box-shadow: inset 4px 0 0 rgb(var(--d-management)); }
+
+/* Admin → QEs: cada día dividido por auditoría (mañana / tarde) */
+.qx-split { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.qx-h { border-radius: 12px; padding: 5px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.qx-h svg circle { fill: currentColor; } .qx-h em { font-style: normal; font-size: 10.5px; font-weight: 700; color: inherit; letter-spacing: .01em; }
+.qx-h.ok { background: #e2f6ea; color: #1faa5e; } .qx-h.bad { background: #ffe0e2; color: #e0182d; } .qx-h.off { background: #eceff6; color: #8d98b2; }
+[data-theme="dark"] .qx-h.ok { background: rgba(34,179,106,.18); } [data-theme="dark"] .qx-h.bad { background: rgba(217,47,58,.2); } [data-theme="dark"] .qx-h.off { background: rgba(120,140,180,.16); }

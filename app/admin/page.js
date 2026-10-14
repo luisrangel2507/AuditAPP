@@ -547,10 +547,18 @@ function QEs() {
               <svg className={`qx-ch ${openId === r.id ? 'on' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
             </button>
             <div className="sub">{r.avg_score != null ? `Promedio ${r.avg_score}%` : 'Sin completadas'} · {r.findings} hallazgo(s){r.avg_sec != null ? ` · ${dur(r.avg_sec)} promedio` : ''}{r.missed ? ` · ${r.missed} no realizada(s)` : ''}</div>
-            <div className="qx-days">{data.days.map((d, i) => { const st = dayState(r, d); return (
-              <div key={d} className="qx-dc"><small className={d === data.today ? 'today' : ''}>{DAYS_SHORT[i]}</small>
-                {st ? <div className={`qx-d ${st.k}`}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="currentColor" stroke="none" />{icon(st.k)}</svg><u><i style={{ width: `${st.f}%` }} /></u></div> : <div className="qx-d none">—</div>}
-              </div>); })}</div>
+            <div className="qx-days">{data.days.map((d, i) => {
+              const its = r.items.filter((x) => x.date === d).sort((x, y) => x.slot - y.slot);
+              const lbl = (x) => (its.length === 2 ? (x.slot === 1 ? 'Mañana' : 'Tarde') : `P${x.slot}`);
+              const st = (x) => (x.status === 'completed' ? 'ok' : x.due < data.today ? 'bad' : 'off');
+              return (
+                <div key={d} className="qx-dc"><small className={d === data.today ? 'today' : ''}>{DAYS_SHORT[i]}</small>
+                  {its.length ? <div className="qx-split">{its.map((x) => (
+                    <div key={x.slot} className={`qx-h ${st(x)}`} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : st(x) === 'bad' ? 'no realizada' : 'pendiente'}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="currentColor" stroke="none" />{icon(st(x))}</svg>
+                      <em>{lbl(x)}</em>
+                    </div>))}</div> : <div className="qx-d none">—</div>}
+                </div>); })}</div>
             {openId === r.id && <div className="qx-det">{r.items.filter((x) => x.status === 'completed').length ? r.items.filter((x) => x.status === 'completed').map((x) => (
               <div key={`${x.date}-${x.slot}`} className="qx-dr"><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric' })} · P{x.slot}</b><span>{x.area}</span><em className={x.score >= 90 ? 'ok' : x.score >= 75 ? 'warn' : 'nok'}>{Math.round(x.score)}%</em></div>)) : <div className="sub" style={{ margin: 0 }}>Aún no hay auditorías completadas esta semana.</div>}</div>}
           </div>))}
