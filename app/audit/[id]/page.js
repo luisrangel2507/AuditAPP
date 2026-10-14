@@ -174,6 +174,19 @@ function RunnerInner({ audit, onExit, onDone }) {
   const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || (x.notes || '').trim().length >= 3);
   const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], ...patch } }));
   const allValid = qs.every((x) => valid(answers[x.id]));
+  // Se puede saltar una pregunta; al llegar al final regresan las que quedaron sin contestar hasta completarlas
+  const [looped, setLooped] = useState(false);
+  const pending = qs.filter((x) => !valid(answers[x.id])).length;
+  function next() {
+    const miss = (i) => !valid(answers[qs[i].id]);
+    if (!looped && idx < qs.length - 1) return setIdx(idx + 1);
+    for (let k = 1; k <= qs.length; k++) {
+      const i = (idx + k) % qs.length;
+      if (i !== idx && miss(i)) { setLooped(true); setErr(''); return setIdx(i); }
+    }
+    if (allValid) setSummary(true);
+    else setErr('Falta contestar esta pregunta para poder enviar la auditoría.');
+  }
 
   async function pickPhoto(e) {
     const f = e.target.files?.[0]; if (!f) return;
@@ -243,6 +256,7 @@ function RunnerInner({ audit, onExit, onDone }) {
           <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.zone ? `Zona ${audit.zone}${audit.machine ? ` · Máquina ${audit.machine}` : ''}` : audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.part_number ? `N/P ${audit.part_number} · ` : ''}{audit.template}</div></div>
           <div className="sub" style={{ margin: 0 }}>{idx + 1}/{qs.length}</div>
         </div>
+        {pending > 0 && (looped || idx === qs.length - 1) && <div className="sub" style={{ margin: '6px 0 0', textAlign: 'center' }}>Faltan {pending} pregunta{pending === 1 ? '' : 's'} por contestar</div>}
         <div className="prog"><i style={{ width: `${((idx + 1) / qs.length) * 100}%` }} /></div>
       </div>
       <div className="exec-body">
@@ -278,9 +292,9 @@ function RunnerInner({ audit, onExit, onDone }) {
       </div>
       <div className="exec-foot">
         <button className="btn alt" disabled={idx === 0} onClick={() => setIdx(idx - 1)}>‹</button>
-        {idx < qs.length - 1
-          ? <button className="btn grow" disabled={!valid(a)} onClick={() => setIdx(idx + 1)}>Siguiente ›</button>
-          : <button className="btn grow" disabled={!allValid} onClick={() => setSummary(true)}>Ver resumen</button>}
+        <button className="btn grow" onClick={next}>
+          {valid(a) ? (looped || idx === qs.length - 1 ? (pending ? 'Siguiente pendiente ›' : 'Ver resumen') : 'Siguiente ›') : (looped || idx === qs.length - 1 ? 'Siguiente pendiente ›' : 'Saltar ›')}
+        </button>
       </div>
     </div>
   );
