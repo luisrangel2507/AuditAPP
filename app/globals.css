@@ -971,3 +971,6 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ztile .zc { width: 22px; height: 22px; right: 5px; bottom: 5px; } .ztile .zc svg { width: 12px; height: 12px; }
 .ztiles.m .ztile { aspect-ratio: 1.05; }
 .setup-foot { padding-top: 6px; } .setup-go { padding: 13px 22px; font-size: 17px; }
+.ztile b { font-size: 27px; font-weight: 800; letter-spacing: -.02em; text-shadow: 0 0 6px rgba(255,255,255,.9), 0 0 2px rgba(255,255,255,.9); }
+.ztiles.m .ztile b { font-size: 19px; }
+.ztiles.m .ztile b { font-size: 18px; } .ztiles.m .zc { display: none; }
