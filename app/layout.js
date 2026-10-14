@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
     <html lang="es" suppressHydrationWarning>
       <head>
         {/* Tema claro/oscuro: se fija antes de pintar para que no parpadee */}
-        <script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('lpa-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0a1226':'#22407f'}catch(e){document.documentElement.dataset.theme='light'}" }} />
+        <script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('lpa-theme');if(t!=='light'&&t!=='dark')t='light';document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0a1226':'#22407f'}catch(e){document.documentElement.dataset.theme='light'}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
