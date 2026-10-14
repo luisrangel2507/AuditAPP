@@ -24,10 +24,10 @@ function Ticket({ a, today }) {
           <span>{a.date === today ? 'Hoy' : multi ? `Semana ${fmtDate(a.date, { day: 'numeric', month: 'short' })} – ${fmtDate(a.due_date, { day: 'numeric', month: 'short' })}` : fmtDate(a.date)}</span>
           <span className={`pill ${cls}`}>{label}</span>
         </div>
-        <div className="area">{a.area || 'Sin zona asignada'}</div>
+        <div className="area">{a.kind === 'process' && a.status !== 'completed' ? `Auditoría de proceso ${a.slot}` : a.area || 'Sin zona asignada'}</div>
         {a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}
         <div className="meta">
-          {a.template} · {a.total_questions} preguntas
+          {a.kind === 'process' ? (a.status === 'completed' ? `${a.area} · ` : 'Zona y máquina al iniciar · ') : ''}{a.template} · {a.total_questions} preguntas
           {a.window === 'last_day' && ` · cierra hoy`}{a.window === 'open' && a.date === a.due_date && ` · solo hoy`}
           {a.window === 'open' && a.date !== a.due_date && ` · disponible hasta ${fmtDate(a.closes_on, { weekday: 'short', day: 'numeric' })}`}
           {a.window === 'completed' && a.nok_count + a.partial_count > 0 && ` · ${a.nok_count + a.partial_count} open issue(s)`}
