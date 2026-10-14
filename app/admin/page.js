@@ -472,6 +472,41 @@ function Assign() {
   );
 }
 
+// Seguimiento de las auditorías de proceso de los QEs (etapa de pruebas)
+function QEs() {
+  const [data, setData] = useState(null), [err, setErr] = useState('');
+  const load = (d) => { setData(null); api(`/api/admin/qes${d ? `?date=${d}` : ''}`).then(setData).catch((e) => setErr(e.message)); };
+  useEffect(() => { load(); }, []);
+  if (err) return <div className="err">{err}</div>;
+  const t = data?.totals || {};
+  return (
+    <>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (2 al día, lunes a viernes). Los hallazgos se abren en Issues. Etapa de pruebas.</p>
+      <div className="row wrap" style={{ margin: '10px 0' }}>
+        <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
+        <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
+        <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, 7))} disabled={!data}>›</button>
+      </div>
+      {!data ? <div className="empty">Cargando…</div> : <>
+        <div className="kpis" style={{ marginBottom: 12 }}>
+          <div className="kpi"><b>{t.done}/{t.total}</b><span>Hechas / programadas</span></div>
+          <div className="kpi"><b>{t.total ? Math.round((t.done / t.total) * 100) : 0}%</b><span>Avance</span></div>
+          <div className="kpi"><b>{t.findings}</b><span>Hallazgos</span></div>
+          <div className="kpi"><b>{t.missed}</b><span>No realizadas</span></div>
+        </div>
+        {!data.rows.length ? <div className="card empty">No hay QEs activos.</div> : data.rows.map((r) => (
+          <div key={r.id} className="card" style={{ marginBottom: 8 }}>
+            <div className="row"><b className="grow">{r.name}</b><span className={`pill ${r.done === r.total && r.total ? 'ok' : r.missed ? 'nok' : 'gold'}`}>{r.done}/{r.total}</span></div>
+            <div className="sub">{r.avg_score != null ? `Promedio ${r.avg_score}%` : 'Sin completadas'} · {r.findings} hallazgo(s){r.avg_sec != null ? ` · ${dur(r.avg_sec)} promedio` : ''}{r.missed ? ` · ${r.missed} no realizada(s)` : ''}</div>
+            <div className="qes-dots">{data.days.map((d) => { const its = r.items.filter((x) => x.date === d); return (
+              <div key={d} className="qes-dot-col"><small>{DAYS_SHORT[data.days.indexOf(d)]}</small>
+                <div>{its.length ? its.map((x) => <i key={x.slot} className={x.status === 'completed' ? 'ok' : x.due < data.today ? 'bad' : ''} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : 'pendiente'} />) : <i className="off" />}</div></div>); })}</div>
+          </div>))}
+      </>}
+    </>
+  );
+}
+
 function Inner() {
   const me = useUser(), master = isMaster(me);
   const [tab, setTab] = useState('assign'), [templates, setTemplates] = useState(null);
@@ -484,10 +519,11 @@ function Inner() {
         <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
         {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
+        <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}>QEs</button>
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
         {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'qes' ? <QEs /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }

@@ -878,3 +878,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .qes-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .qes-slot { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line2); box-shadow: var(--shadow-s); color: var(--ink); }
 .qes-slot.off { opacity: .55; } .qes-slot .pill { align-self: flex-start; margin-top: 4px; }
+
+.qes-dots { display: flex; gap: 10px; margin-top: 8px; } .qes-dot-col { flex: 1; text-align: center; } .qes-dot-col small { display: block; font-size: 11px; color: var(--sub); margin-bottom: 3px; }
+.qes-dot-col div { display: flex; gap: 4px; justify-content: center; }
+.qes-dot-col i { width: 14px; height: 14px; border-radius: 50%; background: rgba(120,140,180,.35); display: inline-block; } .qes-dot-col i.ok { background: #22b36a; } .qes-dot-col i.bad { background: #d92f3a; } .qes-dot-col i.off { background: transparent; border: 1px dashed var(--line2); }
