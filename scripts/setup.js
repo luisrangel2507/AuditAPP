@@ -112,6 +112,7 @@ ALTER TABLE audits ADD COLUMN IF NOT EXISTS slot INT NOT NULL DEFAULT 1;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS zone TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS part_original TEXT;   -- N/P capturado al inicio, si luego se corrigió
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS part_edited_at TIMESTAMPTZ;
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS area_original TEXT;   -- zona/máquina original, si luego se corrigió
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS item_no INT; -- número de ítem del formato (-1 = sin número)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;

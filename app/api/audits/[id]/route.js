@@ -19,22 +19,22 @@ export const GET = route(async (req, { params }, user) => {
   const today = mxToday();
   if (!isAdmin(user)) { delete a.started_at; delete a.active_sec; }
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };
-  if (a.status === 'completed') {
-    const { rows } = await q(
-      `SELECT r.id,r.question_id,r.question,r.category,r.result,r.notes,r.corrective,(r.evidence <> '') AS has_evidence,
-              (SELECT CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END FROM questions x WHERE x.id=r.question_id) AS item
-         FROM responses r WHERE r.audit_id=$1 ORDER BY r.id`, [a.id]);
-    return json({ ...base, responses: rows });
-  }
-  const { rows: qs } = await q(
-    `SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
-  const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
   let machines = {};
   if (a.layer === 1 || a.kind === 'process') {
     const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
     for (const [z, list] of Object.entries(SEED_MACHINES)) machines[z] = [...list];
     for (const r of m) { const l = (machines[r.zone] ||= []); if (!l.includes(r.machine)) l.push(r.machine); }
   }
+  if (a.status === 'completed') {
+    const { rows } = await q(
+      `SELECT r.id,r.question_id,r.question,r.category,r.result,r.notes,r.corrective,(r.evidence <> '') AS has_evidence,
+              (SELECT CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END FROM questions x WHERE x.id=r.question_id) AS item
+         FROM responses r WHERE r.audit_id=$1 ORDER BY r.id`, [a.id]);
+    return json({ ...base, machines, responses: rows });
+  }
+  const { rows: qs } = await q(
+    `SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
+  const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
   let zones = [];
   if (a.layer >= 2 || a.kind === 'process') {
     const { rows: z } = await q(
