@@ -330,9 +330,28 @@ const G = {
   arrow: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>,
 };
 
+// El admin puede eliminar una auditoría realizada (p. ej. de prueba) para que se vuelva a hacer
+function ResetAudit({ audit, onDone }) {
+  const [busy, setBusy] = useState(false), [err, setErr] = useState('');
+  async function go() {
+    const n = audit.nok_count + audit.partial_count;
+    if (!confirm(`¿Eliminar esta auditoría de ${audit.auditor}?\n\nSe borran sus respuestas${n ? ` y ${n} hallazgo(s) abierto(s) en Issues` : ''}, y la auditoría queda pendiente para volver a hacerse. No se puede deshacer.`)) return;
+    setBusy(true); setErr('');
+    try { await api(`/api/admin/audits/${audit.id}/reset`, { method: 'POST' }); onDone(); }
+    catch (e) { setErr(e.message); setBusy(false); }
+  }
+  return (
+    <div style={{ margin: '4px 0 12px' }}>
+      <button type="button" className="reset-btn" disabled={busy} onClick={go}>{busy ? 'Eliminando…' : '🗑 Eliminar para que se vuelva a hacer'}</button>
+      {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+    </div>
+  );
+}
+
 export default function AuditPage() {
   const { id } = useParams();
   const router = useRouter();
+  const user = useUser();
   const [audit, setAudit] = useState(null), [err, setErr] = useState(''), [running, setRunning] = useState(false), [done, setDone] = useState(null);
   const load = () => api(`/api/audits/${id}`).then(setAudit).catch((e) => setErr(e.message));
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
@@ -372,6 +391,7 @@ export default function AuditPage() {
     <Shell>
       {header}
       {audit.status === 'completed' && audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="rep-link">{G.doc}<b>Descargar reporte</b>{G.arrow}</Link>}
+      {audit.status === 'completed' && isAdmin(user) && <ResetAudit audit={audit} onDone={() => router.push('/admin')} />}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
           {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>

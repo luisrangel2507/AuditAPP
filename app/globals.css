@@ -1089,3 +1089,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .notyet i { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: #eceff6; color: #8d98b2; font-style: normal; } .notyet i svg { width: 28px; height: 28px; }
 .notyet b { font-size: 20px; color: var(--ink); } .notyet span { font-size: 14px; }
 .qx-h { text-decoration: none; }
+
+.reset-btn { width: 100%; padding: 12px 16px; border-radius: 999px; border: 1.5px solid #d92f3a; background: transparent; color: #d92f3a; font-weight: 700; font-size: 15px; } .reset-btn:disabled { opacity: .5; }
