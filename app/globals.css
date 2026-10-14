@@ -898,3 +898,18 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .zchips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
 .zchip { padding: 10px 16px; min-width: 56px; border-radius: 14px; border: 1px solid var(--line2); background: var(--panel); color: var(--ink); font-weight: 700; font-size: 15px; box-shadow: var(--shadow-s); }
 .zchip.on { background: linear-gradient(135deg, var(--brand1), var(--brand2)); color: #fff; border-color: transparent; }
+
+/* Antes de auditar: tarjeta con preguntas, fecha, área y tipo */
+.audit-date { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 600; }
+.audit-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 16px; color: var(--sub); font-size: 14px; }
+.audit-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.audit-info { display: grid; grid-template-columns: 1fr 1fr; background: var(--panel); border: 1px solid var(--line2); border-radius: 24px; box-shadow: var(--shadow-s); overflow: hidden; }
+.audit-info > div { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 20px 12px; min-width: 0; }
+.audit-info > div:nth-child(odd) { border-right: 1px solid var(--line2); } .audit-info > div:nth-child(-n+2) { border-bottom: 1px solid var(--line2); }
+.audit-info i { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font-style: normal; margin-bottom: 6px; } .audit-info i svg { width: 32px; height: 32px; }
+.audit-info i.b { background: #e4edfd; color: #1f5bd6; } .audit-info i.o { background: #ffeadb; color: #f26a21; } .audit-info i.v { background: #ebe6fc; color: #5b3fd1; } .audit-info i.g { background: #dff5e8; color: #1e9e5a; }
+.audit-info b { color: var(--ink); font-size: 18px; overflow-wrap: anywhere; } .audit-info b.big { font-size: 40px; line-height: 1; } .audit-info b.when { color: #f26a21; font-size: 20px; }
+.audit-info span { color: var(--sub); font-size: 14px; } .audit-info .warnx { color: #d9822b; font-weight: 600; font-size: 13px; }
+.audit-go { width: 100%; margin-top: 16px; display: flex; align-items: center; gap: 14px; padding: 12px 22px 12px 14px; border: 0; border-radius: 999px; color: #fff; background: linear-gradient(90deg, #0a49b8, #1f6bf0); box-shadow: 0 16px 28px -14px rgba(31,91,214,.8); font-size: 20px; }
+.audit-go i { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); font-style: normal; } .audit-go b { flex: 1; text-align: center; font-weight: 700; }
+[data-theme="dark"] .audit-info i.b { background: rgba(70,120,230,.2); } [data-theme="dark"] .audit-info i.o { background: rgba(242,106,33,.2); } [data-theme="dark"] .audit-info i.v { background: rgba(120,90,230,.22); } [data-theme="dark"] .audit-info i.g { background: rgba(34,179,106,.2); }

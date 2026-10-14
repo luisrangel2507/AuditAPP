@@ -234,6 +234,18 @@ function Result({ audit }) {
   );
 }
 
+const gi = (d) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+const G = {
+  cal: gi(<><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></>),
+  doc: gi(<><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></>),
+  user: gi(<><circle cx="12" cy="8" r="3.6" /><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4" /></>),
+  layers: gi(<><path d="m12 3 9 4.5-9 4.5-9-4.5z" /><path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" /></>),
+  shield: gi(<><path d="M12 3 4.5 6v5.5c0 4.5 3 8 7.5 9.5 4.5-1.5 7.5-5 7.5-9.5V6z" /><path d="m8.8 12 2.4 2.4 4-4.4" /></>),
+  clock: gi(<><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></>),
+  play: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>,
+  arrow: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>,
+};
+
 export default function AuditPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -243,10 +255,14 @@ export default function AuditPage() {
 
   const header = useMemo(() => audit && (
     <>
-      <button className="btn-ghost" onClick={() => router.push('/')} style={{ marginBottom: 12 }}>‹ Volver</button>
-      <h1 className="title">{audit.area}</h1>
+      <div className="row" style={{ marginBottom: 12 }}>
+        <button className="btn-ghost" onClick={() => router.push('/')}>← Volver</button>
+        <span className="grow" />
+        <span className="btn-ghost audit-date">{G.cal}{fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+      </div>
+      <h1 className="title">{(audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.part_number && <div className="partno">N/P <b>{audit.part_number}</b></div>}
-      <div className="sub">{audit.template} · {audit.auditor} ({LAYER[audit.layer]} · {DEPT[audit.dept]}) · {fmtDate(audit.date)}</div>
+      <div className="audit-meta"><span>{G.doc}{audit.template}</span><span>{G.user}{audit.auditor}</span><span>{G.layers}{LAYER[audit.layer]}</span><span>{G.shield}{DEPT[audit.dept]}</span></div>
     </>), [audit, router]);
 
   if (err) return <Shell><div className="err">{err}</div></Shell>;
@@ -270,12 +286,18 @@ export default function AuditPage() {
     <Shell>
       {header}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
-        <div className="card" style={{ marginTop: 16 }}>
-          <p style={{ margin: '0 0 6px' }}>{audit.questions.length} preguntas</p>
-          <p className="sub" style={{ margin: '0 0 14px' }}>{audit.date === audit.due_date ? `Solo se puede registrar el ${fmtDate(audit.date)}` : `Se puede registrar del ${fmtDate(audit.date)} al ${fmtDate(audit.closes_on)}`}{audit.window === 'last_day' ? ' · hoy es el último día' : ''}</p>
-          {canRun ? <button className="btn block" onClick={() => setRunning(true)}>Iniciar auditoría</button>
-            : <div className={audit.window === 'missed' ? 'err' : 'sub'}>{why}</div>}
-        </div>
+        <>
+          <div className="audit-info">
+            <div><i className="b">{G.doc}</i><b className="big">{audit.questions.length}</b><b>Preguntas</b><span>en esta auditoría</span></div>
+            <div><i className="o">{G.clock}</i><span>{audit.date === audit.due_date ? 'Solo disponible' : 'Disponible'}</span>
+              <b className="when">{audit.date === audit.due_date ? fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' }) : `${fmtDate(audit.date, { day: 'numeric', month: 'short' })} – ${fmtDate(audit.closes_on, { day: 'numeric', month: 'short' })}`}</b>
+              {audit.window === 'last_day' && <span className="warnx">hoy es el último día</span>}</div>
+            <div><i className="v">{G.layers}</i><b>{audit.layer === 1 || audit.kind === 'process' ? (audit.zone ? audit.area : 'Zona y máquina') : audit.area}</b><span>{audit.layer === 1 || audit.kind === 'process' ? 'se escoge al iniciar' : 'Área de evaluación'}</span></div>
+            <div><i className="g">{G.shield}</i><b>{audit.kind === 'process' ? 'Proceso' : LAYER[audit.layer]}</b><span>Tipo de auditoría</span></div>
+          </div>
+          {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
+            : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
+        </>
       )}
       {running && <Runner audit={audit} onExit={() => setRunning(false)} onDone={setDone} onSetup={(r) => setAudit({ ...audit, ...r })} />}
     </Shell>
