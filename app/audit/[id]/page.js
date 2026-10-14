@@ -262,7 +262,7 @@ export default function AuditPage() {
       </div>
       <h1 className="title">{(audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.part_number && <div className="partno">N/P <b>{audit.part_number}</b></div>}
-      <div className="audit-meta"><span>{G.doc}{audit.template}</span><span>{G.user}{audit.auditor}</span><span>{G.layers}{LAYER[audit.layer]}</span><span>{G.shield}{DEPT[audit.dept]}</span></div>
+      <div className="audit-meta"><span>{G.doc}{audit.template}</span>{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
 
   if (err) return <Shell><div className="err">{err}</div></Shell>;
@@ -287,6 +287,8 @@ export default function AuditPage() {
       {header}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
+          {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
+            : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
           <div className="audit-info">
             <div><i className="b">{G.doc}</i><b className="big">{audit.questions.length}</b><b>Preguntas</b><span>en esta auditoría</span></div>
             <div><i className="o">{G.clock}</i><span>{audit.date === audit.due_date ? 'Solo disponible' : 'Disponible'}</span>
@@ -295,8 +297,6 @@ export default function AuditPage() {
             <div><i className="v">{G.layers}</i><b>{audit.layer === 1 || audit.kind === 'process' ? (audit.zone ? audit.area : 'Zona y máquina') : audit.area}</b><span>{audit.layer === 1 || audit.kind === 'process' ? 'se escoge al iniciar' : 'Área de evaluación'}</span></div>
             <div><i className="g">{G.shield}</i><b>{audit.kind === 'process' ? 'Proceso' : LAYER[audit.layer]}</b><span>Tipo de auditoría</span></div>
           </div>
-          {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
-            : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
         </>
       )}
       {running && <Runner audit={audit} onExit={() => setRunning(false)} onDone={setDone} onSetup={(r) => setAudit({ ...audit, ...r })} />}
