@@ -68,7 +68,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
 const DEPT_ORDER = ['quality', 'process', 'production', 'logistics', 'hr', 'maintenance', 'toolroom', 'program', 'management'];
 function Users({ templates }) {
   const me = useUser();
-  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState(''), [imp, setImp] = useState(null), [openL, setOpenL] = useState({}), [closedD, setClosedD] = useState({});
+  const [rows, setRows] = useState(null), [edit, setEdit] = useState(null), [qs, setQs] = useState(''), [imp, setImp] = useState(null), [openL, setOpenL] = useState({}), [openD, setOpenD] = useState({});
   // Importar usuarios (pegar desde Excel): con una sola planta se hace desde aquí
   const openImport = async () => { const s = await api('/api/sites'); setImp(s.find((x) => x.id === me.site_id) || s.find((x) => x.code === 'MPQ') || s[0]); };
   const load = () => api('/api/admin/users').then(setRows);
@@ -91,10 +91,10 @@ function Users({ templates }) {
               <b>{LAYER[L]}{L === 3 ? ' · GM' : L === 2 ? ' · Gerentes' : ''}</b><span className="pill">{g.length}</span><i aria-hidden="true">›</i>
             </button>
             {open && DEPT_ORDER.filter((d) => g.some((u) => u.dept === d)).concat([...new Set(g.map((u) => u.dept))].filter((d) => !DEPT_ORDER.includes(d))).map((d) => {
-              const gd = g.filter((u) => u.dept === d), key = `${L}-${d}`, dopen = !!qs || !closedD[key];
+              const gd = g.filter((u) => u.dept === d), key = `${L}-${d}`, dopen = !!qs || !!openD[key];
               return (
                 <div key={d} className="ugd">
-                  <button className={`ugd-h d-${d} ${dopen ? 'on' : ''}`} onClick={() => setClosedD({ ...closedD, [key]: dopen })} aria-expanded={dopen}>
+                  <button className={`ugd-h d-${d} ${dopen ? 'on' : ''}`} onClick={() => setOpenD({ ...openD, [key]: !dopen })} aria-expanded={dopen}>
                     <i className={`ugd-dot d-${d}`} /><b>{DEPT[d]}</b><span>{gd.length}</span><em aria-hidden="true">›</em>
                   </button>
                   {dopen && gd.map((u) => {
