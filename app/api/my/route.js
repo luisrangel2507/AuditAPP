@@ -15,7 +15,7 @@ export const GET = route(async (req, ctx, user) => {
       WHERE a.user_id=$1 AND a.date >= $2 AND a.date <= $3 AND a.date >= $5
         AND (a.date >= $4 OR a.status='pending')
         AND (a.kind='lpa' OR (a.date >= $4 AND a.date <= $6::date))
-      ORDER BY a.date`,
+      ORDER BY a.date, (a.kind='process') DESC, a.slot`,
     [user.id, addDays(monday, -14), addDays(monday, 4), monday, gl, today]
   );
   return json({ today, monday, audits: rows.map((a) => ({ ...a, window: windowState(a, today), closes_on: closesOn(a) })) });

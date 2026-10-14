@@ -50,7 +50,7 @@ function MyHome() {
   if (err) return <Shell><div className="err">{err}</div></Shell>;
   const list = data?.audits || [];
   const by = (w) => list.filter((a) => w.includes(a.window));
-  const todo = by(['last_day', 'open']).sort((a, b) => (a.window === 'last_day' ? -1 : 1) - (b.window === 'last_day' ? -1 : 1));
+  const todo = by(['last_day', 'open']).sort((a, b) => (b.window === 'last_day') - (a.window === 'last_day') || (b.kind === 'process') - (a.kind === 'process') || (a.slot || 0) - (b.slot || 0));
   return (
     <>
       <div className="row"><h1 className="title grow">Mis auditorías</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
