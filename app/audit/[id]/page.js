@@ -214,9 +214,9 @@ function RunnerInner({ audit, onExit, onDone }) {
             <textarea className="inp" rows={2} value={a.corrective || ''} onChange={(e) => set({ corrective: e.target.value })} placeholder="Contención / corrección en sitio…" />
             <OwnerPicker value={a.owners || []} onChange={(owners) => set({ owners })} />
             <div className="sub" style={{ marginTop: 6 }}>Al enviar se abre un open issue; cada responsable que agregues deberá darle seguimiento hasta cerrarlo.</div>
-            <label className="lbl">Evidencia</label>
+            <label className="lbl">Foto del hallazgo</label>
             <div className="photo">
-              {a.evidence && <img src={a.evidence} alt="evidencia" />}
+              {a.evidence && <img src={a.evidence} alt="foto del hallazgo" />}
               <label className="btn alt sm" style={{ display: 'inline-block' }}>
                 {a.evidence ? 'Cambiar foto' : 'Adjuntar foto de evidencia'}
                 <input type="file" accept="image/*" capture="environment" hidden onChange={pickPhoto} />
@@ -263,7 +263,7 @@ function Result({ audit }) {
           </div>
           {r.notes && <div className="sub">{r.notes}</div>}
           {r.corrective && <div className="sub">Acción: {r.corrective}</div>}
-          {r.has_evidence && <img className="thumb" src={`/api/evidence/${r.id}`} alt="evidencia" loading="lazy" />}
+          {r.has_evidence && <img className="thumb" src={`/api/evidence/${r.id}`} alt="foto del hallazgo" loading="lazy" />}
         </div>))}
     </>
   );

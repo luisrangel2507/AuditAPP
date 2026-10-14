@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, fmtDate } from '@/lib/client';
 
-// Reporte de media hoja (carta/2) de una auditoría de proceso: resumen y hallazgos con ítem, acción e imagen
+// Reporte de media hoja (carta/2) de una auditoría de proceso: resumen y hallazgos con ítem, acción y foto
 export default function Report() {
   const { id } = useParams();
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function Report() {
               <div className="fr"><Ic d={I.clip} /><p><i>Hallazgo</i>{r.notes || '—'}</p></div>
               <div className="fr w"><Ic d={I.wrench} /><p><i>Acción correctiva</i>{r.corrective || 'Sin acción registrada'}</p></div>
             </div>
-            <div className="fi">{r.has_evidence ? <img src={`/api/evidence/${r.id}`} alt="Imagen del hallazgo" /> : <span>Sin imagen</span>}</div>
+            <div className="fi">{r.has_evidence ? <img src={`/api/evidence/${r.id}`} alt="Foto del hallazgo" /> : <span>Sin foto</span>}</div>
           </section>))}
         <footer><Ic d={I.clock} />Generado por LPApp · {new Date().toLocaleDateString('es-MX')}</footer>
       </div>
