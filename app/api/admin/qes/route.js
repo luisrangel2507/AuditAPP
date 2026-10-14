@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 import { siteScope } from '@/lib/site';
@@ -39,5 +40,6 @@ export const PUT = route(async (req, ctx, user) => {
   await q(`INSERT INTO settings(key,value) VALUES('qe_process_per_day',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [String(n)]);
   // Si se reduce: se quitan las pendientes de hoy en adelante que sobran
   await q(`DELETE FROM audits WHERE kind='process' AND status='pending' AND date >= $1 AND slot > $2`, [mxToday(), n]);
+  resetEnsured();
   return json({ ok: true, per_day: n });
 }, { need: 'admin' });

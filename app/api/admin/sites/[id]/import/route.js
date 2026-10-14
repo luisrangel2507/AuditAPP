@@ -1,3 +1,4 @@
+import { resetEnsured } from '@/lib/schedule';
 import bcrypt from 'bcryptjs';
 import { pool, q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
@@ -44,6 +45,7 @@ export const POST = route(async (req, { params }, user) => {
       created.push({ name: u.name, username: un, password });
     }
     await client.query('COMMIT');
+    resetEnsured();
     return json({ ok: true, site: site.code, created }, 201);
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});

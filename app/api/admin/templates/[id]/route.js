@@ -1,6 +1,8 @@
+import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 export const PATCH = route(async (req, { params }) => {
+  resetEnsured();
   const b = await req.json();
   const per = Number(b.per_audit);
   if (!(per >= 1 && per <= 50)) return err('Preguntas por auditoría: entre 1 y 50');

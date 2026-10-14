@@ -1,9 +1,11 @@
+import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 import { mxToday } from '@/lib/dates';
 
 // Renombrar, poner en marcha o pausar una planta
 export const PATCH = route(async (req, { params }) => {
+  resetEnsured();
   const b = await req.json();
   const { rows: [s] } = await q('SELECT * FROM sites WHERE id=$1', [params.id]);
   if (!s) return err('Planta no encontrada', 404);

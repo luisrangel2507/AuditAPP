@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
-import { api, fmtDate, scoreCls } from '@/lib/client';
+import { api, peek, fmtDate, scoreCls } from '@/lib/client';
 import Ring from '@/components/Ring';
 import { I } from '@/components/Icons';
 import { isAdmin, isMaster } from '@/lib/roles';
@@ -48,7 +48,7 @@ function Ticket({ a, today }) {
 
 function MyHome() {
   const [data, setData] = useState(null), [err, setErr] = useState(''), [iss, setIss] = useState([]);
-  useEffect(() => { api('/api/my').then(setData).catch((e) => setErr(e.message)); api('/api/findings?status=mine').then((d) => setIss(d.findings.slice(0, 3).map((f) => ({ ...f, overdue: f.due_date && f.due_date < d.today })))).catch(() => {}); }, []);
+  useEffect(() => { const c = peek('/api/my'); if (c) setData(c); api('/api/my').then(setData).catch((e) => setErr(e.message)); api('/api/findings?status=mine').then((d) => setIss(d.findings.slice(0, 3).map((f) => ({ ...f, overdue: f.due_date && f.due_date < d.today })))).catch(() => {}); }, []);
   if (err) return <Shell><div className="err">{err}</div></Shell>;
   const list = data?.audits || [];
   const by = (w) => list.filter((a) => w.includes(a.window));
@@ -91,6 +91,7 @@ function AdminHome() {
   const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null), [qs, setQs] = useState('');
   useEffect(() => {
     if (master && user.multi_site) api('/api/admin/sites').then(setPlants).catch(() => {});
+    { const c = peek('/api/week'); if (c) setW(c); }
     api('/api/week').then(setW).catch((e) => setErr(e.message));
     api('/api/findings?status=open').then((d) => setIss(d)).catch(() => {});
   }, []);

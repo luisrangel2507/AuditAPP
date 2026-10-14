@@ -2,7 +2,7 @@
 import { useEffect, useState, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
+import { api, peek, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
 import Guide from '@/components/Guide';
 import ThemeToggle from '@/components/ThemeToggle';
 import { isAdmin, isMaster, roleLabel } from '@/lib/roles';
@@ -43,7 +43,7 @@ export default function Shell({ children, need }) {
   const path = usePathname();
   const router = useRouter();
 
-  useEffect(() => { api('/api/auth/me').then(setUser).catch(() => {}); setSiteSel(getSiteCookie()); }, []);
+  useEffect(() => { const c = peek('/api/auth/me'); if (c) setUser(c); api('/api/auth/me').then(setUser).catch(() => {}); setSiteSel(getSiteCookie()); }, []);
   useEffect(() => { if (isMaster(user) && user.multi_site) api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
   // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
@@ -61,7 +61,7 @@ export default function Shell({ children, need }) {
     if (user && !user.onboarded) { setUser({ ...user, onboarded: true }); api('/api/auth/onboarded', { method: 'POST' }).catch(() => {}); }
   }
   function pickSite(code) { setSiteCookie(code); setSiteSel(code); window.location.reload(); }
-  async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
+  async function logout() { await api('/api/auth/logout', { method: 'POST' }); try { sessionStorage.clear(); } catch {} router.replace('/login'); }
   if (!user) return <div className="empty" style={{ paddingTop: 120 }}>Cargando…</div>;
 
   const lead = isAdmin(user);

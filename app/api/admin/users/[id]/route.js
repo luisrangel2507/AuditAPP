@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { passwordError } from '@/lib/password';
 import { route, json, err } from '@/lib/api';
@@ -39,5 +40,6 @@ export const PATCH = route(async (req, { params }, user) => {
         AND (NOT u.active OR u.access IN ('admin','master')
           OR (u.layer=1 AND (a.date<>a.due_date OR NOT (EXTRACT(ISODOW FROM a.date)::int = ANY(u.days))))
           OR (u.layer>=2 AND a.date=a.due_date))`, [params.id, mxToday()]);
+  resetEnsured();
   return json({ ok: true });
 }, { need: 'admin' });

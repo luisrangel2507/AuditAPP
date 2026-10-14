@@ -120,3 +120,5 @@ Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador 
 **Corregir el número de parte:** el auditor puede corregir su zona, máquina y N/P (y el segundo N/P) con el botón *✎ Corregir* en la auditoría, incluso después de terminarla. Queda guardado el nuevo número y el original (`audits.part_original` y `area_original`), y el N/P se muestra distinto (morado, con la marca *✎ corregido*) en la auditoría, en Hoy, en Semana y en el reporte.
 
 **Marcar la foto del hallazgo:** al tomar o cambiar la foto de un hallazgo se abre un editor para dibujar en la imagen — **círculo**, **flecha** o trazo **libre**, en rojo, amarillo, verde o blanco, con *Deshacer*. Al pulsar *Listo* la foto se guarda con las marcas; con *✎ Marcar* se puede volver a marcar antes de enviar.
+
+**Velocidad:** la generación de las auditorías de la semana (`ensureWeek`) se recuerda 60 s en el servidor y se reinicia al editar usuarios, plantillas, plantas o el número de auditorías de proceso; antes recorría a todos los usuarios en cada pantalla. En el navegador, Hoy / Semana / Issues y la sesión se muestran al instante con la última respuesta guardada mientras llega la nueva.

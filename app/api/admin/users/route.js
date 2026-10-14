@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 import { passwordError } from '@/lib/password';
@@ -38,6 +39,7 @@ export const POST = route(async (req, ctx, user) => {
       [b.name.trim(), b.username.trim().toLowerCase(), await bcrypt.hash(password, 10), b.dept || 'production',
        layer, access, b.template_id || null, b.days || [], b.pool || [],
        Number(b.start_idx) || 0, !!b.rotate_daily, access === 'master' ? null : siteId]);
+    resetEnsured();
     return json({ id: rows[0].id }, 201);
   } catch (e) {
     if (e.code === '23505') return err('Ese usuario ya existe');

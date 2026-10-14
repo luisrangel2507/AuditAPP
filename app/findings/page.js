@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import OwnerPicker from '@/components/OwnerPicker';
-import { api, fmtDate } from '@/lib/client';
+import { api, fmtDate, peek } from '@/lib/client';
 import { isAdmin } from '@/lib/roles';
 
 const OWN = { open: ['Pendiente', ''], in_progress: ['En proceso', 'gold'], done: ['Terminó', 'ok'] };
@@ -93,9 +93,9 @@ function Inner() {
   const [status, setStatus] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
   const focus = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('oi')) || null : null;
   // Vista inicial: "Mis issues" si tienes alguno a cargo; si no, abiertos
-  useEffect(() => { api('/api/findings/count').then((c) => setStatus(c.n > 0 ? 'mine' : 'open')).catch(() => setStatus('open')); }, []);
+  useEffect(() => { const c0 = peek('/api/findings/count'); if (c0) setStatus(c0.n > 0 ? 'mine' : 'open'); api('/api/findings/count').then((c) => setStatus(c.n > 0 ? 'mine' : 'open')).catch(() => setStatus('open')); }, []);
   const load = () => status && api(`/api/findings?status=${status}`).then(setData).catch((e) => setErr(e.message));
-  useEffect(() => { setData(null); load(); /* eslint-disable-next-line */ }, [status]);
+  useEffect(() => { setData(status ? peek(`/api/findings?status=${status}`) : null); load(); /* eslint-disable-next-line */ }, [status]);
   const tabs = [['mine', 'A mi cargo'], ['open', 'Abiertos'], ...(lead ? [['unassigned', 'Sin responsable']] : []), ['closed', 'Cerrados']];
   return (
     <>
