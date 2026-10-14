@@ -19,6 +19,7 @@ const BTN = [
 const ZTONE = (z) => (z.startsWith('PL') ? 'g' : ({ A: 'b', B: 'e', C: 'o', D: 'v', E: 't' })[z[0]] || 'b');
 const fac = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 20V9l5 3V9l5 3V5h3v15z" /><path d="M3 20h18M7 16h2M12 16h2" /></svg>;
 const wh = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6v10H3z" /><path d="M8 20v-6h8v6M8 17h8" /></svg>;
+const cube = <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" /><path d="m4 7.5 8 4.5 8-4.5M12 12v9" /></svg>;
 const chev = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>;
 
 function Setup({ audit, onSaved, onExit }) {
@@ -72,10 +73,10 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {step === 'part' && <>
           <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
-          <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} />
+          <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /></label>
           {mirror
-            ? <div className="row" style={{ marginTop: 8 }}><input className="inp" placeholder="Segundo N/P (pieza espejo RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button className="btn-ghost" type="button" onClick={() => { setMirror(false); setP2(''); }}>Quitar</button></div>
-            : <button className="btn-ghost" type="button" style={{ marginTop: 8 }} onClick={() => setMirror(true)}>+ Segundo N/P (pieza espejo RH / LH)</button>}
+            ? <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="Segundo N/P (RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npx" onClick={() => { setMirror(false); setP2(''); }} aria-label="Quitar segundo N/P">✕</button></label>
+            : <button className="npadd" type="button" onClick={() => setMirror(true)}><span className="npplus">+</span><i className="npsep" /><b>Segundo N/P (pieza espejo RH / LH)</b></button>}
         </>}
         {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
       </div>
