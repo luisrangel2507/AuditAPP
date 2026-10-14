@@ -8,6 +8,7 @@ import Shell from '@/components/Shell';
 import { api, fmtDate, compressImage, useLocal, scoreCls, DEPT, LAYER } from '@/lib/client';
 import Ring from '@/components/Ring';
 import Photo from '@/components/Photo';
+import PhotoMark from '@/components/PhotoMark';
 import { ZONES, NO_MACHINE } from '@/lib/zones';
 import OwnerPicker, { useUsers } from '@/components/OwnerPicker';
 import { useUser } from '@/components/Shell';
@@ -143,7 +144,7 @@ function RunnerInner({ audit, onExit, onDone }) {
   const draft = useLocal(`lpa-draft-${audit.id}`, { answers: {}, idx: 0 });
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
   const [idx, setIdx] = useState(() => draft.read().idx || 0);
-  const [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
+  const [marking, setMarking] = useState(null), [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
   const needArea = false, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
@@ -176,7 +177,7 @@ function RunnerInner({ audit, onExit, onDone }) {
 
   async function pickPhoto(e) {
     const f = e.target.files?.[0]; if (!f) return;
-    try { set({ evidence: await compressImage(f) }); } catch { setErr('No se pudo procesar la foto'); }
+    try { setMarking(await compressImage(f)); } catch { setErr('No se pudo procesar la foto'); }
     e.target.value = '';
   }
   async function submit() {
@@ -188,6 +189,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     } catch (e) { setErr(e.message); setBusy(false); }
   }
 
+  const marker = marking ? <PhotoMark src={marking} onCancel={() => setMarking(null)} onDone={(d) => { set({ evidence: d }); setMarking(null); }} /> : null;
   if (summary) {
     const c = { ok: 0, nok: 0, partial: 0, na: 0 };
     qs.forEach((x) => c[answers[x.id].result]++);
@@ -234,6 +236,7 @@ function RunnerInner({ audit, onExit, onDone }) {
 
   return (
     <div className="exec">
+      {marker}
       <div className="exec-top">
         <div className="row">
           <button className="btn-ghost" onClick={onExit}>✕ Salir</button>
@@ -266,6 +269,7 @@ function RunnerInner({ audit, onExit, onDone }) {
                 {a.evidence ? 'Cambiar foto' : 'Adjuntar foto de evidencia'}
                 <input type="file" accept="image/*" capture="environment" hidden onChange={pickPhoto} />
               </label>
+              {a.evidence && <button className="btn-ghost" onClick={() => setMarking(a.evidence)}>✎ Marcar</button>}
               {a.evidence && <button className="btn-ghost" onClick={() => set({ evidence: '' })}>Quitar</button>}
             </div>
           </div>
