@@ -7,6 +7,7 @@ import { isAdmin } from '@/lib/roles';
 import Shell from '@/components/Shell';
 import { api, fmtDate, compressImage, useLocal, scoreCls, DEPT, LAYER } from '@/lib/client';
 import Ring from '@/components/Ring';
+import Photo from '@/components/Photo';
 import { ZONES, NO_MACHINE } from '@/lib/zones';
 import OwnerPicker, { useUsers } from '@/components/OwnerPicker';
 import { useUser } from '@/components/Shell';
@@ -216,7 +217,7 @@ function RunnerInner({ audit, onExit, onDone }) {
             <div className="sub" style={{ marginTop: 6 }}>Al enviar se abre un open issue; cada responsable que agregues deberá darle seguimiento hasta cerrarlo.</div>
             <label className="lbl">Foto del hallazgo</label>
             <div className="photo">
-              {a.evidence && <img src={a.evidence} alt="foto del hallazgo" />}
+              {a.evidence && <Photo src={a.evidence} />}
               <label className="btn alt sm" style={{ display: 'inline-block' }}>
                 {a.evidence ? 'Cambiar foto' : 'Adjuntar foto de evidencia'}
                 <input type="file" accept="image/*" capture="environment" hidden onChange={pickPhoto} />
@@ -263,7 +264,7 @@ function Result({ audit }) {
           </div>
           {r.notes && <div className="sub">{r.notes}</div>}
           {r.corrective && <div className="sub">Acción: {r.corrective}</div>}
-          {r.has_evidence && <img className="thumb" src={`/api/evidence/${r.id}`} alt="foto del hallazgo" loading="lazy" />}
+          {r.has_evidence && <Photo className="thumb" src={`/api/evidence/${r.id}`} />}
         </div>))}
     </>
   );

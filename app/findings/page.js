@@ -1,4 +1,5 @@
 'use client';
+import Photo from '@/components/Photo';
 import { useEffect, useState } from 'react';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
@@ -42,7 +43,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
       {open && (
         <div style={{ marginTop: 12 }}>
           {f.notes && <div style={{ fontSize: 14 }}><b>Hallazgo:</b> {f.notes}</div>}
-          {f.evidence_id && <img className="thumb" src={`/api/evidence/${f.evidence_id}`} alt="foto del hallazgo" loading="lazy" />}
+          {f.evidence_id && <Photo className="thumb" src={`/api/evidence/${f.evidence_id}`} />}
 
           <div className="sect" style={{ marginTop: 14 }}>Responsables</div>
           {f.owners.length === 0 && <div className="sub">Nadie asignado todavía.</div>}
