@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Bi from '@/components/Bi';
 import { isAdmin } from '@/lib/roles';
 import Shell from '@/components/Shell';
@@ -307,6 +308,7 @@ export default function AuditPage() {
       <div className="card" style={{ textAlign: 'center', marginTop: 40 }}>
         <Ring value={done.score} size={120} stroke={10} cls={scoreCls(done.score)} label={`${done.score}%`} sub="Score" />
         <p>Auditoría registrada.{done.findings > 0 ? ` Se abrieron ${done.findings} open issue(s) para seguimiento.` : ' Sin hallazgos.'}</p>
+        {audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="btn alt block" style={{ marginBottom: 10 }}>Descargar reporte (media hoja)</Link>}
         <button className="btn block" onClick={() => router.replace('/')}>Listo</button>
       </div>
     </Shell>
@@ -319,6 +321,7 @@ export default function AuditPage() {
   return (
     <Shell>
       {header}
+      {audit.status === 'completed' && audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="btn block" style={{ margin: '4px 0 12px' }}>Descargar reporte (media hoja)</Link>}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
           {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>

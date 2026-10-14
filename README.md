@@ -112,3 +112,5 @@ El administrador ve el avance en **Admin → QEs**: por semana y por persona, he
 Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador define cuántas hace cada QE al día (0 a 5) en **Admin → QEs** (por defecto 2). Al bajar el número se quitan las pendientes de hoy en adelante que sobran; al subirlo se generan las nuevas. También aparecen en **Mi semana** del QE.
 
 **Pantalla "Antes de empezar":** todas las auditorías empiezan con tarjetas de zona (A1…E2, PL1/PL3/PL4). Layer 1 y QEs siguen con máquina (botones, salvo PL) y número de parte (con segundo N/P para piezas espejo); Layer 2, 3 y 4 (All Areas) solo escogen el área que auditan y comienzan.
+
+**Reporte de auditoría de proceso (QEs):** al terminar una auditoría de proceso, el QE puede **descargar un reporte de media hoja** (carta/2, PDF desde el diálogo de impresión): resumen (auditor, fecha, zona/máquina, N/P, score) y, si no hubo hallazgos, "No hay hallazgos"; si los hubo, por cada uno el ítem, el hallazgo, la acción correctiva y la imagen. También está disponible en la auditoría ya completada (`/audit/ID/report`).
