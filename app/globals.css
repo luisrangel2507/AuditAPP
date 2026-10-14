@@ -930,3 +930,6 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .audit-info b.big { font-size: 22px; display: inline; } .audit-info b { font-size: 14px; line-height: 1.2; } .audit-info span { font-size: 11.5px; line-height: 1.2; } .audit-info b.when { font-size: 14px; }
   .audit-info > div:first-child b.big { grid-column: 2; }
 }
+
+.tvq-slots { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (min-width: 1200px) { .tvq .tvx-row.q .tvx-slot.a1 { grid-column: 3 / 5 !important; } }

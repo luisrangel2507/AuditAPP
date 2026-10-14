@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { q } from '@/lib/db';
-import { route, json } from '@/lib/api';
+import { route, json, err } from '@/lib/api';
 import { siteScope } from '@/lib/site';
 import { ensureWeek } from '@/lib/schedule';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
@@ -27,6 +27,17 @@ export const GET = route(async (req, ctx, user) => {
       WHERE u.active AND u.dept='quality' AND u.layer=1 AND u.access NOT IN ('admin','master') AND ($3::int IS NULL OR u.site_id=$3)
       GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today]);
   const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
-  return json({ today, monday, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), rows,
+  const perDay = Number((await q(`SELECT value FROM settings WHERE key='qe_process_per_day'`)).rows[0]?.value ?? 2);
+  return json({ today, monday, per_day: perDay, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), rows,
     totals: { total: sum('total'), done: sum('done'), missed: sum('missed'), findings: sum('findings') } });
+}, { need: 'admin' });
+
+// El admin define cuántas auditorías de proceso al día hace cada QE (0 a 5)
+export const PUT = route(async (req, ctx, user) => {
+  const n = Number((await req.json()).per_day);
+  if (!Number.isInteger(n) || n < 0 || n > 5) return err('Indica un número de 0 a 5');
+  await q(`INSERT INTO settings(key,value) VALUES('qe_process_per_day',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [String(n)]);
+  // Si se reduce: se quitan las pendientes de hoy en adelante que sobran
+  await q(`DELETE FROM audits WHERE kind='process' AND status='pending' AND date >= $1 AND slot > $2`, [mxToday(), n]);
+  return json({ ok: true, per_day: n });
 }, { need: 'admin' });

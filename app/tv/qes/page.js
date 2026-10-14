@@ -77,14 +77,13 @@ export default function TVQEs() {
 
           <section className="tvx-grid">
             <div className="tvx-panel main">
-              <h2><span className="tvx-h-ic">▤</span>Hoy · 2 por QE<em>{k.today_total - k.today_done} pendientes</em></h2>
-              <div className="tvx-th"><span>QE</span><span>Proceso 1</span><span>Proceso 2</span><span>Semana</span></div>
+              <h2><span className="tvx-h-ic">▤</span>Hoy<em>{k.today_total - k.today_done} pendientes</em></h2>
+              <div className="tvx-th"><span>QE</span><span>Auditorías de proceso de hoy</span><span /><span>Semana</span></div>
               {!rowsToday.length ? <div className="tvx-empty">Sin QEs programados.</div> : rowsToday.map((p) => (
                 <div className="tvx-row q" key={p.id}>
                   <span className="tvx-av" style={{ background: color(p.name) }}>{initials(p.name)}</span>
                   <div className="tvx-name">{p.name}<span>Calidad</span></div>
-                  <div className="tvx-slot a1"><Slot s={p.today.find((x) => x.slot === 1)} n={1} /></div>
-                  <div className="tvx-slot a2"><Slot s={p.today.find((x) => x.slot === 2)} n={2} /></div>
+                  <div className="tvx-slot a1" style={{ gridColumn: "a1 / a2" }}><div className="tvq-slots">{p.today.length ? p.today.map((x) => <Slot key={x.slot} s={x} n={x.slot} />) : <span className="tvx-st"><i />—</span>}</div></div>
                   <span className={`tvx-st wk ${p.missed ? 'nok' : p.week_done === p.week_total ? 'ok' : 'pend'}`}>{p.week_done}/{p.week_total}</span>
                 </div>))}
               {pgToday && <div className="tvx-pager">{pgToday}</div>}
@@ -111,7 +110,7 @@ export default function TVQEs() {
               </div>
             </div>
           </section>
-          <footer className="tvx-foot">2 auditorías de proceso por QE al día · Actualizado {updated?.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} · se refresca cada minuto</footer>
+          <footer className="tvx-foot">Auditorías de proceso de los QEs · Actualizado {updated?.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} · se refresca cada minuto</footer>
         </>
       )}
     </div>

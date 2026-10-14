@@ -474,19 +474,26 @@ function Assign() {
 
 // Seguimiento de las auditorías de proceso de los QEs (etapa de pruebas)
 function QEs() {
-  const [data, setData] = useState(null), [err, setErr] = useState('');
+  const [data, setData] = useState(null), [err, setErr] = useState(''), [saving, setSaving] = useState(false);
+  const setPer = async (n) => { setSaving(true); try { await api('/api/admin/qes', { method: 'PUT', body: { per_day: n } }); load(data.monday); } catch (e) { setErr(e.message); } finally { setSaving(false); } };
   const load = (d) => { setData(null); api(`/api/admin/qes${d ? `?date=${d}` : ''}`).then(setData).catch((e) => setErr(e.message)); };
   useEffect(() => { load(); }, []);
   if (err) return <div className="err">{err}</div>;
   const t = data?.totals || {};
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (2 al día, lunes a viernes). Los hallazgos se abren en Issues. Etapa de pruebas. <a href="/tv/qes" target="_blank" rel="noreferrer" style={{ color: 'var(--brand2)', fontWeight: 600 }}>Abrir pantalla TV ›</a></p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (lunes a viernes; tú defines cuántas al día). Los hallazgos se abren en Issues. Etapa de pruebas. <a href="/tv/qes" target="_blank" rel="noreferrer" style={{ color: 'var(--brand2)', fontWeight: 600 }}>Abrir pantalla TV ›</a></p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, 7))} disabled={!data}>›</button>
       </div>
+      {data && <div className="card row" style={{ marginBottom: 12, alignItems: 'center' }}>
+        <span className="grow">Auditorías de proceso <b>por QE al día</b></span>
+        <button className="btn alt sm" disabled={saving || data.per_day <= 0} onClick={() => setPer(data.per_day - 1)}>−</button>
+        <b style={{ minWidth: 28, textAlign: 'center', fontSize: 18 }}>{data.per_day}</b>
+        <button className="btn alt sm" disabled={saving || data.per_day >= 5} onClick={() => setPer(data.per_day + 1)}>+</button>
+      </div>}
       {!data ? <div className="empty">Cargando…</div> : <>
         <div className="kpis" style={{ marginBottom: 12 }}>
           <div className="kpi"><b>{t.done}/{t.total}</b><span>Hechas / programadas</span></div>

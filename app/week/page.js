@@ -66,13 +66,13 @@ function WeekInner() {
       {data && !isAdmin(user) ? (
         data.audits.length ? (
           <div className="mydays">
-            {[...data.audits].sort((a, b) => a.date.localeCompare(b.date)).map((a) => {
+            {[...data.audits].sort((a, b) => a.date.localeCompare(b.date) || (a.slot || 0) - (b.slot || 0)).map((a) => {
               const wide = a.date !== a.due_date, st = status(a), isToday = a.date === today || (wide && today >= a.date && today <= a.due_date);
               const [label, cls] = ({ completed: ['Completada', 'ok'], late: ['Completada tarde', 'warn'], open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'], upcoming: ['Próxima', ''] })[st] || ['', ''];
               return (
                 <Link key={a.id} href={`/audit/${a.id}`} className={`myday ${isToday ? 'today' : ''}`}>
                   <div className="myday-d">{wide ? <><b>Semana</b><span>vence {fmtDate(a.due_date, { weekday: 'short', day: 'numeric' })}</span></> : <><b>{fmtDate(a.date, { weekday: 'long' })}</b><span>{fmtDate(a.date, { day: 'numeric', month: 'short' })}</span></>}</div>
-                  <div className="myday-z">{a.area || 'Sin zona asignada'}{a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}</div>
+                  <div className="myday-z">{a.kind === 'process' && a.status !== 'completed' ? `Auditoría de proceso ${a.slot}` : (a.area || 'Sin zona asignada')}{a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}</div>
                   <div className="myday-s"><span className={`pill ${cls}`}>{label}</span>{a.status === 'completed' && <b className="myday-sc">{Math.round(a.score_pct)}%</b>}</div>
                 </Link>);
             })}

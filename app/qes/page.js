@@ -17,7 +17,7 @@ function Inner() {
   return (
     <>
       <h1 className="title">QEs · Auditorías de proceso</h1>
-      <p className="sub" style={{ margin: '4px 0 10px' }}>Haces <b>2 auditorías de proceso al día</b>. Al terminar escoges el área auditada. Si hay hallazgos (X / Δ) se abren en Issues.</p>
+      <p className="sub" style={{ margin: '4px 0 10px' }}>Auditorías de proceso del día. Al terminar escoges el área auditada. Si hay hallazgos (X / Δ) se abren en Issues.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => load(shift(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
