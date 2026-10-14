@@ -14,33 +14,64 @@ const BTN = [
   ['ok', '✓', 'Cumple', 'OK'], ['nok', '✕', 'No cumple', 'NOK'], ['partial', 'Δ', 'Cumple parcialmente', 'Parcial'], ['na', '—', 'No aplica', 'N/A'],
 ];
 
-// Inicio (Layer 1 y QEs): zona → máquina (salvo PL) → N/P, con un segundo N/P para piezas espejo RH / LH
+// Inicio de toda auditoría. Layer 1 y QEs: zona → máquina (salvo PL) → N/P (con segundo N/P para piezas espejo RH / LH).
+// Layer 2, 3 y 4 (All Areas): solo escogen el área que auditan.
+const ZTONE = (z) => (z.startsWith('PL') ? 'g' : ({ A: 'b', B: 'e', C: 'o', D: 'v', E: 't' })[z[0]] || 'b');
+const fac = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 20V9l5 3V9l5 3V5h3v15z" /><path d="M3 20h18M7 16h2M12 16h2" /></svg>;
+const wh = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6v10H3z" /><path d="M8 20v-6h8v6M8 17h8" /></svg>;
+const chev = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>;
+
 function Setup({ audit, onSaved, onExit }) {
+  const full = audit.layer === 1 || audit.kind === 'process';
   const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
+  const [step, setStep] = useState('zone');
   const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [mirror, setMirror] = useState(false);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
-  const ok = zone && (noMach || machine.trim()) && p1.trim() && (!mirror || p2.trim());
+  const partOk = p1.trim() && (!mirror || p2.trim());
+  const sub = step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
+    : step === 'machine' ? `Zona ${zone}: selecciona la máquina` : `Zona ${zone}${machine ? ' · ' + machine : ''}: captura el número de parte`;
   async function go() {
     setBusy(true); setErr('');
     try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_number: p1, part_number2: mirror ? p2 : '' } }); onSaved(r); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
+  const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(NO_MACHINE.includes(z) ? 'part' : 'machine'); };
+  const back = () => { if (step === 'part') setStep(noMach ? 'zone' : 'machine'); else if (step === 'machine') setStep('zone'); };
   return (
-    <div className="exec">
-      <div className="exec-top"><div className="row"><button className="btn-ghost" onClick={onExit}>✕ Salir</button><div className="grow" style={{ textAlign: 'center', fontWeight: 600 }}>Antes de empezar</div><span style={{ width: 60 }} /></div></div>
-      <div className="exec-body">
-        {hint && <div className="sub" style={{ marginTop: 0 }}>Zona asignada por el administrador: <b>{hint}</b></div>}
-        <div className="sect" style={{ marginTop: 6 }}>1. Zona</div>
-        <div className="zchips">{ZONES.map((z) => <button key={z} type="button" className={`zchip ${zone === z ? 'on' : ''}`} onClick={() => { setZone(z); setMachine(''); }}>{z}</button>)}</div>
-        {zone && !noMach && <>
-          <div className="sect">2. Máquina</div>
-          <div className="zchips">{list.map((m) => <button key={m} type="button" className={`zchip ${machine === m ? 'on' : ''}`} onClick={() => setMachine(m)}>{m}</button>)}</div>
-          <input className="inp" placeholder="Otra máquina…" maxLength={40} value={list.includes(machine) ? '' : machine} onChange={(e) => setMachine(e.target.value)} />
+    <div className="exec setup">
+      <div className="setup-hero">
+        <img src="/login-bg.jpg" alt="" />
+        <div className="setup-top">
+          <button className="setup-pill" onClick={step === 'zone' ? onExit : back}>{step === 'zone' ? '✕ Salir' : '‹ Atrás'}</button>
+          {step !== 'zone' && <button className="setup-pill" onClick={onExit}>✕</button>}
+        </div>
+        <h2>Antes de empezar</h2><p>{sub}</p>
+      </div>
+      <div className="setup-body">
+        {hint && step === 'zone' && <div className="sub" style={{ margin: '0 0 6px' }}>Zona asignada por el administrador: <b>{hint}</b></div>}
+        {step === 'zone' && <>
+          <div className="setup-h"><i />1. Zona</div>
+          <div className="ztiles">{ZONES.map((z) => (
+            <button key={z} type="button" className={`ztile t-${ZTONE(z)} ${zone === z ? 'on' : ''}`} onClick={() => pickZone(z)}>
+              <span className="zi">{z.startsWith('PL') ? wh : fac}</span><b>{z}</b><span className="zc">{chev}</span>
+            </button>))}</div>
+          {!full && zone && <div className="setup-note">Área elegida: <b>{zone}</b></div>}
         </>}
-        {zone && <>
-          <div className="sect">{noMach ? '2' : '3'}. Número de parte</div>
+        {step === 'machine' && <>
+          <div className="setup-h"><i />2. Máquina <span>Zona {zone}</span></div>
+          <div className="ztiles m">{list.map((m) => (
+            <button key={m} type="button" className={`ztile t-${ZTONE(zone)} ${machine === m ? 'on' : ''}`} onClick={() => { setMachine(m); setStep('part'); }}>
+              <span className="zi">{fac}</span><b>{m}</b><span className="zc">{chev}</span>
+            </button>))}</div>
+          <div className="row" style={{ marginTop: 12 }}>
+            <input className="inp" placeholder="Otra máquina…" maxLength={40} value={list.includes(machine) ? '' : machine} onChange={(e) => setMachine(e.target.value)} />
+            <button className="btn sm" disabled={!machine.trim() || list.includes(machine)} onClick={() => setStep('part')}>Usar</button>
+          </div>
+        </>}
+        {step === 'part' && <>
+          <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
           <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} />
           {mirror
             ? <div className="row" style={{ marginTop: 8 }}><input className="inp" placeholder="Segundo N/P (pieza espejo RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button className="btn-ghost" type="button" onClick={() => { setMirror(false); setP2(''); }}>Quitar</button></div>
@@ -48,13 +79,15 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
       </div>
-      <div className="exec-foot"><button className="btn grow" disabled={!ok || busy} onClick={go}>{busy ? 'Guardando…' : 'Comenzar preguntas ›'}</button></div>
+      <div className="setup-foot">
+        <button className="setup-go" disabled={busy || (full ? !(step === 'part' && partOk) : !zone)} onClick={go}><span>→</span><b>{busy ? 'Guardando…' : 'Comenzar preguntas'}</b></button>
+      </div>
     </div>
   );
 }
 
 function Runner({ audit, onExit, onDone, onSetup }) {
-  const needSetup = (audit.layer === 1 || audit.kind === 'process') && !audit.zone;
+  const needSetup = !audit.zone;
   if (needSetup) return <Setup audit={audit} onSaved={onSetup} onExit={onExit} />;
   return <RunnerInner audit={audit} onExit={onExit} onDone={onDone} />;
 }
@@ -64,7 +97,7 @@ function RunnerInner({ audit, onExit, onDone }) {
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
   const [idx, setIdx] = useState(() => draft.read().idx || 0);
   const [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
-  const needArea = audit.layer >= 2, needPart = false;
+  const needArea = false, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const qs = audit.questions;

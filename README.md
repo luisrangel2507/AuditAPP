@@ -110,3 +110,5 @@ El administrador ve el avance en **Admin → QEs**: por semana y por persona, he
 **Pantalla TV de QEs:** `/tv/qes?key=TU_TV_KEY&site=MPQ` (misma llave `TV_KEY` que la TV normal; también abre con sesión de admin). Muestra cumplimiento de la semana, completadas hoy, score promedio, no realizadas, hallazgos, el estatus de Proceso 1 y Proceso 2 de cada QE hoy, y el avance semanal. Se refresca cada minuto y rota por páginas en pantalla grande.
 
 Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador define cuántas hace cada QE al día (0 a 5) en **Admin → QEs** (por defecto 2). Al bajar el número se quitan las pendientes de hoy en adelante que sobran; al subirlo se generan las nuevas. También aparecen en **Mi semana** del QE.
+
+**Pantalla "Antes de empezar":** todas las auditorías empiezan con tarjetas de zona (A1…E1, PL1/PL3/PL4). Layer 1 y QEs siguen con máquina (botones, salvo PL) y número de parte (con segundo N/P para piezas espejo); Layer 2, 3 y 4 (All Areas) solo escogen el área que auditan y comienzan.

@@ -19,12 +19,9 @@ export const POST = route(async (req, { params }, user) => {
     if (a.status === 'completed') { await client.query('ROLLBACK'); return err('Ya fue completada'); }
     const { rows: [au] } = await client.query('SELECT layer FROM users WHERE id=$1', [a.user_id]);
     const proc = a.kind === 'process';
-    if (au.layer >= 2) {
-      // Layer 2/3/4: el auditor escoge el área que auditó
-      const ar = String(area || '').trim().slice(0, 80);
-      if (!ar || ar === 'All Areas') { await client.query('ROLLBACK'); return err('Indica el área que auditaste'); }
-      await client.query('UPDATE audits SET area=$2 WHERE id=$1', [a.id, ar]);
-      a.area = ar;
+    if (au.layer >= 2 && !a.zone) {
+      // Layer 2/3/4: el área se escoge al iniciar
+      await client.query('ROLLBACK'); return err('Indica el área que auditas (se escoge al iniciar)');
     }
     if ((au.layer === 1 || proc) && (!a.zone || !a.part_number)) {
       // Layer 1 y QEs: zona, máquina y N/P se capturan al iniciar
