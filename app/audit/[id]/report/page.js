@@ -61,7 +61,7 @@ export default function Report() {
         ) : finds.map((r) => (
           <section className="find" key={r.id}>
             <div className="ft">
-              <h4><em>{r.result === 'nok' ? 'X' : 'Δ'}</em><span>Hallazgo · Ítem {r.item ?? '—'}</span></h4>
+              <h4><em>{r.result === 'nok' ? 'X' : 'Δ'}</em><span>Hallazgo{r.item ? ` · Ítem ${r.item}` : ''}</span></h4>
               <p className="q">{es(r.question)}</p>
               <div className="fr"><Ic d={I.clip} /><p><i>Hallazgo</i>{r.notes || '—'}</p></div>
               <div className="fr w"><Ic d={I.wrench} /><p><i>Acción correctiva</i>{r.corrective || 'Sin acción registrada'}</p></div>

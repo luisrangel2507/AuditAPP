@@ -1,0 +1,26 @@
+{
+  "name": "QE Process Audit",
+  "zone": "Calidad",
+  "per_audit": 10,
+  "questions": [
+    { "item": null, "es": "Realizar una auditoría del Plan de Control y especificar el número de parte auditado en el área de Notas de este formato.", "en": "Conduct a Control Plan audit and specify part number audited in Notes area of this form." },
+    { "item": null, "es": "¿El Plan de Control auditado se alinea con el PFMEA y el QIR/PIR? Confirmar si las características críticas están homologadas.", "en": "Does the Control Plan audited align with the PFMEA and QIR/PIR? Confirm if Critical Characteristics are homologated." },
+    { "item": 1033, "es": "Entrevista. Todos los operadores han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).", "en": "Interview. All operators have been trained on the work instructions and on process deviations (quality alerts)." },
+    { "item": 1341, "es": "Revisar el fechador en la pieza moldeada. Coincide al mes en curso.", "en": "Check the date stamp on the molded part. It matches the current month." },
+    { "item": 2290, "es": "¿Está el operador colocando las partes en el empaque adecuado de WIP y PT, así como las etiquetas?", "en": "Is the operator placing the parts in the proper WIP and finished-goods packaging, along with the labels?" },
+    { "item": 106, "es": "¿Hay IPL impresas y adicionales en la celda?", "en": "Are there printed and additional IPLs in the cell?" },
+    { "item": 1031, "es": "El número de parte cuenta con Verificación de arranque de proceso con los datos correctos y firmada por los responsables.", "en": "The part number has a process start-up verification with the correct data, signed by those responsible." },
+    { "item": 100, "es": "*¿Están los QIR / PIR completos y actualizados?", "en": "*Are the QIR / PIR complete and up to date?" },
+    { "item": 1032, "es": "Lista de defectos con nivel ok/nok. Boundary samples.", "en": "List of defects with ok/nok level. Boundary samples." },
+    { "item": 173, "es": "Se cuenta con primera pieza liberada y etiquetada correctamente.", "en": "A first piece is released and labeled correctly." },
+    { "item": 2102, "es": "¿Están los Red/Green Rabbits disponibles para probar los Poka-Yokes?", "en": "Are the Red/Green Rabbits available to test the Poka-Yokes?" },
+    { "item": 1042, "es": "Los Red/Green Rabbit están correctamente identificados.", "en": "The Red/Green Rabbits are correctly identified." },
+    { "item": 453, "es": "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX.", "en": "Verify control of current documents. Use of current internal and PLEX forms." },
+    { "item": 2304, "es": "¿La Instrucción de trabajo está actualizada en Ripple?", "en": "Is the work instruction up to date in Ripple?" },
+    { "item": 455, "es": "Revisar que instrumentos estén dentro de su vigencia de calibración y correctamente identificados.", "en": "Check that instruments are within their calibration validity and correctly identified." },
+    { "item": 458, "es": "5S. Validar condiciones de orden, limpieza, señalización en el área de trabajo.", "en": "5S. Validate order, cleanliness and signage conditions in the work area." },
+    { "item": 459, "es": "ECN. Asegurar que cualquier cambio de ingeniería o desviación esté autorizado, documentado y comunicado en piso.", "en": "ECN. Ensure any engineering change or deviation is authorized, documented and communicated on the floor." },
+    { "item": 448, "es": "Las Instrucciones de Operación del CF están actualizadas.", "en": "The CF Operating Instructions are up to date." },
+    { "item": 449, "es": "Las Instrucciones de Operación del CF cuentan con la simbología de las características especiales.", "en": "The CF Operating Instructions include the special characteristics symbology." }
+  ]
+}

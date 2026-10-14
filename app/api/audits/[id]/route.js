@@ -22,12 +22,12 @@ export const GET = route(async (req, { params }, user) => {
   if (a.status === 'completed') {
     const { rows } = await q(
       `SELECT r.id,r.question_id,r.question,r.category,r.result,r.notes,r.corrective,(r.evidence <> '') AS has_evidence,
-              (SELECT sort_order + 1 FROM questions x WHERE x.id=r.question_id) AS item
+              (SELECT CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END FROM questions x WHERE x.id=r.question_id) AS item
          FROM responses r WHERE r.audit_id=$1 ORDER BY r.id`, [a.id]);
     return json({ ...base, responses: rows });
   }
   const { rows: qs } = await q(
-    `SELECT id,text,category,sort_order + 1 AS item FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
+    `SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
   const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
   let machines = {};
   if (a.layer === 1 || a.kind === 'process') {

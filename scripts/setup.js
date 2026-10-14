@@ -2,6 +2,7 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 const bank = require(path.join(__dirname, '../data/question-bank.json'));
 const i18n = require(path.join(__dirname, '../data/question-i18n.json'));
 // Texto bilingüe "español\ninglés"; si falta traducción se deja el original
@@ -109,6 +110,7 @@ ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'lpa';
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS slot INT NOT NULL DEFAULT 1;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS zone TEXT NOT NULL DEFAULT '';
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS item_no INT; -- número de ítem del formato (-1 = sin número)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_audits_slot ON audits(user_id,date,kind,slot);
@@ -205,6 +207,21 @@ async function main() {
       }
     }
     console.log(`[setup] ${bank.length} plantillas cargadas`);
+  }
+
+  // Auditoría de proceso de los QEs: preguntas e ítems del formato "QE Layer 1 Audit" (español primero, luego inglés)
+  const qeTpl = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-process.json'), 'utf8'));
+  let { rows: [qt] } = await pool.query('SELECT id FROM templates WHERE name=$1', [qeTpl.name]);
+  if (!qt) {
+    ({ rows: [qt] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [qeTpl.name, qeTpl.zone, qeTpl.per_audit]));
+    for (let i = 0; i < qeTpl.questions.length; i++) {
+      const x = qeTpl.questions[i];
+      await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no) VALUES($1,$2,$3,$4,$5)',
+        [qt.id, `${x.es}\n${x.en}`, qeTpl.zone, i, x.item ?? -1]);
+    }
+    // Las auditorías de proceso pendientes (hoy en adelante) se regeneran con las preguntas nuevas
+    await pool.query(`DELETE FROM audits WHERE kind='process' AND status='pending' AND date >= $1`, [mxToday]);
+    console.log('[setup] plantilla QE Process Audit cargada');
   }
 
   // Preguntas existentes de una versión anterior (un solo idioma) -> bilingües. Idempotente: solo toca las que aún son el texto original.
