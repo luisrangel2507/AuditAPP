@@ -42,7 +42,7 @@ function Setup({ audit, onSaved, onExit }) {
   return (
     <div className="exec setup">
       <div className="setup-hero">
-        <img src="/login-bg.jpg" alt="" />
+        <img src="/app-hero.jpg" alt="" />
         <div className="setup-top">
           <button className="setup-pill" onClick={step === 'zone' ? onExit : back}>{step === 'zone' ? '✕ Salir' : '‹ Atrás'}</button>
           {step !== 'zone' && <button className="setup-pill" onClick={onExit}>✕</button>}
