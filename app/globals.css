@@ -951,7 +951,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .setup-h i { width: 4px; height: 20px; border-radius: 2px; background: #1f6bf0; } .setup-h span { margin-left: auto; text-transform: none; font-weight: 500; color: var(--sub); font-size: 13px; letter-spacing: 0; }
 .ztiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .ztile { position: relative; overflow: hidden; aspect-ratio: 1.12; border-radius: 18px; border: 1px solid var(--line2); background: var(--panel); box-shadow: var(--shadow-s); text-align: left; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; color: var(--ink); --c: 31,107,240; }
-.ztile::before { content: ''; position: absolute; inset: 0; background: url(/login-bg.jpg) 70% 50% / cover; clip-path: polygon(38% 0, 100% 0, 100% 100%, 12% 100%); opacity: .85; }
+.ztile::before { content: ''; position: absolute; inset: 0; background: url(/login-bg.webp) 70% 50% / cover; clip-path: polygon(38% 0, 100% 0, 100% 100%, 12% 100%); opacity: .85; }
 .ztile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(var(--c),.55) 0%, rgba(var(--c),.18) 45%, rgba(var(--c),.45) 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
 .ztile > * { position: relative; z-index: 1; }
 .ztile.t-b { --c: 31,107,240; } .ztile.t-e { --c: 20,170,120; } .ztile.t-o { --c: 242,130,30; } .ztile.t-v { --c: 110,70,230; } .ztile.t-t { --c: 20,170,190; } .ztile.t-g { --c: 120,135,160; }

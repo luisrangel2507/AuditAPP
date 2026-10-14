@@ -74,7 +74,7 @@ export default function Shell({ children, need }) {
   return (
     <UserCtx.Provider value={user}>
       <header className="apphero">
-        <img className="apphero-img" src="/app-hero.jpg" alt="" />
+        <img className="apphero-img" src="/app-hero.webp" alt="" fetchPriority="high" decoding="async" />
         <div className="apphero-in">
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />

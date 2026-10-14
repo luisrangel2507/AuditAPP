@@ -47,7 +47,7 @@ export default function Login() {
   return (
     <div className="login2"><div className="login2-card">
       <div className="hero">
-        <img className="hero-photo" src="/login-bg.jpg" alt="" />
+        <img className="hero-photo" src="/login-bg.webp" alt="" />
         <span className="hero-wedge" aria-hidden="true" />
         <div className="lang"><ThemeToggle className="lang-theme" /><button className={lang === 'es' ? 'on' : ''} onClick={() => pick('es')} type="button">ES</button><button className={lang === 'en' ? 'on' : ''} onClick={() => pick('en')} type="button">EN</button></div>
         <div className="hero-in">
