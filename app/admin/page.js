@@ -173,56 +173,6 @@ function Questions({ templates, reloadTemplates }) {
 
 const dur = (s) => s == null ? '—' : s < 60 ? `${s} s` : `${Math.floor(s / 60)} min${s % 60 ? ` ${String(s % 60).padStart(2, '0')} s` : ''}`;
 
-function Stats() {
-  const [days, setDays] = useState(28), [d, setD] = useState(null), [err, setErr] = useState(''), [all, setAll] = useState(false);
-  useEffect(() => { setD(null); api(`/api/admin/stats?days=${days}`).then(setD).catch((e) => setErr(e.message)); }, [days]);
-  const max = d ? Math.max(1, ...d.hours) : 1;
-  return (
-    <>
-      <div className="seg" style={{ margin: '12px 0' }}>
-        {[[7, '7 días'], [28, '4 semanas'], [90, '3 meses']].map(([n, l]) => <button key={n} className={days === n ? 'on' : ''} onClick={() => setDays(n)}>{l}</button>)}
-      </div>
-      {err && <div className="err">{err}</div>}
-      {!d ? <div className="empty">Cargando…</div> : d.total === 0 ? <div className="card empty">Aún no hay auditorías completadas en este periodo.</div> : (
-        <>
-          <div className="kpis">
-            <div className="kpi"><div className="v">{dur(d.kpi.median_sec)}</div><div className="l">Duración típica (mediana)</div></div>
-            <div className="kpi"><div className="v">{d.kpi.usual_time || '—'}</div><div className="l">Hora típica de registro</div></div>
-            <div className="kpi"><div className="v" style={{ color: d.kpi.fast ? 'var(--nok)' : undefined }}>{d.kpi.fast}</div><div className="l">Muy rápidas (&lt; 5 s por pregunta)</div></div>
-            <div className="kpi"><div className="v">{d.total}</div><div className="l">Auditorías completadas</div></div>
-          </div>
-          <div className="sect">¿A qué hora se hacen?</div>
-          <div className="card">
-            <div className="st-bars">{d.hours.map((n, h) => <i key={h} title={`${h}:00 · ${n}`} style={{ height: `${(n / max) * 100}%`, opacity: n ? 1 : .15 }} />)}</div>
-            <div className="st-axis"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>
-          </div>
-          <div className="sect">Por auditor</div>
-          {d.users.map((u) => (
-            <div key={u.user_id} className="card" style={{ marginBottom: 8 }}>
-              <div className="st-row">
-                <b>{u.name}</b><span className="sub" style={{ margin: 0 }}>{u.n} audit.</span>
-                {u.fast > 0 ? <span className="pill nok">{u.fast} muy rápida(s)</span> : <span />}
-              </div>
-              <div className="sub">Promedio {dur(u.avg_sec)} · hora típica {u.usual_time} (de {u.earliest} a {u.latest}){u.late ? ` · ${u.late} tarde` : ''}</div>
-            </div>))}
-          <div className="sect">Detalle reciente</div>
-          {(all ? d.audits : d.audits.slice(0, 15)).map((a) => (
-            <div key={a.id} className="card" style={{ marginBottom: 8 }}>
-              <div className="st-row">
-                <b>{a.name}</b>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13 }}>{a.done_time}</span>
-                <span className={`pill ${a.fast ? 'nok' : ''}`}>{dur(a.active_sec)}</span>
-              </div>
-              <div className="sub">{a.area} · {String(a.date).slice(5)} · {a.qn} preg.{a.start_time ? ` · inició ${a.start_time}` : ''}{a.fast ? ' · muy rápida' : ''}</div>
-            </div>))}
-          {d.audits.length > 15 && !all && <button className="btn alt block" onClick={() => setAll(true)}>Ver todas ({d.audits.length})</button>}
-          <div className="sub" style={{ marginTop: 10 }}>Duración = tiempo activo con la pantalla abierta (se descuentan pausas de más de 60 s). Las auditorías anteriores a esta función no tienen duración.</div>
-        </>
-      )}
-    </>
-  );
-}
-
 const EXAMPLE = `Nombre\tDepto\tCapa\tPlantilla\tDías\tÁreas\tAcceso
 Ana López\tCalidad\t1\tQuality Engineer\tLun, Mié\tLínea 1|Línea 2\t
 Beto Ruiz\tProducción\t2\tProduction Manager\t\t\tlíder`;
@@ -580,10 +530,9 @@ function Inner() {
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
         {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
         <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}>QEs</button>
-        <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Tiempos</button>
         {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'stats' ? <Stats /> : tab === 'qes' ? <QEs /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'qes' ? <QEs /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }
