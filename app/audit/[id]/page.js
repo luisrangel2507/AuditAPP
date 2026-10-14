@@ -335,9 +335,11 @@ function ResetAudit({ audit, onDone }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   async function go() {
     const n = audit.nok_count + audit.partial_count;
-    if (!confirm(`¿Eliminar esta auditoría de ${audit.auditor}?\n\nSe borran sus respuestas${n ? ` y ${n} hallazgo(s) abierto(s) en Issues` : ''}, y la auditoría queda pendiente para volver a hacerse. No se puede deshacer.`)) return;
+    const reason = (prompt(`Razón por la que se elimina (obligatoria):\n\nSe borran las respuestas de ${audit.auditor}${n ? ` y ${n} hallazgo(s) en Issues` : ''}; la auditoría queda pendiente. No se puede deshacer.`) || '').trim();
+    if (!reason) return;
+    if (reason.length < 5) { setErr('Escribe la razón por la que se elimina'); return; }
     setBusy(true); setErr('');
-    try { await api(`/api/admin/audits/${audit.id}/reset`, { method: 'POST' }); onDone(); }
+    try { await api(`/api/admin/audits/${audit.id}/reset`, { method: 'POST', body: { reason } }); onDone(); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
   return (

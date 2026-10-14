@@ -6,15 +6,22 @@ import { resetEnsured } from '@/lib/schedule';
 // El admin elimina una auditoría realizada (p. ej. una de prueba) para que se vuelva a hacer.
 // Se borran sus respuestas, hallazgos (issues) y avisos; la auditoría se genera de nuevo, pendiente.
 export const POST = route(async (req, { params }, user) => {
+  const body = await req.json().catch(() => ({}));
+  const reason = String(body.reason || '').trim().slice(0, 500);
+  if (reason.length < 5) return err('Escribe la razón por la que se elimina');
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const { rows: [a] } = await client.query(
-      `SELECT a.id,a.date,a.status,a.kind,a.slot,u.site_id,u.name FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [params.id]);
+      `SELECT a.id,a.date,a.status,a.kind,a.slot,a.zone,a.part_number,a.user_id,u.site_id,u.name FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [params.id]);
     if (!a) { await client.query('ROLLBACK'); return err('No encontrada', 404); }
     if (!sameSite(user, a.site_id)) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }
     if (a.status !== 'completed') { await client.query('ROLLBACK'); return err('Solo se pueden eliminar auditorías ya realizadas'); }
     const { rows: [f] } = await client.query(`SELECT COUNT(*)::int n FROM findings WHERE audit_id=$1`, [a.id]);
+    await client.query(
+      `INSERT INTO audit_deletions(site_id,auditor_id,auditor,audit_date,kind,slot,zone,part_number,reason,deleted_by,deleted_by_name)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [a.site_id, a.user_id, a.name, a.date, a.kind, a.slot, a.zone, a.part_number, reason, user.id, user.name]);
     await client.query('DELETE FROM findings WHERE audit_id=$1', [a.id]);
     await client.query('DELETE FROM audits WHERE id=$1', [a.id]);
     await client.query('COMMIT');
