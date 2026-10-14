@@ -57,7 +57,7 @@ export default function Report() {
           <div className="res"><Ic d={I.list} /><p><i>Resultado</i><b><u className="g">{a.ok_count} OK</u> · <u className="r">{a.nok_count} X</u> · <u className="y">{a.partial_count} Δ</u> · <u className="n">{a.na_count} N/A</u></b></p></div>
         </div>
         {!finds.length ? (
-          <div className="none"><b>✓ No hay hallazgos</b><span>Todas las preguntas de esta auditoría cumplen.</span></div>
+          <div className="none"><b>✓ No hay hallazgos</b></div>
         ) : finds.map((r) => (
           <section className="find" key={r.id}>
             <div className="ft">
