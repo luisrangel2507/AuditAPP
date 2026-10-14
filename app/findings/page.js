@@ -74,6 +74,11 @@ function Item({ f, today, lead, user, reload, startOpen }) {
             <div><label className="lbl">Compromiso</label><input className="inp" type="date" value={f.due_date || ''} onChange={(e) => patch({ due_date: e.target.value })} /></div>
             {!closed ? <button className="btn-ghost" onClick={() => { const a = prompt('Acción tomada para cerrar el issue'); if (a) patch({ force_status: 'closed', action: a }); }}>Cerrar como líder</button>
               : <button className="btn-ghost" onClick={() => patch({ force_status: 'open' })}>Reabrir</button>}
+            {isAdmin(user) && <button className="btn-ghost" style={{ color: '#d11d2a' }} onClick={async () => {
+              const r = (prompt('Razón por la que se elimina este hallazgo (obligatoria):\nSe borra el issue y su bitácora. No se puede deshacer.') || '').trim();
+              if (!r) return;
+              try { await api(`/api/findings/${f.id}`, { method: 'DELETE', body: { reason: r } }); reload(); } catch (e) { setErr(e.message); }
+            }}>🗑 Eliminar</button>}
           </div>}
 
           <div className="sect" style={{ marginTop: 14 }}>Bitácora</div>

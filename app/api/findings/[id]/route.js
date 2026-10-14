@@ -86,3 +86,18 @@ export const PATCH = route(async (req, { params }, user) => {
     return err('Error interno', 500);
   } finally { client.release(); }
 });
+
+// El admin puede eliminar un hallazgo (open issue) indicando la razón; queda registrado.
+export const DELETE = route(async (req, { params }, user) => {
+  const b = await req.json().catch(() => ({}));
+  const reason = String(b.reason || '').trim().slice(0, 500);
+  if (reason.length < 5) return err('Escribe la razón por la que se elimina');
+  const { rows: [f] } = await q(
+    `SELECT f.id,f.audit_id,f.question,f.notes,au.site_id FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users au ON au.id=a.user_id WHERE f.id=$1`, [params.id]);
+  if (!f) return err('No encontrado', 404);
+  if (!sameSite(user, f.site_id)) return err('Sin permiso', 403);
+  await q(`INSERT INTO finding_deletions(finding_id,audit_id,question,notes,reason,deleted_by,deleted_by_name) VALUES($1,$2,$3,$4,$5,$6,$7)`,
+    [f.id, f.audit_id, f.question, f.notes, reason, user.id, user.name]);
+  await q('DELETE FROM findings WHERE id=$1', [f.id]);
+  return json({ ok: true });
+}, { need: 'admin' });
