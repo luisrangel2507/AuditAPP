@@ -365,7 +365,7 @@ export default function AuditPage() {
   );
 
   const canRun = audit.editable && (audit.window === 'open' || audit.window === 'last_day');
-  const why = !audit.editable ? 'Solo el auditor asignado puede realizarla.'
+  const why = !audit.editable ? (audit.status === 'pending' ? 'Aún no realizado' : 'Solo el auditor asignado puede realizarla.')
     : audit.window === 'upcoming' ? `Se habilita el ${fmtDate(audit.date)}.`
     : audit.window === 'missed' ? `No realizada. Solo se podía registrar el ${fmtDate(audit.closes_on)} (día programado).` : '';
   return (
@@ -375,6 +375,7 @@ export default function AuditPage() {
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
           {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
+            : !audit.editable && audit.status === 'pending' ? <div className="notyet"><i>{G.clock}</i><b>Aún no realizado</b><span>{audit.auditor} todavía no la realiza.</span></div>
             : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
           <div className="audit-info">
             <div><i className="b">{G.doc}</i><b className="big">{audit.questions.length}</b><b>Preguntas</b><span>en esta auditoría</span></div>

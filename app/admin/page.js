@@ -554,10 +554,10 @@ function QEs() {
               return (
                 <div key={d} className="qx-dc"><small className={d === data.today ? 'today' : ''}>{DAYS_SHORT[i]}</small>
                   {its.length ? <div className="qx-split">{its.map((x) => (
-                    <div key={x.slot} className={`qx-h ${st(x)}`} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : st(x) === 'bad' ? 'no realizada' : 'pendiente'}>
+                    <a key={x.slot} href={`/audit/${x.id}`} className={`qx-h ${st(x)}`} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : st(x) === 'bad' ? 'no realizada' : 'pendiente'}>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="currentColor" stroke="none" />{icon(st(x))}</svg>
                       <em>{lbl(x)}</em>
-                    </div>))}</div> : <div className="qx-d none">—</div>}
+                    </a>))}</div> : <div className="qx-d none">—</div>}
                 </div>); })}</div>
             {openId === r.id && <div className="qx-det">{r.items.filter((x) => x.status === 'completed').length ? r.items.filter((x) => x.status === 'completed').map((x) => (
               <div key={`${x.date}-${x.slot}`} className="qx-dr"><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric' })} · P{x.slot}</b><span>{x.area}</span><em className={x.score >= 90 ? 'ok' : x.score >= 75 ? 'warn' : 'nok'}>{Math.round(x.score)}%</em></div>)) : <div className="sub" style={{ margin: 0 }}>Aún no hay auditorías completadas esta semana.</div>}</div>}
