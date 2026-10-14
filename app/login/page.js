@@ -31,6 +31,8 @@ const Icon = {
 
 export default function Login() {
   const [lang, setLang] = useState('es');
+  const [expired, setExpired] = useState(false);
+  useEffect(() => { try { setExpired(new URLSearchParams(window.location.search).get('expired') === '1'); } catch {} }, []);
   const [username, setU] = useState(''), [pin, setP] = useState(''), [show, setShow] = useState(false);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [remember, setRemember] = useState(true), [forgot, setForgot] = useState(false);
   const router = useRouter();
@@ -66,6 +68,7 @@ export default function Login() {
         <div className="field">{Icon.lock}<div className="f-in"><label htmlFor="p">{t.pin}</label>
           <input id="p" type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
           <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar contraseña">{show ? Icon.eyeOff : Icon.eye}</button></div>
+        {expired && !err && <div className="err">{lang === 'en' ? 'Your session was closed after a period of inactivity. Please sign in again.' : 'Tu sesión se cerró por inactividad. Vuelve a entrar.'}</div>}
         {err && <div className="err">{err}</div>}
         <button className="btn go" disabled={busy || !username || !pin}>{busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
         <div className="remrow">

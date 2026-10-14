@@ -50,6 +50,28 @@ export default function Shell({ children, need }) {
   const loadNotif = () => api('/api/admin/notifications').then(setNotif).catch(() => {});
   useEffect(() => { if (user && isAdmin(user)) loadNotif(); }, [user, path]);
   async function openBell() { setBell(true); if (notif?.unread) { await api('/api/admin/notifications', { method: 'POST' }).catch(() => {}); } }
+  // Cierre por inactividad (15 min; 45 min administradores) con latido para no perder la sesión mientras se usa la app
+  useEffect(() => {
+    if (!user) return;
+    const limit = (user.access === 'admin' || user.access === 'master' ? 45 : 15) * 60000;
+    let last = Date.now(), ping = Date.now();
+    const touch = () => {
+      last = Date.now();
+      if (last - ping > 4 * 60000) { ping = last; api('/api/auth/ping', { method: 'POST' }).catch(() => {}); }
+    };
+    const evs = ['pointerdown', 'keydown', 'touchstart', 'scroll', 'input'];
+    evs.forEach((e) => window.addEventListener(e, touch, { passive: true, capture: true }));
+    const check = async () => {
+      if (Date.now() - last > limit) {
+        try { await api('/api/auth/logout', { method: 'POST' }); } catch {}
+        try { sessionStorage.clear(); } catch {}
+        window.location.href = '/login?expired=1';
+      }
+    };
+    const iv = setInterval(check, 20000);
+    document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', check); evs.forEach((e) => window.removeEventListener(e, touch, { capture: true })); };
+  }, [user?.id]);
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
     if (user && (need === 'lead' || need === 'admin') && !isAdmin(user)) router.replace('/');
