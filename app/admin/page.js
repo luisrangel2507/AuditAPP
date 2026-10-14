@@ -481,7 +481,7 @@ function QEs() {
   const t = data?.totals || {};
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (2 al día, lunes a viernes). Los hallazgos se abren en Issues. Etapa de pruebas.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (2 al día, lunes a viernes). Los hallazgos se abren en Issues. Etapa de pruebas. <a href="/tv/qes" target="_blank" rel="noreferrer" style={{ color: 'var(--brand2)', fontWeight: 600 }}>Abrir pantalla TV ›</a></p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>

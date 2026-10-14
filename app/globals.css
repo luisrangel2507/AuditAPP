@@ -882,3 +882,14 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .qes-dots { display: flex; gap: 10px; margin-top: 8px; } .qes-dot-col { flex: 1; text-align: center; } .qes-dot-col small { display: block; font-size: 11px; color: var(--sub); margin-bottom: 3px; }
 .qes-dot-col div { display: flex; gap: 4px; justify-content: center; }
 .qes-dot-col i { width: 14px; height: 14px; border-radius: 50%; background: rgba(120,140,180,.35); display: inline-block; } .qes-dot-col i.ok { background: #22b36a; } .qes-dot-col i.bad { background: #d92f3a; } .qes-dot-col i.off { background: transparent; border: 1px dashed var(--line2); }
+
+/* TV de QEs: fila con Proceso 1, Proceso 2 y avance semanal */
+.tvq .tvx-row.q { grid-template-columns: 44px 1fr; grid-template-areas: "av name" "av a1" "av a2"; }
+.tvq .tvx-row.q .tvx-name { grid-area: name; } .tvq .tvx-row.q .tvx-slot.a1 { grid-area: a1; } .tvq .tvx-row.q .tvx-slot.a2 { grid-area: a2; }
+.tvq .tvx-row.q .tvx-st.wk { display: none; }
+@media (min-width: 1200px) {
+  .tvq .tvx-th { grid-template-columns: 1fr 1fr 1fr 90px; padding-left: 56px; }
+  .tvq .tvx-panel.main .tvx-row.q { grid-template-columns: 44px 1fr 1fr 1fr 90px; grid-template-areas: "av name a1 a2 wk"; }
+  .tvq .tvx-row.q .tvx-st.wk { display: inline-flex; grid-area: wk; justify-content: center; }
+}
+.tvq .tvx-slot .tvx-st { white-space: nowrap; }
