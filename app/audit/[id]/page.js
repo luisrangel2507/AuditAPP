@@ -240,7 +240,7 @@ function RunnerInner({ audit, onExit, onDone }) {
       <div className="exec-top">
         <div className="row">
           <button className="btn-ghost" onClick={onExit}>✕ Salir</button>
-          <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.part_number ? `N/P ${audit.part_number} · ` : ''}{audit.template}</div></div>
+          <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.zone ? `Zona ${audit.zone}${audit.machine ? ` · Máquina ${audit.machine}` : ''}` : audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.part_number ? `N/P ${audit.part_number} · ` : ''}{audit.template}</div></div>
           <div className="sub" style={{ margin: 0 }}>{idx + 1}/{qs.length}</div>
         </div>
         <div className="prog"><i style={{ width: `${((idx + 1) / qs.length) * 100}%` }} /></div>
