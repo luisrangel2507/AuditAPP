@@ -1092,3 +1092,9 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 
 .reset-btn { width: 100%; padding: 12px 16px; border-radius: 999px; border: 1.5px solid #d92f3a; background: transparent; color: #d92f3a; font-weight: 700; font-size: 15px; } .reset-btn:disabled { opacity: .5; }
 .issue .oi-item { display: inline-block; margin: 0 6px 0 2px; padding: 1px 8px; border-radius: 8px; background: #eef2fb; color: #2c3a5e; font-size: 12px; font-weight: 700; vertical-align: 1px; }
+/* Usuarios: tarjetas compactas */
+.uc { gap: 9px; align-items: center; margin-bottom: 5px; padding: 6px 10px; border-left-width: 4px; }
+.uc-av { width: 32px; height: 32px; font-size: 12px; }
+.uc-name { font-size: 14.5px; } .uc .sub { margin: 1px 0 0; font-size: 12px; line-height: 1.25; }
+.uc .pill { padding: 1px 7px; font-size: 11px; }
+@media (min-width: 900px) { .ugd { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; } .ugd > .ugd-h { grid-column: 1 / -1; } }

@@ -107,8 +107,7 @@ function Users({ templates }) {
                             {u.access === 'master' ? <span className="pill warn">{me.multi_site ? 'Máster' : 'Admin'}</span> : u.access === 'admin' ? <span className="pill gold">Admin</span> : u.access === 'lead' ? <span className="pill">Líder</span> : null}
                             {me.multi_site && u.site && <span className="pill ok">{u.site}</span>}
                             <span className={`pill lp l${u.layer}`}>L{u.layer}</span></div>
-                          <div className="sub"><span className={`dtag d-${u.dept}`}>{DEPT[u.dept]}</span> {u.template || 'sin plantilla'}</div>
-                          <div className="sub">{u.username} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((x) => DAYS_SHORT[x - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
+                          <div className="sub"><span className={`dtag d-${u.dept}`}>{DEPT[u.dept]}</span> {u.template || 'sin plantilla'} · {u.username} · {u.layer >= 2 ? 'All Areas (semanal)' : `${u.days.map((x) => DAYS_SHORT[x - 1]).join('/')} · ${u.pool.length} área(s)${u.rotate_daily ? ' · rota diario' : ''}`}</div>
                         </div>
                       </div>);
                   })}
