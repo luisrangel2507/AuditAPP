@@ -14,7 +14,9 @@ const STATE = {
 };
 
 function Ticket({ a, today }) {
-  const [label, cls] = STATE[a.window];
+  const [label0, cls0] = STATE[a.window];
+  const inProg = a.started && (a.window === 'open' || a.window === 'last_day');
+  const [label, cls] = inProg ? ['En proceso', 'warn'] : [label0, cls0];
   const multi = a.date !== a.due_date;
   return (
     <Link href={`/audit/${a.id}`} className={`ticket s-${a.window}`}>
@@ -36,7 +38,7 @@ function Ticket({ a, today }) {
       <div className="stub">
         <span className="chev">{I.chevron(18)}</span>
         {a.window === 'completed' ? <Ring value={a.score_pct} size={60} stroke={7} cls={scoreCls(a.score_pct)} label={`${Math.round(a.score_pct)}%`} />
-          : a.window === 'open' || a.window === 'last_day' ? <span className="go">{I.play(18)}Iniciar</span>
+          : a.window === 'open' || a.window === 'last_day' ? <span className="go">{I.play(18)}{inProg ? 'Continuar' : 'Iniciar'}</span>
           : a.window === 'missed' ? <div className="meta">Ventana cerrada</div>
           : <div className="meta">{fmtDate(a.date, { weekday: 'short', day: 'numeric' })}</div>}
       </div>
@@ -74,7 +76,8 @@ function MyHome() {
           {todo.length ? todo.map((a) => <Ticket key={a.id} a={a} today={data.today} />)
             : <div className="card empty">No tienes auditorías pendientes.</div>}
           {by(['upcoming']).length > 0 && <><div className="sect">Próximas</div>{by(['upcoming']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
-          {by(['completed']).length > 0 && <><div className="sect">Completadas esta semana</div>{by(['completed']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
+          {by(['completed']).filter((a) => a.done_day === data.today).length > 0 && <><div className="sect">Completadas hoy</div>{by(['completed']).filter((a) => a.done_day === data.today).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
+          {by(['completed']).filter((a) => a.done_day !== data.today).length > 0 && <><div className="sect">Completadas esta semana</div>{by(['completed']).filter((a) => a.done_day !== data.today).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
           {by(['missed']).length > 0 && <><div className="sect">No realizadas</div>{by(['missed']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
         </>
       )}
