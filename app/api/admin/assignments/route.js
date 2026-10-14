@@ -15,12 +15,13 @@ export const GET = route(async (req, ctx, user) => {
   const lim = (n) => addDays(mondayOf(today), n * 7);
   if (monday < lim(-8) || monday > lim(8)) return json({ monday, days: [], audits: [], zones: [], today });
   await ensureWeek(monday);
+  const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
   const { rows } = await q(
     `SELECT a.id,a.user_id,a.date,a.due_date,a.area,a.part_number,a.status,
             u.name,u.dept,u.layer,u.pool,u.site_id, s.code AS site
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN sites s ON s.id=u.site_id
-      WHERE a.date BETWEEN $1 AND $2 AND a.kind='lpa' AND u.layer=1 AND ($3::int IS NULL OR u.site_id=$3)
-      ORDER BY u.layer DESC,u.dept,u.name,a.date`, [monday, addDays(monday, 4), scope]);
+      WHERE a.date BETWEEN $1 AND $2 AND a.date >= $4 AND a.kind='lpa' AND u.layer=1 AND ($3::int IS NULL OR u.site_id=$3)
+      ORDER BY u.layer DESC,u.dept,u.name,a.date`, [monday, addDays(monday, 4), scope, gl]);
   const zones = [...new Set(rows.flatMap((r) => r.pool || []).concat(rows.map((r) => r.area)).filter(Boolean))].sort();
   return json({ monday, today, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows, zones });
 }, { need: 'admin' });

@@ -15,6 +15,7 @@ export const GET = route(async (req, ctx, user) => {
   const monday = mondayOf(date);
   if (monday < addDays(mondayOf(today), -28) || monday > addDays(mondayOf(today), 7)) return json({ today, monday, days: [], rows: [], totals: {} });
   await ensureWeek(monday);
+  const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
   const { rows } = await q(
     `SELECT u.id, u.name,
             COUNT(a.id)::int AS total,
@@ -24,9 +25,9 @@ export const GET = route(async (req, ctx, user) => {
             COALESCE(SUM(a.nok_count + a.partial_count) FILTER (WHERE a.status='completed'),0)::int AS findings,
             ROUND(AVG(a.active_sec) FILTER (WHERE a.status='completed' AND a.active_sec IS NOT NULL))::int AS avg_sec,
             COALESCE(json_agg(json_build_object('date',a.date,'slot',a.slot,'status',a.status,'score',a.score_pct,'area',a.area,'due',a.due_date) ORDER BY a.date,a.slot) FILTER (WHERE a.id IS NOT NULL),'[]') AS items
-       FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='process' AND a.date BETWEEN $1 AND $2
+       FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='process' AND a.date BETWEEN $1 AND $2 AND a.date >= $5::date
       WHERE u.active AND u.dept='quality' AND u.layer=1 AND u.access NOT IN ('admin','master') AND ($3::int IS NULL OR u.site_id=$3)
-      GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today]);
+      GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today, gl]);
   const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
   const perDay = Number((await q(`SELECT value FROM settings WHERE key='qe_process_per_day'`)).rows[0]?.value ?? 2);
   const lpaOn = (await q(`SELECT value FROM settings WHERE key='qe_lpa_on'`)).rows[0]?.value === '1';

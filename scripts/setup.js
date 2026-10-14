@@ -243,6 +243,16 @@ async function main() {
     console.log('[setup] QEs: solo auditorías de proceso (LPA apagada)');
   }
 
+  // Programa piloto: arranca el 14-Oct-2026. Los días anteriores no cuentan para nadie (sin rojos ni "no realizadas")
+  const flag3 = await pool.query(`INSERT INTO settings(key,value) VALUES('pilot_start_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flag3.rowCount) {
+    const PILOT = '2026-10-14';
+    await pool.query(`INSERT INTO settings(key,value) VALUES('go_live',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [PILOT]);
+    await pool.query(`UPDATE sites SET go_live=$1 WHERE active`, [PILOT]);
+    const r = await pool.query(`DELETE FROM audits WHERE status='pending' AND date < $1`, [PILOT]);
+    console.log(`[setup] Piloto desde ${PILOT}: ${r.rowCount} auditorías pendientes anteriores quitadas`);
+  }
+
   // Preguntas existentes de una versión anterior (un solo idioma) -> bilingües. Idempotente: solo toca las que aún son el texto original.
   let bi = 0;
   for (const [orig] of Object.entries(i18n)) {
