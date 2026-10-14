@@ -59,9 +59,9 @@ export default function Report() {
         {!finds.length ? (
           <div className="none"><b>✓ No hay hallazgos</b></div>
         ) : finds.map((r) => (
-          <section className="find" key={r.id}>
+          <section className={`find${r.result === 'partial' ? ' pt' : ''}`} key={r.id}>
             <div className="ft">
-              <h4><em>{r.result === 'nok' ? 'X' : 'Δ'}</em><span>Hallazgo{r.item ? ` · Ítem ${r.item}` : ''}</span></h4>
+              <h4><em>{r.result === 'nok' ? 'X' : 'Δ'}</em><span>{r.result === 'partial' ? 'Se puede mejorar' : 'Hallazgo'}{r.item ? ` · Ítem ${r.item}` : ''}</span></h4>
               <p className="q">{es(r.question)}</p>
               <div className="fr"><Ic d={I.clip} /><p><i>Hallazgo</i>{r.notes || '—'}</p></div>
               <div className="fr w"><Ic d={I.wrench} /><p><i>Acción correctiva</i>{r.corrective || 'Sin acción registrada'}</p></div>
@@ -94,6 +94,7 @@ export default function Report() {
         .rep .ft h4 em { font-style: normal; background: #e0182d; color: #fff; border-radius: 10px; padding: 8px 15px; font-size: 22px; font-weight: 800; } .rep .ft h4 span { background: #ffe0e2; border-radius: 12px; padding: 8px 14px; font-weight: 700; }
         .rep .ft .q { margin: 6px 0 12px; font-weight: 800; font-size: 22px; line-height: 1.25; }
         .rep .fr { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; } .rep .fr .ric { background: #ffe0e2; color: #d11d2a; } .rep .fr.w .ric { background: #e6ebf6; color: #2c3a5e; }
+        .rep .find.pt { border-color: #f3dc8a; background: #fffbe8; } .rep .find.pt .ft h4 { color: #a56a00; } .rep .find.pt .ft h4 em { background: #f2b200; color: #fff; } .rep .find.pt .ft h4 span { background: #fff0b8; } .rep .find.pt .fr .ric { background: #fff0b8; color: #a56a00; } .rep .find.pt .fr.w .ric { background: #e6ebf6; color: #2c3a5e; }
         .rep .fr p { margin: 0; font-size: 17px; line-height: 1.3; } .rep .fr i { display: block; font-style: normal; font-weight: 700; color: #5a6a8c; font-size: 17px; }
         .rep .fi { width: 190px; height: 150px; flex: none; border: 4px solid #fff; border-radius: 14px; box-shadow: 0 0 0 1px #f0b9be; position: relative; overflow: hidden; background: #fff; font-size: 13px; color: #8b97b2; } .rep .fi img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; } .rep .fi > span { position: absolute; inset: 0; display: grid; place-items: center; }
         .rep footer { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 14px; color: #6b7a9b; border-top: 1px solid #e3e9f5; padding-top: 10px; } .rep footer .ric { width: 28px; height: 28px; background: none; } .rep footer svg { width: 20px; height: 20px; }
