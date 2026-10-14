@@ -1,7 +1,7 @@
 {
   "name": "QE Process Audit",
   "zone": "Calidad",
-  "per_audit": 10,
+  "per_audit": 19,
   "questions": [
     { "item": null, "es": "Realizar una auditoría del Plan de Control y especificar el número de parte auditado en el área de Notas de este formato.", "en": "Conduct a Control Plan audit and specify part number audited in Notes area of this form." },
     { "item": null, "es": "¿El Plan de Control auditado se alinea con el PFMEA y el QIR/PIR? Confirmar si las características críticas están homologadas.", "en": "Does the Control Plan audited align with the PFMEA and QIR/PIR? Confirm if Critical Characteristics are homologated." },
