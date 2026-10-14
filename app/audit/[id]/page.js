@@ -196,7 +196,7 @@ function RunnerInner({ audit, onExit, onDone }) {
         <div className="prog"><i style={{ width: `${((idx + 1) / qs.length) * 100}%` }} /></div>
       </div>
       <div className="exec-body">
-        <div className="qcat">{q.category || audit.template}</div>
+        <div className="qcat">{q.category || audit.template}{q.item ? <span className="qitem">Ítem {q.item}</span> : null}</div>
         <div className="qtext"><Bi text={q.text} /></div>
         <div className="answers">
           {BTN.map(([k, sym, lbl, code]) => (
@@ -256,7 +256,7 @@ function Result({ audit }) {
       {audit.responses.map((r) => (
         <div key={r.id} className="card" style={{ marginBottom: 8 }}>
           <div className="row" style={{ alignItems: 'flex-start' }}>
-            <div className="grow" style={{ fontSize: 14 }}><Bi text={r.question} /></div>
+            <div className="grow" style={{ fontSize: 14 }}>{r.item ? <b className="qitem-s">#{r.item}</b> : null}<Bi text={r.question} /></div>
             <span className={`pill ${r.result === 'ok' ? 'ok' : r.result === 'nok' ? 'nok' : r.result === 'partial' ? 'warn' : ''}`}>{r.result === 'nok' ? 'X' : r.result === 'partial' ? 'Δ' : r.result === 'na' ? 'N/A' : 'OK'}</span>
           </div>
           {r.notes && <div className="sub">{r.notes}</div>}

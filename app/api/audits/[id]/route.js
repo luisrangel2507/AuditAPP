@@ -21,12 +21,13 @@ export const GET = route(async (req, { params }, user) => {
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };
   if (a.status === 'completed') {
     const { rows } = await q(
-      `SELECT id,question_id,question,category,result,notes,corrective,(evidence <> '') AS has_evidence
-         FROM responses WHERE audit_id=$1 ORDER BY id`, [a.id]);
+      `SELECT r.id,r.question_id,r.question,r.category,r.result,r.notes,r.corrective,(r.evidence <> '') AS has_evidence,
+              (SELECT n FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY template_id ORDER BY sort_order,id) AS n FROM questions) x WHERE x.id=r.question_id) AS item
+         FROM responses r WHERE r.audit_id=$1 ORDER BY r.id`, [a.id]);
     return json({ ...base, responses: rows });
   }
   const { rows: qs } = await q(
-    `SELECT id,text,category FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
+    `SELECT id,text,category,item FROM (SELECT id,text,category, ROW_NUMBER() OVER (PARTITION BY template_id ORDER BY sort_order,id) AS item FROM questions) x WHERE id = ANY($1::int[])`, [a.question_ids]);
   const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
   let machines = {};
   if (a.layer === 1 || a.kind === 'process') {

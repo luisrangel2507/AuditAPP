@@ -974,3 +974,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ztile b { font-size: 27px; font-weight: 800; letter-spacing: -.02em; text-shadow: 0 0 6px rgba(255,255,255,.9), 0 0 2px rgba(255,255,255,.9); }
 .ztiles.m .ztile b { font-size: 19px; }
 .ztiles.m .ztile b { font-size: 18px; } .ztiles.m .zc { display: none; }
+
+/* Número de ítem de cada pregunta */
+.qitem { margin-left: 10px; padding: 3px 10px; border-radius: 999px; background: rgba(31,107,240,.12); color: #1f5bd6; font-weight: 800; font-size: 12px; letter-spacing: .02em; text-transform: none; }
+.qitem-s { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 8px; background: rgba(31,107,240,.12); color: #1f5bd6; font-size: 12px; }
+[data-theme="dark"] .qitem, [data-theme="dark"] .qitem-s { background: rgba(110,160,255,.2); color: #9fc0ff; }
