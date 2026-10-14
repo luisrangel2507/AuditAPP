@@ -287,15 +287,8 @@ function RunnerInner({ audit, onExit, onDone }) {
 }
 
 function Result({ audit }) {
-  const user = useUser();
-  const mx = (ts) => new Date(ts).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });
-  const dur = (s) => s == null ? '—' : s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`;
   return (
     <>
-      {isAdmin(user) && audit.completed_at && (
-        <div className="card" style={{ marginBottom: 10 }}>
-          <div className="sub" style={{ margin: 0 }}>Registrada a las <b>{mx(audit.completed_at)}</b>{audit.started_at ? ` · inició ${mx(audit.started_at)}` : ''} · duración activa <b>{dur(audit.active_sec)}</b></div>
-        </div>)}
       <div className="card" style={{ textAlign: 'center' }}>
         <Ring value={audit.score_pct} size={110} stroke={10} cls={scoreCls(audit.score_pct)} label={`${Math.round(audit.score_pct)}%`} sub="Score" />
         <div className="row" style={{ justifyContent: 'center', marginTop: 10 }}>
