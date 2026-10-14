@@ -224,6 +224,14 @@ async function main() {
     console.log('[setup] plantilla QE Process Audit cargada');
   }
 
+  // Ajuste único: las auditorías de proceso de los QEs llevan las 19 preguntas (si ya se había creado con 10)
+  const flag = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_process_all_19','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flag.rowCount) {
+    await pool.query(`UPDATE templates SET per_audit=19 WHERE name=$1`, [qeTpl.name]);
+    await pool.query(`DELETE FROM audits WHERE kind='process' AND status='pending' AND date >= $1`, [mxToday]);
+    console.log('[setup] QE Process Audit: 19 preguntas por auditoría');
+  }
+
   // Preguntas existentes de una versión anterior (un solo idioma) -> bilingües. Idempotente: solo toca las que aún son el texto original.
   let bi = 0;
   for (const [orig] of Object.entries(i18n)) {
