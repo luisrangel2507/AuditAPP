@@ -502,6 +502,10 @@ function QEs() {
         <b className="qx-n">{data ? data.per_day : '…'}</b>
         <button className="qx-pm plus" disabled={saving || !data || data.per_day >= 5} onClick={() => setPer(data.per_day + 1)} aria-label="Más">+</button>
       </div>
+      {data && <div className="qx-card qx-per" style={{ marginBottom: 12 }}>
+        <i className="qx-bar" style={{ background: data.lpa_on ? '#22b36a' : '#98a3bb' }} /><div className="grow"><span>LPA de los QEs</span><b>{data.lpa_on ? 'Encendida' : 'Apagada · solo proceso'}</b></div>
+        <button className={`btn sm ${data.lpa_on ? 'alt' : ''}`} disabled={saving} onClick={async () => { setSaving(true); try { await api('/api/admin/qes', { method: 'PUT', body: { lpa_on: !data.lpa_on } }); load(data.monday); } catch (e) { setErr(e.message); } finally { setSaving(false); } }}>{data.lpa_on ? 'Apagar' : 'Encender'}</button>
+      </div>}
       <div className="row wrap" style={{ margin: '4px 0 10px' }}>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>

@@ -29,13 +29,22 @@ export const GET = route(async (req, ctx, user) => {
       GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today]);
   const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
   const perDay = Number((await q(`SELECT value FROM settings WHERE key='qe_process_per_day'`)).rows[0]?.value ?? 2);
-  return json({ today, monday, per_day: perDay, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), rows,
+  const lpaOn = (await q(`SELECT value FROM settings WHERE key='qe_lpa_on'`)).rows[0]?.value === '1';
+  return json({ today, monday, per_day: perDay, lpa_on: lpaOn, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), rows,
     totals: { total: sum('total'), done: sum('done'), missed: sum('missed'), findings: sum('findings') } });
 }, { need: 'admin' });
 
 // El admin define cuántas auditorías de proceso al día hace cada QE (0 a 5)
 export const PUT = route(async (req, ctx, user) => {
-  const n = Number((await req.json()).per_day);
+  const body = await req.json();
+  // Encender / apagar la LPA de los QEs (por ahora solo auditorías de proceso)
+  if (typeof body.lpa_on === 'boolean') {
+    await q(`INSERT INTO settings(key,value) VALUES('qe_lpa_on',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [body.lpa_on ? '1' : '0']);
+    if (!body.lpa_on) await q(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND a.kind='lpa' AND a.status='pending' AND u.dept='quality' AND u.layer=1`);
+    resetEnsured();
+    return json({ ok: true, lpa_on: body.lpa_on });
+  }
+  const n = Number(body.per_day);
   if (!Number.isInteger(n) || n < 0 || n > 5) return err('Indica un número de 0 a 5');
   await q(`INSERT INTO settings(key,value) VALUES('qe_process_per_day',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [String(n)]);
   // Si se reduce: se quitan las pendientes de hoy en adelante que sobran

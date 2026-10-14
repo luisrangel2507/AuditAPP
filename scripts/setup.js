@@ -235,6 +235,14 @@ async function main() {
     console.log('[setup] QE Process Audit: 19 preguntas por auditoría');
   }
 
+  // Ajuste único: por ahora los QEs solo hacen auditorías de proceso (se quitan sus LPA pendientes)
+  const flag2 = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_lpa_off_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flag2.rowCount) {
+    await pool.query(`INSERT INTO settings(key,value) VALUES('qe_lpa_on','0') ON CONFLICT DO NOTHING`);
+    await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND a.kind='lpa' AND a.status='pending' AND u.dept='quality' AND u.layer=1`);
+    console.log('[setup] QEs: solo auditorías de proceso (LPA apagada)');
+  }
+
   // Preguntas existentes de una versión anterior (un solo idioma) -> bilingües. Idempotente: solo toca las que aún son el texto original.
   let bi = 0;
   for (const [orig] of Object.entries(i18n)) {

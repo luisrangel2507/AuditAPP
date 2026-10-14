@@ -61,6 +61,7 @@ export const GET = route(async (req, ctx, user) => {
                       COUNT(a.id) FILTER (WHERE a.status='pending' AND a.due_date < $2::date AND a.date >= $1)::int AS missed
                  FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='lpa'
                 WHERE u.active AND u.access NOT IN ('admin','master') AND u.template_id IS NOT NULL AND ($3::int IS NULL OR u.site_id=$3)
+                  AND (NOT (u.dept='quality' AND u.layer=1) OR EXISTS (SELECT 1 FROM settings WHERE key='qe_lpa_on' AND value='1'))
                 GROUP BY u.id) t`, [from, today, scope]),
   ]);
   const siteName = scope != null ? (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || ''
