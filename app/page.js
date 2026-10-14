@@ -77,7 +77,7 @@ function MyHome() {
             : <div className="card empty">No tienes auditorías pendientes.</div>}
           {by(['upcoming']).length > 0 && <><div className="sect">Próximas</div>{by(['upcoming']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
           {by(['completed']).filter((a) => a.done_day === data.today).length > 0 && <><div className="sect">Completadas hoy</div>{by(['completed']).filter((a) => a.done_day === data.today).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
-          {by(['completed']).filter((a) => a.done_day !== data.today).length > 0 && <><div className="sect">Completadas esta semana</div>{by(['completed']).filter((a) => a.done_day !== data.today).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
+          {by(['completed']).length > 0 && <><div className="sect">Completadas esta semana</div>{by(['completed']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
           {by(['missed']).length > 0 && <><div className="sect">No realizadas</div>{by(['missed']).map((a) => <Ticket key={a.id} a={a} today={data.today} />)}</>}
         </>
       )}
