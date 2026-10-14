@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Shell, { useUser } from '@/components/Shell';
 import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
-import { api, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
+import { api, peek, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
   const me = useUser(), master = isMaster(me);
@@ -474,40 +474,61 @@ function Assign() {
 
 // Seguimiento de las auditorías de proceso de los QEs (etapa de pruebas)
 function QEs() {
-  const [data, setData] = useState(null), [err, setErr] = useState(''), [saving, setSaving] = useState(false);
+  const [data, setData] = useState(null), [err, setErr] = useState(''), [saving, setSaving] = useState(false), [filter, setFilter] = useState('all'), [openId, setOpenId] = useState(null);
   const setPer = async (n) => { setSaving(true); try { await api('/api/admin/qes', { method: 'PUT', body: { per_day: n } }); load(data.monday); } catch (e) { setErr(e.message); } finally { setSaving(false); } };
-  const load = (d) => { setData(null); api(`/api/admin/qes${d ? `?date=${d}` : ''}`).then(setData).catch((e) => setErr(e.message)); };
+  const load = (d) => { const c = !d ? peek('/api/admin/qes') : null; if (c) setData(c); else setData(null); api(`/api/admin/qes${d ? `?date=${d}` : ''}`).then(setData).catch((e) => setErr(e.message)); };
   useEffect(() => { load(); }, []);
   if (err) return <div className="err">{err}</div>;
   const t = data?.totals || {};
+  const pct = t.total ? Math.round((t.done / t.total) * 100) : 0;
+  const ic = (d) => <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+  const chev = <svg className="qx-ch" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>;
+  const rows = (data?.rows || []).filter((r) => filter === 'missed' ? r.missed > 0 : filter === 'done' ? r.done > 0 : true);
+  // Estado de cada día de una persona: ok (todas hechas), part (algunas), bad (no realizada), off (pendiente)
+  const dayState = (r, d) => {
+    const its = r.items.filter((x) => x.date === d);
+    if (!its.length) return null;
+    const dn = its.filter((x) => x.status === 'completed').length;
+    if (dn === its.length) return { k: 'ok', f: 100, dn, n: its.length };
+    const late = its.some((x) => x.status !== 'completed' && x.due < data.today);
+    return { k: late ? 'bad' : dn ? 'part' : 'off', f: Math.round((dn / its.length) * 100) || (late ? 40 : 0), dn, n: its.length };
+  };
+  const icon = (k) => k === 'ok' ? <path d="m7.5 12.5 3 3 6-6.5" /> : k === 'bad' ? <path d="m8 8 8 8M16 8l-8 8" /> : k === 'part' ? <path d="M8 12h8M12 8v8" /> : <path d="M8 12h8" />;
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Auditorías de proceso de los QEs (lunes a viernes; tú defines cuántas al día). Los hallazgos se abren en Issues. Etapa de pruebas. <a href="/tv/qes" target="_blank" rel="noreferrer" style={{ color: 'var(--brand2)', fontWeight: 600 }}>Abrir pantalla TV ›</a></p>
-      <div className="row wrap" style={{ margin: '10px 0' }}>
+      <div className="qx-card qx-per">
+        <i className="qx-bar" /><div className="grow"><span>Auditorías de proceso</span><b>por QE al día</b></div>
+        <button className="qx-pm" disabled={saving || !data || data.per_day <= 0} onClick={() => setPer(data.per_day - 1)} aria-label="Menos">−</button>
+        <b className="qx-n">{data ? data.per_day : '…'}</b>
+        <button className="qx-pm plus" disabled={saving || !data || data.per_day >= 5} onClick={() => setPer(data.per_day + 1)} aria-label="Más">+</button>
+      </div>
+      <div className="row wrap" style={{ margin: '4px 0 10px' }}>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, 7))} disabled={!data}>›</button>
       </div>
-      {data && <div className="card row" style={{ marginBottom: 12, alignItems: 'center' }}>
-        <span className="grow">Auditorías de proceso <b>por QE al día</b></span>
-        <button className="btn alt sm" disabled={saving || data.per_day <= 0} onClick={() => setPer(data.per_day - 1)}>−</button>
-        <b style={{ minWidth: 28, textAlign: 'center', fontSize: 18 }}>{data.per_day}</b>
-        <button className="btn alt sm" disabled={saving || data.per_day >= 5} onClick={() => setPer(data.per_day + 1)}>+</button>
-      </div>}
       {!data ? <div className="empty">Cargando…</div> : <>
-        <div className="kpis" style={{ marginBottom: 12 }}>
-          <div className="kpi"><b>{t.done}/{t.total}</b><span>Hechas / programadas</span></div>
-          <div className="kpi"><b>{t.total ? Math.round((t.done / t.total) * 100) : 0}%</b><span>Avance</span></div>
-          <div className="kpi"><b>{t.findings}</b><span>Hallazgos</span></div>
-          <div className="kpi"><b>{t.missed}</b><span>No realizadas</span></div>
+        <div className="qx-kpis">
+          <button className={`qx-card qx-k ${filter === 'done' ? 'sel' : ''}`} onClick={() => setFilter(filter === 'done' ? 'all' : 'done')}><i className="b">{ic(<><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17M9 15l2 2 4-4" /></>)}</i><div><b>{t.done}/{t.total}</b><span>Hechas / programadas</span></div>{chev}</button>
+          <div className="qx-card qx-k"><i className="g">{ic(<path d="M6 20v-7M12 20V6M18 20v-11" />)}</i><div><b>{pct}%</b><span>Avance</span></div>
+            <svg className="qx-ring" width="68" height="68" viewBox="0 0 68 68" aria-hidden="true"><circle cx="34" cy="34" r="28" fill="none" stroke="rgba(120,140,180,.2)" strokeWidth="6" /><circle cx="34" cy="34" r="28" fill="none" stroke="#22b36a" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(pct / 100) * 175.9} 175.9`} transform="rotate(-90 34 34)" /><text x="34" y="38" textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">{pct}%</text></svg></div>
+          <a href="/findings" className="qx-card qx-k"><i className="r">{ic(<><path d="M12 3.5 2.8 19.5h18.4z" /><path d="M12 10v4.5M12 17.2v.1" /></>)}</i><div><b>{t.findings}</b><span>Hallazgos</span></div>{chev}</a>
+          <button className={`qx-card qx-k ${filter === 'missed' ? 'sel' : ''}`} onClick={() => setFilter(filter === 'missed' ? 'all' : 'missed')}><i className="n">{ic(<><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></>)}</i><div><b>{t.missed}</b><span>No realizadas</span></div>{chev}</button>
         </div>
-        {!data.rows.length ? <div className="card empty">No hay QEs activos.</div> : data.rows.map((r) => (
-          <div key={r.id} className="card" style={{ marginBottom: 8 }}>
-            <div className="row"><b className="grow">{r.name}</b><span className={`pill ${r.done === r.total && r.total ? 'ok' : r.missed ? 'nok' : 'gold'}`}>{r.done}/{r.total}</span></div>
+        {filter !== 'all' && <div className="sub" style={{ margin: '0 0 8px' }}>Mostrando solo {filter === 'missed' ? 'quienes tienen no realizadas' : 'quienes ya hicieron alguna'} · <button className="linkbtn" onClick={() => setFilter('all')}>ver todos</button></div>}
+        {!rows.length ? <div className="card empty">{data.rows.length ? 'Nadie con ese filtro.' : 'No hay QEs activos.'}</div> : rows.map((r) => (
+          <div key={r.id} className="qx-card qx-p">
+            <button className="qx-ph" onClick={() => setOpenId(openId === r.id ? null : r.id)} aria-expanded={openId === r.id}>
+              <b className="grow">{r.name}</b><span className={`pill ${r.done === r.total && r.total ? 'ok' : r.missed ? 'nok' : 'gold'}`}>{r.done}/{r.total}</span>
+              <svg className={`qx-ch ${openId === r.id ? 'on' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+            </button>
             <div className="sub">{r.avg_score != null ? `Promedio ${r.avg_score}%` : 'Sin completadas'} · {r.findings} hallazgo(s){r.avg_sec != null ? ` · ${dur(r.avg_sec)} promedio` : ''}{r.missed ? ` · ${r.missed} no realizada(s)` : ''}</div>
-            <div className="qes-dots">{data.days.map((d) => { const its = r.items.filter((x) => x.date === d); return (
-              <div key={d} className="qes-dot-col"><small>{DAYS_SHORT[data.days.indexOf(d)]}</small>
-                <div>{its.length ? its.map((x) => <i key={x.slot} className={x.status === 'completed' ? 'ok' : x.due < data.today ? 'bad' : ''} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : 'pendiente'} />) : <i className="off" />}</div></div>); })}</div>
+            <div className="qx-days">{data.days.map((d, i) => { const st = dayState(r, d); return (
+              <div key={d} className="qx-dc"><small className={d === data.today ? 'today' : ''}>{DAYS_SHORT[i]}</small>
+                {st ? <div className={`qx-d ${st.k}`}><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="currentColor" stroke="none" />{icon(st.k)}</svg><u><i style={{ width: `${st.f}%` }} /></u></div> : <div className="qx-d none">—</div>}
+              </div>); })}</div>
+            {openId === r.id && <div className="qx-det">{r.items.filter((x) => x.status === 'completed').length ? r.items.filter((x) => x.status === 'completed').map((x) => (
+              <div key={`${x.date}-${x.slot}`} className="qx-dr"><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric' })} · P{x.slot}</b><span>{x.area}</span><em className={x.score >= 90 ? 'ok' : x.score >= 75 ? 'warn' : 'nok'}>{Math.round(x.score)}%</em></div>)) : <div className="sub" style={{ margin: 0 }}>Aún no hay auditorías completadas esta semana.</div>}</div>}
           </div>))}
       </>}
     </>
