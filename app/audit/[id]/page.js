@@ -332,6 +332,7 @@ const G = {
 
 // El admin puede eliminar una auditoría realizada (p. ej. de prueba) para que se vuelva a hacer
 function ResetAudit({ audit, onDone }) {
+  const user = useUser();
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   async function go() {
     const n = audit.nok_count + audit.partial_count;
@@ -342,6 +343,7 @@ function ResetAudit({ audit, onDone }) {
     try { await api(`/api/admin/audits/${audit.id}/reset`, { method: 'POST', body: { reason } }); onDone(); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
+  if (!isAdmin(user)) return null;
   return (
     <div style={{ margin: '4px 0 12px' }}>
       <button type="button" className="reset-btn" disabled={busy} onClick={go}>{busy ? 'Eliminando…' : '🗑 Eliminar para que se vuelva a hacer'}</button>
@@ -353,7 +355,6 @@ function ResetAudit({ audit, onDone }) {
 export default function AuditPage() {
   const { id } = useParams();
   const router = useRouter();
-  const user = useUser();
   const [audit, setAudit] = useState(null), [err, setErr] = useState(''), [running, setRunning] = useState(false), [done, setDone] = useState(null);
   const load = () => api(`/api/audits/${id}`).then(setAudit).catch((e) => setErr(e.message));
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
@@ -393,7 +394,7 @@ export default function AuditPage() {
     <Shell>
       {header}
       {audit.status === 'completed' && audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="rep-link">{G.doc}<b>Descargar reporte</b>{G.arrow}</Link>}
-      {audit.status === 'completed' && isAdmin(user) && <ResetAudit audit={audit} onDone={() => router.push('/admin')} />}
+      {audit.status === 'completed' && <ResetAudit audit={audit} onDone={() => router.push('/admin')} />}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
           {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
