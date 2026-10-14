@@ -46,7 +46,7 @@ function WeekInner() {
   return (
     <>
       <h1 className="title">{isAdmin(user) ? 'Programa semanal' : 'Mi semana'}</h1>
-      <div className="row wrap" style={{ margin: isAdmin(user) ? '10px 0' : '6px 0 10px' }}>
+      <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => go(1)} disabled={!data}>›</button>
@@ -65,27 +65,17 @@ function WeekInner() {
       )}
       {data && !isAdmin(user) ? (
         data.audits.length ? (
-          <div className="wk-my">
-            {(() => {
-              const all = [...data.audits].sort((x, y) => x.date.localeCompare(y.date) || (x.slot || 0) - (y.slot || 0));
-              const wide = all.filter((x) => x.date !== x.due_date);
-              const rowsBy = data.days.map((d) => ({ d, list: all.filter((x) => x.date === d && x.date === x.due_date) })).filter((r) => r.list.length);
-              const pillTxt = (x) => x.status === 'completed' ? `${Math.round(x.score_pct)}%` : '';
-              const row = (key, lbl, sub, list, isToday) => (
-                <div key={key} className={`wk-my-row ${isToday ? 'today' : ''}`}>
-                  <div className="wk-my-d"><b>{lbl}</b><span>{sub}</span></div>
-                  <div className="wk-my-c">
-                    {list.filter((x) => x.kind !== 'process').map((x) => (
-                      <Link key={x.id} href={`/audit/${x.id}`} className={`chip wk-lpa ${status(x)}`}><span>{x.area || 'Sin zona'}</span>{pillTxt(x) && <b>{pillTxt(x)}</b>}</Link>))}
-                    <div className="wk-procs">{list.filter((x) => x.kind === 'process').map((x) => (
-                      <Link key={x.id} href={`/audit/${x.id}`} className={`chip wk-p ${status(x)}`}>P{x.slot}{pillTxt(x) && <b>{pillTxt(x)}</b>}</Link>))}</div>
-                  </div>
-                </div>);
-              return [
-                ...wide.map((x) => row('w' + x.id, 'Semana', `vence ${fmtDate(x.due_date, { weekday: 'short', day: 'numeric' })}`, [x], today >= x.date && today <= x.due_date)),
-                ...rowsBy.map((r) => row(r.d, fmtDate(r.d, { weekday: 'short' }), fmtDate(r.d, { day: 'numeric', month: 'short' }), r.list, r.d === today)),
-              ];
-            })()}
+          <div className="mydays">
+            {[...data.audits].sort((a, b) => a.date.localeCompare(b.date) || (a.slot || 0) - (b.slot || 0)).map((a) => {
+              const wide = a.date !== a.due_date, st = status(a), isToday = a.date === today || (wide && today >= a.date && today <= a.due_date);
+              const [label, cls] = ({ completed: ['Completada', 'ok'], late: ['Completada tarde', 'warn'], open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'], upcoming: ['Próxima', ''] })[st] || ['', ''];
+              return (
+                <Link key={a.id} href={`/audit/${a.id}`} className={`myday ${isToday ? 'today' : ''}`}>
+                  <div className="myday-d">{wide ? <><b>Semana</b><span>vence {fmtDate(a.due_date, { weekday: 'short', day: 'numeric' })}</span></> : <><b>{fmtDate(a.date, { weekday: 'long' })}</b><span>{fmtDate(a.date, { day: 'numeric', month: 'short' })}</span></>}</div>
+                  <div className="myday-z">{a.kind === 'process' && a.status !== 'completed' ? `Auditoría de proceso ${a.slot}` : (a.area || 'Sin zona asignada')}{a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}</div>
+                  <div className="myday-s"><span className={`pill ${cls}`}>{label}</span>{a.status === 'completed' && <b className="myday-sc">{Math.round(a.score_pct)}%</b>}</div>
+                </Link>);
+            })}
           </div>
         ) : <div className="card empty">No tienes auditorías programadas esta semana.</div>
       ) : !data ? <div className="empty">Cargando…</div> : (

@@ -937,13 +937,3 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 /* Cabecera interior: panorámica de Querétaro en lugar de la ilustración de la máquina */
 .apphero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; z-index: -1; }
 .apphero::after { background: linear-gradient(90deg, rgba(6,22,60,.78) 0%, rgba(6,22,60,.5) 45%, rgba(6,22,60,.18) 100%), linear-gradient(180deg, rgba(6,22,60,.35) 0%, rgba(6,22,60,0) 40%); z-index: 0; }
-
-/* Mi semana (no admin): una fila por día con su LPA y las auditorías de proceso como chips */
-.wk-my { display: grid; gap: 6px; }
-.wk-my-row { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: center; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line2); border-radius: 16px; box-shadow: var(--shadow-s); }
-.wk-my-row.today { border-color: var(--brand2); box-shadow: 0 0 0 3px rgba(34,114,234,.15); }
-.wk-my-d { display: flex; flex-direction: column; line-height: 1.15; text-transform: capitalize; } .wk-my-d b { font-size: 15px; color: var(--ink); } .wk-my-d span { font-size: 11.5px; color: var(--sub); text-transform: none; }
-.wk-my-c { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wk-my .chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 10px; font-size: 12.5px; min-height: 0; white-space: nowrap; }
-.wk-my .chip.wk-lpa span { flex: 1; overflow: hidden; text-overflow: ellipsis; } .wk-my .chip b { font-weight: 800; }
-.wk-procs { display: flex; gap: 4px; flex-wrap: wrap; } .wk-my .chip.wk-p { padding: 3px 9px; font-size: 12px; }
