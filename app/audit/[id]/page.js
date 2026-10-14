@@ -295,7 +295,8 @@ export default function AuditPage() {
         <span className="grow" />
         <span className="btn-ghost audit-date">{G.cal}{fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
       </div>
-      <h1 className="title">{(audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
+      <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
+      {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
       {audit.part_number && <div className="partno">N/P <b>{audit.part_number}</b></div>}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
