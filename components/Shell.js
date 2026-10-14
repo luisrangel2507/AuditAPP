@@ -6,7 +6,6 @@ import { api, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
 import Guide from '@/components/Guide';
 import ThemeToggle from '@/components/ThemeToggle';
 import { isAdmin, isMaster, roleLabel } from '@/lib/roles';
-import { HeroArt } from '@/components/Art';
 import { I } from '@/components/Icons';
 
 const ROLE = { quality: 'Calidad', process: 'Procesos', production: 'Producción', logistics: 'Logística', hr: 'RH', maintenance: 'Mantenimiento', toolroom: 'Tool Room', program: 'Programas', management: 'Gerencia' };
@@ -75,7 +74,7 @@ export default function Shell({ children, need }) {
   return (
     <UserCtx.Provider value={user}>
       <header className="apphero">
-        <HeroArt />
+        <img className="apphero-img" src="/app-hero.jpg" alt="" />
         <div className="apphero-in">
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
