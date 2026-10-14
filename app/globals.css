@@ -961,3 +961,13 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .setup-note { margin-top: 12px; color: var(--sub); }
 .setup-foot { flex: none; padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); }
 .setup-go { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 24px; border: 0; border-radius: 999px; color: #fff; background: linear-gradient(90deg, #0a49b8, #1f8bf0); box-shadow: 0 16px 28px -14px rgba(31,91,214,.8); font-size: 18px; } .setup-go b { flex: 1; text-align: center; } .setup-go span { font-size: 24px; } .setup-go:disabled { opacity: .45; box-shadow: none; }
+/* Antes de empezar: tarjetas más chicas para que quepan sin scroll */
+.setup-hero { min-height: 118px; padding-bottom: 12px; border-radius: 0 0 24px 24px; }
+.setup-hero h2 { font-size: 26px; } .setup-hero p { font-size: 13.5px; }
+.setup-body { padding: 12px 14px 4px; } .setup-h { margin-bottom: 8px; font-size: 14px; }
+.ztiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ztile { aspect-ratio: 1.05; padding: 7px; border-radius: 14px; }
+.ztile b, .ztiles.m .ztile b { font-size: 16px; } .ztile .zi svg, .ztiles.m .zi svg { width: 22px; height: 22px; }
+.ztile .zc { width: 22px; height: 22px; right: 5px; bottom: 5px; } .ztile .zc svg { width: 12px; height: 12px; }
+.ztiles.m .ztile { aspect-ratio: 1.05; }
+.setup-foot { padding-top: 6px; } .setup-go { padding: 13px 22px; font-size: 17px; }
