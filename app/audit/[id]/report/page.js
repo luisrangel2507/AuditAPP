@@ -53,7 +53,7 @@ export default function Report() {
           <div><Ic d={I.user} /><p><i>Auditor</i><b>{a.auditor}</b></p></div>
           <div><Ic d={I.cal} /><p><i>Fecha</i><b>{fmtDate(a.date, { day: 'numeric', month: 'short', year: 'numeric' })}</b></p></div>
           <div><Ic d={I.mach} /><p><i>Zona / máquina</i><b>{a.area}</b></p></div>
-          <div><Ic d={I.doc} /><p><i>N/P</i><b>{a.part_number || '—'}</b></p></div>
+          <div><Ic d={I.doc} /><p><i>N/P</i><b className={a.part_edited_at ? 'pe' : ''}>{a.part_number || '—'}{a.part_edited_at ? <small> ✎ corregido</small> : null}</b></p></div>
           <div className="res"><Ic d={I.list} /><p><i>Resultado</i><b><u className="g">{a.ok_count} OK</u> · <u className="r">{a.nok_count} X</u> · <u className="y">{a.partial_count} Δ</u> · <u className="n">{a.na_count} N/A</u></b></p></div>
         </div>
         {!finds.length ? (
@@ -86,6 +86,7 @@ export default function Report() {
         .rep .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; margin: 16px 0; }
         .rep .meta > div { display: flex; align-items: center; gap: 10px; min-width: 0; } .rep .meta .res { grid-column: span 2; }
         .rep .meta p { margin: 0; display: flex; flex-direction: column; min-width: 0; } .rep .meta i { font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7a9b; } .rep .meta b { font-size: 18px; overflow-wrap: anywhere; }
+        .rep .meta .pe { color: #5b3fd1; } .rep .meta .pe small { font-size: .65em; font-weight: 600; color: #7d63e0; }
         .rep .meta u { text-decoration: none; } .rep .meta .g { color: #1f9a5a; } .rep .meta .r { color: #d92f3a; } .rep .meta .y { color: #e3a21a; } .rep .meta .n { color: #6b7a9b; }
         .rep .none { border: 1px solid #bfe6d1; background: #eefaf3; border-radius: 16px; padding: 22px; text-align: center; } .rep .none b { display: block; font-size: 24px; color: #17803f; } .rep .none span { font-size: 15px; color: #3c6b50; }
         .rep .find { display: flex; gap: 16px; border: 1px solid #f4c9cd; background: #fff3f3; border-radius: 18px; padding: 16px; margin-bottom: 10px; break-inside: avoid; }

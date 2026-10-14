@@ -27,7 +27,7 @@ function Ticket({ a, today }) {
           <span className={`pill ${cls}`}>{label}</span>
         </div>
         <div className="area">{a.kind === 'process' && a.status !== 'completed' ? `Auditoría de proceso ${a.slot}` : a.area || 'Sin zona asignada'}</div>
-        {a.part_number && <div className="partno">N/P <b>{a.part_number}</b></div>}
+        {a.part_number && <div className={`partno ${a.part_edited ? 'edited' : ''}`}>N/P <b>{a.part_number}</b>{a.part_edited ? <em> ✎ corregido</em> : null}</div>}
         <div className="meta">
           {a.kind === 'process' ? (a.status === 'completed' ? `${a.area} · ` : 'Zona y máquina al iniciar · ') : ''}{a.template} · {a.total_questions} preguntas
           {a.window === 'last_day' && ` · cierra hoy`}{a.window === 'open' && a.date === a.due_date && ` · solo hoy`}

@@ -89,6 +89,37 @@ function Setup({ audit, onSaved, onExit }) {
   );
 }
 
+// N/P con opción de corregirlo (queda marcado como corregido)
+function PartEdit({ audit, onSaved }) {
+  const [open, setOpen] = useState(false), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const edited = !!audit.part_edited_at;
+  const start = () => { const [a, b] = String(audit.part_number).split(' / '); setP1(a || ''); setP2(b || ''); setErr(''); setOpen(true); };
+  async function save() {
+    setBusy(true); setErr('');
+    try { const r = await api(`/api/audits/${audit.id}/part`, { method: 'POST', body: { part_number: p1, part_number2: p2 } }); onSaved(r); setOpen(false); }
+    catch (e) { setErr(e.message); } finally { setBusy(false); }
+  }
+  return (
+    <>
+      <div className={`partno ${edited ? 'edited' : ''}`}>N/P <b>{audit.part_number}</b>{edited ? <em> ✎ corregido</em> : null}
+        {audit.editable && <button type="button" className="pe-btn" onClick={start}>✎ Corregir</button>}</div>
+      {edited && audit.part_original && <div className="pe-was">Antes: <s>{audit.part_original}</s></div>}
+      {open && (
+        <div className="sheet-bg" onClick={() => setOpen(false)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+          <h2>Corregir número de parte</h2>
+          <p className="sub">Quedará marcado como corregido y se conserva el número original.</p>
+          <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} />
+          <input className="inp" style={{ marginTop: 8 }} placeholder="Segundo N/P (pieza espejo, opcional)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} />
+          {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+          <div className="row" style={{ marginTop: 14 }}>
+            <button className="btn alt grow" onClick={() => setOpen(false)}>Cancelar</button>
+            <button className="btn grow" disabled={busy || !p1.trim()} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+          </div>
+        </div></div>)}
+    </>
+  );
+}
+
 function Runner({ audit, onExit, onDone, onSetup }) {
   const needSetup = !audit.zone;
   if (needSetup) return <Setup audit={audit} onSaved={onSetup} onExit={onExit} />;
@@ -298,7 +329,7 @@ export default function AuditPage() {
       </div>
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
-      {audit.part_number && <div className="partno">N/P <b>{audit.part_number}</b></div>}
+      {audit.part_number && <PartEdit audit={audit} onSaved={(r) => setAudit({ ...audit, part_number: r.part_number, part_edited_at: r.unchanged ? audit.part_edited_at : new Date().toISOString(), part_original: audit.part_original || audit.part_number })} />}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
 
