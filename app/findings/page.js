@@ -7,6 +7,7 @@ import OwnerPicker from '@/components/OwnerPicker';
 import { api, fmtDate, peek } from '@/lib/client';
 import { isAdmin } from '@/lib/roles';
 
+const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 const OWN = { open: ['Pendiente', ''], in_progress: ['En proceso', 'gold'], done: ['Terminó', 'ok'] };
 const KIND = { opened: '●', assign: '＋', unassign: '－', progress: '◐', done: '✓', comment: '✎', closed: '■', reopened: '↺' };
 const no = (id) => 'OI-' + String(id).padStart(4, '0');
@@ -18,6 +19,9 @@ function Item({ f, today, lead, user, reload, startOpen }) {
   const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState('');
   const closed = f.status === 'closed';
   const overdue = !closed && f.due_date && f.due_date < today;
+  const soon = !closed && !overdue && f.due_date && f.due_date <= addDays(today, 2);
+  const stCls = closed ? 'ok' : overdue ? 'nok' : soon ? 'warn' : 'ok';
+  const stTxt = closed ? 'Cerrado' : overdue ? 'Vencido' : soon ? 'Por vencer' : f.status === 'in_progress' ? 'En proceso' : 'Abierto';
   const canAdd = lead || f.auditor_id === user.id || !!mine;
   const loadTl = () => api(`/api/findings/${f.id}`).then((d) => setTl(d.updates)).catch(() => {});
   useEffect(() => { if (open && !tl) loadTl(); /* eslint-disable-next-line */ }, [open]);
@@ -31,14 +35,14 @@ function Item({ f, today, lead, user, reload, startOpen }) {
     <div id={`oi-${f.id}`} className="card issue" style={{ marginBottom: 10, borderColor: overdue ? 'rgba(200,60,50,.5)' : undefined }}>
       <div className="row" style={{ alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
         <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
-        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span> <Bi text={f.question} /></div>
+        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span>{f.item ? <span className="oi-item">Ítem {f.item}</span> : null} <Bi text={f.question} /></div>
       </div>
       <div className="sub">{f.area}{f.part_number ? ` · N/P ${f.part_number}` : ''} · {fmtDate(f.audit_date)} · {f.auditor}</div>
       <div className="row wrap" style={{ marginTop: 8 }}>
-        <span className={`pill ${closed ? 'ok' : f.status === 'in_progress' ? 'gold' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span>
+        <span className={`pill ${stCls}`}>{stTxt}</span>
         {f.owners.length === 0 && !closed && <span className="pill nok">Sin responsable</span>}
-        {f.owners.length > 0 && <span className="pill">{closed ? `${f.owners.length} responsable(s)` : `${f.owners.length - pend}/${f.owners.length} terminaron`}</span>}
-        {f.due_date && <span className={`pill ${overdue ? 'nok' : ''}`}>{overdue ? 'Vencido ' : 'Compromiso '}{fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</span>}
+        {f.owners.map((o) => <span key={o.user_id} className={`pill ${o.status === 'done' ? 'ok' : ''}`}>{o.name}{o.status === 'done' ? ' ✓' : ''}</span>)}
+        {f.due_date && <span className={`pill ${overdue ? 'nok' : soon ? 'warn' : ''}`}>{'Compromiso '}{fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</span>}
       </div>
       {open && (
         <div style={{ marginTop: 12 }}>

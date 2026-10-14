@@ -25,6 +25,8 @@ export const GET = route(async (req, ctx, user) => {
     `SELECT f.id,f.area,a.part_number,f.question,f.result,f.notes,f.status,f.action,f.due_date,f.created_at,f.closed_at,
             a.id AS audit_id, a.date AS audit_date, a.user_id AS auditor_id, u.name AS auditor, u.dept,
             (SELECT r.id FROM responses r WHERE r.id=f.response_id AND r.evidence <> '') AS evidence_id,
+            (SELECT CASE WHEN qq.item_no IS NOT NULL THEN NULLIF(qq.item_no,-1) ELSE qq.sort_order + 1 END
+               FROM responses r2 JOIN questions qq ON qq.id=r2.question_id WHERE r2.id=f.response_id) AS item,
             COALESCE((SELECT json_agg(json_build_object('user_id',o.user_id,'name',ou.name,'status',o.status,'action',o.action,'done_at',o.done_at) ORDER BY o.added_at)
                         FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
        FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id

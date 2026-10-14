@@ -1091,3 +1091,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .qx-h { text-decoration: none; }
 
 .reset-btn { width: 100%; padding: 12px 16px; border-radius: 999px; border: 1.5px solid #d92f3a; background: transparent; color: #d92f3a; font-weight: 700; font-size: 15px; } .reset-btn:disabled { opacity: .5; }
+.issue .oi-item { display: inline-block; margin: 0 6px 0 2px; padding: 1px 8px; border-radius: 8px; background: #eef2fb; color: #2c3a5e; font-size: 12px; font-weight: 700; vertical-align: 1px; }
