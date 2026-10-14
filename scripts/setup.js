@@ -108,6 +108,8 @@ ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
 -- Auditorías de proceso de los QEs (2 diarias): mismo esquema, con tipo y número de turno
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'lpa';
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS slot INT NOT NULL DEFAULT 1;
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS zone TEXT NOT NULL DEFAULT '';
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_audits_slot ON audits(user_id,date,kind,slot);
 CREATE TABLE IF NOT EXISTS notifications (

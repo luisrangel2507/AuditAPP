@@ -6,6 +6,7 @@ import { isAdmin } from '@/lib/roles';
 import Shell from '@/components/Shell';
 import { api, fmtDate, compressImage, useLocal, scoreCls, DEPT, LAYER } from '@/lib/client';
 import Ring from '@/components/Ring';
+import { ZONES, NO_MACHINE } from '@/lib/zones';
 import OwnerPicker, { useUsers } from '@/components/OwnerPicker';
 import { useUser } from '@/components/Shell';
 
@@ -13,12 +14,57 @@ const BTN = [
   ['ok', '✓', 'Cumple', 'OK'], ['nok', '✕', 'No cumple', 'NOK'], ['partial', 'Δ', 'Cumple parcialmente', 'Parcial'], ['na', '—', 'No aplica', 'N/A'],
 ];
 
-function Runner({ audit, onExit, onDone }) {
+// Inicio (Layer 1 y QEs): zona → máquina (salvo PL) → N/P, con un segundo N/P para piezas espejo RH / LH
+function Setup({ audit, onSaved, onExit }) {
+  const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
+  const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [mirror, setMirror] = useState(false);
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const noMach = NO_MACHINE.includes(zone);
+  const list = (audit.machines && audit.machines[zone]) || [];
+  const ok = zone && (noMach || machine.trim()) && p1.trim() && (!mirror || p2.trim());
+  async function go() {
+    setBusy(true); setErr('');
+    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_number: p1, part_number2: mirror ? p2 : '' } }); onSaved(r); }
+    catch (e) { setErr(e.message); setBusy(false); }
+  }
+  return (
+    <div className="exec">
+      <div className="exec-top"><div className="row"><button className="btn-ghost" onClick={onExit}>✕ Salir</button><div className="grow" style={{ textAlign: 'center', fontWeight: 600 }}>Antes de empezar</div><span style={{ width: 60 }} /></div></div>
+      <div className="exec-body">
+        {hint && <div className="sub" style={{ marginTop: 0 }}>Zona asignada por el administrador: <b>{hint}</b></div>}
+        <div className="sect" style={{ marginTop: 6 }}>1. Zona</div>
+        <div className="zchips">{ZONES.map((z) => <button key={z} type="button" className={`zchip ${zone === z ? 'on' : ''}`} onClick={() => { setZone(z); setMachine(''); }}>{z}</button>)}</div>
+        {zone && !noMach && <>
+          <div className="sect">2. Máquina</div>
+          <div className="zchips">{list.map((m) => <button key={m} type="button" className={`zchip ${machine === m ? 'on' : ''}`} onClick={() => setMachine(m)}>{m}</button>)}</div>
+          <input className="inp" placeholder="Otra máquina…" maxLength={40} value={list.includes(machine) ? '' : machine} onChange={(e) => setMachine(e.target.value)} />
+        </>}
+        {zone && <>
+          <div className="sect">{noMach ? '2' : '3'}. Número de parte</div>
+          <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} />
+          {mirror
+            ? <div className="row" style={{ marginTop: 8 }}><input className="inp" placeholder="Segundo N/P (pieza espejo RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button className="btn-ghost" type="button" onClick={() => { setMirror(false); setP2(''); }}>Quitar</button></div>
+            : <button className="btn-ghost" type="button" style={{ marginTop: 8 }} onClick={() => setMirror(true)}>+ Segundo N/P (pieza espejo RH / LH)</button>}
+        </>}
+        {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
+      </div>
+      <div className="exec-foot"><button className="btn grow" disabled={!ok || busy} onClick={go}>{busy ? 'Guardando…' : 'Comenzar preguntas ›'}</button></div>
+    </div>
+  );
+}
+
+function Runner({ audit, onExit, onDone, onSetup }) {
+  const needSetup = (audit.layer === 1 || audit.kind === 'process') && !audit.zone;
+  if (needSetup) return <Setup audit={audit} onSaved={onSetup} onExit={onExit} />;
+  return <RunnerInner audit={audit} onExit={onExit} onDone={onDone} />;
+}
+
+function RunnerInner({ audit, onExit, onDone }) {
   const draft = useLocal(`lpa-draft-${audit.id}`, { answers: {}, idx: 0 });
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
   const [idx, setIdx] = useState(() => draft.read().idx || 0);
   const [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
-  const needArea = audit.layer >= 2 || audit.kind === 'process', needPart = audit.layer === 1 && audit.kind !== 'process';
+  const needArea = audit.layer >= 2, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const qs = audit.questions;
@@ -231,7 +277,7 @@ export default function AuditPage() {
             : <div className={audit.window === 'missed' ? 'err' : 'sub'}>{why}</div>}
         </div>
       )}
-      {running && <Runner audit={audit} onExit={() => setRunning(false)} onDone={setDone} />}
+      {running && <Runner audit={audit} onExit={() => setRunning(false)} onDone={setDone} onSetup={(r) => setAudit({ ...audit, ...r })} />}
     </Shell>
   );
 }

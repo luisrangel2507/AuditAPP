@@ -2,6 +2,7 @@ import { q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
 import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
+import { SEED_MACHINES } from '@/lib/zones';
 import { mxToday, windowState, closesOn } from '@/lib/dates';
 
 async function load(id) {
@@ -27,13 +28,19 @@ export const GET = route(async (req, { params }, user) => {
   const { rows: qs } = await q(
     `SELECT id,text,category FROM questions WHERE id = ANY($1::int[])`, [a.question_ids]);
   const byId = Object.fromEntries(qs.map((r) => [r.id, r]));
+  let machines = {};
+  if (a.layer === 1 || a.kind === 'process') {
+    const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
+    for (const [z, list] of Object.entries(SEED_MACHINES)) machines[z] = [...list];
+    for (const r of m) { const l = (machines[r.zone] ||= []); if (!l.includes(r.machine)) l.push(r.machine); }
+  }
   let zones = [];
   if (a.layer >= 2 || a.kind === 'process') {
     const { rows: z } = await q(
       `SELECT DISTINCT x AS z FROM users u, unnest(u.pool) x WHERE u.layer=1 AND u.active AND u.site_id IS NOT DISTINCT FROM $1 ORDER BY 1`, [a.site_id]);
     zones = z.map((r) => r.z).filter((v) => v && v !== 'All Areas');
   }
-  return json({ ...base, zones, questions: a.question_ids.map((i) => byId[i]).filter(Boolean) });
+  return json({ ...base, zones, machines, questions: a.question_ids.map((i) => byId[i]).filter(Boolean) });
 });
 
 // Reasignar auditor / zona / número de parte / fecha de una auditoría pendiente (solo admin)

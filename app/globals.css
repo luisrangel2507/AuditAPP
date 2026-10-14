@@ -893,3 +893,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .tvq .tvx-row.q .tvx-st.wk { display: inline-flex; grid-area: wk; justify-content: center; }
 }
 .tvq .tvx-slot .tvx-st { white-space: nowrap; }
+
+/* Inicio de auditoría: zonas como botones */
+.zchips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+.zchip { padding: 10px 16px; min-width: 56px; border-radius: 14px; border: 1px solid var(--line2); background: var(--panel); color: var(--ink); font-weight: 700; font-size: 15px; box-shadow: var(--shadow-s); }
+.zchip.on { background: linear-gradient(135deg, var(--brand1), var(--brand2)); color: #fff; border-color: transparent; }
