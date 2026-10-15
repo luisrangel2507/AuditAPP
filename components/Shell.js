@@ -13,7 +13,7 @@ import { I } from '@/components/Icons';
 const ROLE = { quality: 'Calidad', process: 'Procesos', production: 'Producción', logistics: 'Logística', hr: 'RH', maintenance: 'Mantenimiento', toolroom: 'Tool Room', program: 'Programas', management: 'Gerencia' };
 
 const UserCtx = createContext(null);
-const NICON = { short_audit: '⚠️', issue_assigned: '📌', issue_soon: '⏳', issue_overdue: '🔴', issue_escalated: '🚨', audit_reminder: '⏰', daily_summary: '📋', weekly_report: '📊', repeat_finding: '🔁' };
+const NICON = { short_audit: '⚠️', issue_assigned: '📌', issue_soon: '⏳', issue_overdue: '🔴', issue_escalated: '🚨', audit_reminder: '⏰', daily_summary: '📋', weekly_report: '📊', repeat_finding: '🔁', archive_warning: '🗄️', archive_done: '🗄️' };
 
 export const useUser = () => useContext(UserCtx);
 

@@ -210,6 +210,7 @@ function Archive() {
         <span className="sub" style={{ margin: 0 }}>días (0 = nunca)</span>
         <button className="btn alt sm" disabled={busy || String(d.days) === days} onClick={() => call({ days: Number(days) })}>Guardar</button>
       </div>
+      {d.upcoming > 0 && <div className="err" style={{ margin: '8px 0' }}>⚠️ En los próximos 7 días se borrarán {d.upcoming} foto(s) más por antigüedad. Descarga antes el respaldo con fotos (Reportes → Respaldo).</div>}
       <div className="row wrap" style={{ gap: 8, marginTop: 8, alignItems: 'center' }}>
         <span className="sub" style={{ margin: 0 }}>Por archivar hoy: <b>{d.eligible}</b> foto(s) (≈{d.eligible_mb} MB){d.last ? ` · última vez ${d.last}` : ''}</span>
         <button className="btn sm" disabled={busy || !d.eligible} onClick={() => { if (confirm(`Se eliminarán ${d.eligible} foto(s) con más de ${d.days} días. No se puede deshacer. ¿Continuar?`)) call({ run: true }); }}>Archivar ahora</button>
