@@ -432,7 +432,11 @@ function PasteSheet({ data, onApply, onClose }) {
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
 // Zona (A1…PL4) a partir del texto asignado ("B2", "B2 · B2-1" o textos antiguos como "ZONA C")
 const zoneOf = (area) => { const z = String(area || '').split(' · ')[0].trim().toUpperCase(); return ZONES.includes(z) ? z : ''; };
-const toneOf = (area) => { const z = zoneOf(area); return z ? (z.startsWith('PL') ? 'pl' : z[0].toLowerCase()) : (area ? 'x' : ''); };
+const toneOf = (area) => {
+  const z = zoneOf(area); if (z) return z.startsWith('PL') ? 'pl' : z[0].toLowerCase();
+  const m = /^ZONA ([A-E])\b/i.exec(String(area || '').trim()); // zona completa: "ZONA A" … "ZONA E"
+  return m ? m[1].toLowerCase() : (area ? 'x' : '');
+};
 const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 function Assign() {
@@ -531,11 +535,14 @@ function Assign() {
                   <div className="grow"><h2>{pick.step === 'zone' ? 'Zona' : `Máquina · Zona ${z}`}</h2>
                     <div className="sub" style={{ margin: 0 }}>{x.name} · {fmtDate(x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</div></div>
                 </div>
-                {pick.step === 'zone' ? (
+                {pick.step === 'zone' ? (<>
+                  <div className="apick-sub">Zona completa (cualquier área de la zona)</div>
+                  <div className="apick-big">{['A', 'B', 'C', 'D', 'E'].map((L) => <button key={L} type="button" className={`apz t-${L.toLowerCase()} ${cur === `ZONA ${L}` ? 'on' : ''}`} onClick={() => apply(`ZONA ${L}`)}>{L}</button>)}</div>
+                  <div className="apick-sub">O una zona específica</div>
                   <div className="apick-z">{ZONES.map((zz) => (
                     <button key={zz} type="button" className={`apz t-${zz.startsWith('PL') ? 'pl' : zz[0].toLowerCase()} ${zz === z ? 'on' : ''}`}
                       onClick={() => (NO_MACHINE.includes(zz) ? apply(zz) : setPick({ ...pick, zone: zz, step: 'machine' }))}>{zz}<em>{NO_MACHINE.includes(zz) ? '' : '›'}</em></button>))}</div>
-                ) : (
+                </>) : (
                   <>
                     <button type="button" className="apm solo" onClick={() => apply(z)}>Solo la zona {z} <small>(el auditor elige la máquina)</small></button>
                     <div className="zchips" style={{ marginTop: 10 }}>{ms.map((m) => <button key={m} type="button" className={`zchip ${cur === `${z} · ${m}` ? 'on' : ''}`} onClick={() => apply(`${z} · ${m}`)}>{m}</button>)}</div>
