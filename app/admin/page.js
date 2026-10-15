@@ -193,6 +193,33 @@ const EXAMPLE = `Nombre\tDepto\tCapa\tPlantilla\tDías\tÁreas\tAcceso
 Ana López\tCalidad\t1\tQuality Engineer\tLun, Mié\tLínea 1|Línea 2\t
 Beto Ruiz\tProducción\t2\tProduction Manager\t\t\tlíder`;
 
+// Archivo de datos históricos: quita las fotos de auditorías e issues con más de N días (se conservan resultados y bitácora)
+function Archive() {
+  const [d, setD] = useState(null), [days, setDays] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false);
+  const load = () => api('/api/admin/archive').then((r) => { setD(r); setDays(String(r.days)); }).catch(() => {});
+  useEffect(() => { load(); }, []);
+  if (!d) return null;
+  const call = async (body) => { setBusy(true); setMsg(''); try { const r = await api('/api/admin/archive', { method: 'PUT', body }); setD(r); setDays(String(r.days)); setMsg(body.run ? `Listo: ${r.result?.removed || 0} foto(s) archivada(s).` : 'Guardado.'); } catch (e) { setMsg(e.message); } setBusy(false); };
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
+      <b>Archivo de fotos antiguas</b>
+      <div className="sub" style={{ margin: '4px 0 8px' }}>Base de datos: {d.db_mb} MB · {d.photos} foto(s) guardadas (≈{d.photos_mb} MB). Se quitan solo las fotos; las respuestas, hallazgos, scores y la bitácora se conservan. Descarga antes un respaldo con fotos (Reportes) si las quieres guardar.</div>
+      <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
+        <label className="sub" style={{ margin: 0 }}>Quitar fotos con más de</label>
+        <input className="inp" style={{ width: 90 }} type="number" min="0" value={days} onChange={(e) => setDays(e.target.value)} />
+        <span className="sub" style={{ margin: 0 }}>días (0 = nunca)</span>
+        <button className="btn alt sm" disabled={busy || String(d.days) === days} onClick={() => call({ days: Number(days) })}>Guardar</button>
+      </div>
+      <div className="row wrap" style={{ gap: 8, marginTop: 8, alignItems: 'center' }}>
+        <span className="sub" style={{ margin: 0 }}>Por archivar hoy: <b>{d.eligible}</b> foto(s) (≈{d.eligible_mb} MB){d.last ? ` · última vez ${d.last}` : ''}</span>
+        <button className="btn sm" disabled={busy || !d.eligible} onClick={() => { if (confirm(`Se eliminarán ${d.eligible} foto(s) con más de ${d.days} días. No se puede deshacer. ¿Continuar?`)) call({ run: true }); }}>Archivar ahora</button>
+      </div>
+      {msg && <div className="sub" style={{ margin: '6px 0 0' }}>{msg}</div>}
+      <div className="sub" style={{ margin: '6px 0 0' }}>Se corre solo cada madrugada. También se borran avisos con más de 90 días.</div>
+    </div>
+  );
+}
+
 // Registro: cambios del administrador y eliminaciones con su razón
 function LogTab() {
   const [d, setD] = useState(null), [f, setF] = useState('all');
@@ -201,6 +228,7 @@ function LogTab() {
   const rows = (d || []).filter((x) => f === 'all' || (f === 'del' ? x.kind !== 'cambio' : x.kind === 'cambio'));
   return (
     <>
+      <Archive />
       <div className="seg" style={{ margin: '4px 0 10px' }}>{[['all', 'Todo'], ['cambio', 'Cambios'], ['del', 'Eliminaciones']].map(([k, l]) => <button key={k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}</div>
       {!d ? <div className="empty">Cargando…</div> : !rows.length ? <div className="card empty">Sin registros.</div> : rows.map((x, i) => (
         <div className="card" key={i} style={{ marginBottom: 8 }}>

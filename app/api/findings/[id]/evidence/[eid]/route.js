@@ -13,6 +13,7 @@ export async function GET(req, { params }) {
       WHERE e.id=$1 AND e.finding_id=$2`, [params.eid, params.id, user.id]);
   if (!r) return new Response('No encontrada', { status: 404 });
   if (r.auditor_id !== user.id && !r.is_owner && !(isLead(user) && sameSite(user, r.site_id))) return new Response('Sin permiso', { status: 403 });
+  if (r.data.startsWith('[archivada')) return new Response('Foto archivada', { status: 404 });
   const m = /^data:(image\/[a-z+.-]+);base64,(.*)$/s.exec(r.data);
   if (!m) return new Response('Formato inválido', { status: 500 });
   return new Response(Buffer.from(m[2], 'base64'), { headers: { 'Content-Type': m[1], 'Cache-Control': 'private, max-age=86400' } });

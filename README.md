@@ -140,4 +140,5 @@ Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador 
 - **Registro (Admin → Registro):** bitácora automática de cambios del admin (`admin_log`, se escribe desde `route()`), más auditorías y hallazgos eliminados con su razón.
 - **Versiones de preguntas:** cada edición/borrado guarda la versión anterior (`question_versions`); las respuestas conservan el texto y el ítem del momento (`responses.item_no`).
 - **Sin señal:** `public/sw.js` guarda lo ya visitado; si se envía una auditoría sin conexión queda en el teléfono (`lpa-outbox`) y se envía sola al volver la señal. La zona/máquina/N-P se capturan con señal (al iniciar).
+- **Archivo de fotos (Admin → Registro):** cada madrugada se quitan las fotos de auditorías e issues con más de 365 días (configurable; 0 = nunca) y los avisos con más de 90 días. Se conservan respuestas, hallazgos, scores y bitácora.
 - **Escáner de N/P:** botón 📷 en la captura del número de parte (lector nativo del navegador o ZXing en iPhone); siempre se puede escribir a mano.
