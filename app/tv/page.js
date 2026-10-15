@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Ring from '@/components/Ring';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -20,11 +20,36 @@ function Delta({ now, before, unit = ' pts' }) {
 }
 
 function Status({ a }) {
-  if (a.status === 'completed') return <span className="tvx-st ok">{Math.round(a.score)}%{a.findings ? ` · ${a.findings} hall.` : ''}</span>;
+  if (a.status === 'completed') return <span className="tvx-st ok">✓ Realizada · {Math.round(a.score)}%{a.findings ? ` · ${a.findings} hall.` : ''}</span>;
   if (a.window === 'missed') return <span className="tvx-st nok"><i />No realizada</span>;
   if (a.window === 'last_day') return <span className="tvx-st warn"><i />Último día</span>;
   if (a.window === 'upcoming') return <span className="tvx-st"><i />Programada</span>;
   return <span className="tvx-st pend"><i />Pendiente</span>;
+}
+
+// Lista: en pantalla grande se acomoda al alto disponible (sin scroll) y rota sola por páginas; en celular muestra 8 y "Ver todas"
+function List({ id, rows, per, render, empty, wall, tick, more, setMore }) {
+  const ref = useRef(null);
+  const [cap, setCap] = useState(per);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!wall || !el) return undefined;
+    const calc = () => {
+      const first = el.querySelector('.tvx-row');
+      const rh = first ? first.getBoundingClientRect().height : 56;
+      setCap(Math.max(1, Math.floor(el.clientHeight / (rh || 56))));
+    };
+    calc();
+    const ro = new ResizeObserver(calc); ro.observe(el);
+    return () => ro.disconnect();
+  }, [wall, rows.length]);
+  if (!rows.length) return <div className="tvx-empty">{empty}</div>;
+  if (wall) {
+    const pages = Math.ceil(rows.length / cap), p = tick % pages;
+    return <><div className="tvx-list" ref={ref}>{rows.slice(p * cap, p * cap + cap).map(render)}</div>
+      <div className="tvx-pager">{pages > 1 ? `Página ${p + 1} de ${pages} · ${rows.length} registros` : ''}</div></>;
+  }
+  const open = more[id], lim = Math.min(per, 8), shown = open ? rows : rows.slice(0, lim);
+  return <>{shown.map(render)}{rows.length > lim && <button className="tvx-more" onClick={() => setMore({ ...more, [id]: !open })}>{open ? 'Ver menos' : `Ver todas (${rows.length})`}</button>}</>;
 }
 
 export default function TV() {
@@ -62,16 +87,7 @@ export default function TV() {
   const missedBy = data ? Object.values(data.missed.reduce((m, a) => { (m[a.name] ||= { ...a, days: [] }).days.push(a.date); return m; }, {}))
     .sort((a, b) => b.days.length - a.days.length || a.name.localeCompare(b.name)) : [];
 
-  // Lista: en pantalla grande rota sola por páginas; en celular muestra 8 y "Ver todas"
-  const List = ({ id, rows, per, render, empty }) => {
-    if (!rows.length) return <div className="tvx-empty">{empty}</div>;
-    if (wall) {
-      const pages = Math.ceil(rows.length / per), p = tick % pages;
-      return <>{rows.slice(p * per, p * per + per).map(render)}{pages > 1 && <div className="tvx-pager">Página {p + 1} de {pages} · {rows.length} registros</div>}</>;
-    }
-    const open = more[id], lim = Math.min(per, 8), shown = open ? rows : rows.slice(0, lim);
-    return <>{shown.map(render)}{rows.length > lim && <button className="tvx-more" onClick={() => setMore({ ...more, [id]: !open })}>{open ? 'Ver menos' : `Ver todas (${rows.length})`}</button>}</>;
-  };
+  const listProps = { wall, tick, more, setMore };
 
   const row = (a) => (
     <div className="tvx-row" key={a.id}>
@@ -84,7 +100,7 @@ export default function TV() {
   );
 
   return (
-    <div className="tvx">
+    <div className={`tvx ${wall ? 'wall' : ''}`}>
       <header className="tvx-head">
         <div className="tvx-brand"><img src="/mitchell-logo-light.png" alt="Mitchell Plastics" /><i /><b>LP<span>App</span></b></div>
         <div className="tvx-clock"><b>{now ? now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : ''}</b>
@@ -97,12 +113,12 @@ export default function TV() {
       {data && (
         <>
           <section className="tvx-kpis">
-            <div className={`tvx-kpi ${pctCls(k.week_pct)}`}><Ring value={k.week_pct || 0} size={92} stroke={10} label={k.week_pct == null ? '—' : `${k.week_pct}%`} />
+            <div className={`tvx-kpi ${pctCls(k.week_pct)}`}><Ring value={k.week_pct || 0} size={wall ? 70 : 92} stroke={10} label={k.week_pct == null ? '—' : `${k.week_pct}%`} />
               <div><h3>Cumplimiento semana</h3><b>{k.week_done} / {k.week_counted}</b><Delta now={k.week_pct} before={data.prev.week_pct} /></div></div>
-            <div className="tvx-kpi blue"><Ring value={k.today_total ? (k.today_done / k.today_total) * 100 : 0} size={92} stroke={10} label={`${k.today_done} / ${k.today_total}`} />
+            <div className="tvx-kpi blue"><Ring value={k.today_total ? (k.today_done / k.today_total) * 100 : 0} size={wall ? 70 : 92} stroke={10} label={`${k.today_done} / ${k.today_total}`} />
               <div><h3>Layer 1 completadas hoy</h3><div className="tvx-prog"><i style={{ width: `${k.today_total ? Math.round((k.today_done / k.today_total) * 100) : 0}%` }} /></div>
                 <b className="sm">{k.today_total ? Math.round((k.today_done / k.today_total) * 100) : 0}%</b></div></div>
-            <div className={`tvx-kpi ${pctCls(k.avg_score)}`}><Ring value={k.avg_score || 0} size={92} stroke={10} label={k.avg_score == null ? '—' : `${k.avg_score}%`} />
+            <div className={`tvx-kpi ${pctCls(k.avg_score)}`}><Ring value={k.avg_score || 0} size={wall ? 70 : 92} stroke={10} label={k.avg_score == null ? '—' : `${k.avg_score}%`} />
               <div><h3>Score promedio semana</h3><Delta now={k.avg_score} before={data.prev.avg_score} /></div></div>
             <div className={`tvx-kpi big ${data.missed.length ? 'nok' : 'ok'}`}><div><b>{data.missed.length}</b><h3>No realizadas esta semana</h3></div><span className="tvx-ic">▤</span></div>
             <div className={`tvx-kpi wide ${k.findings_overdue ? 'nok' : ''}`}><div><b className="sm">{k.findings_open}</b><h3>Hallazgos abiertos · {k.findings_overdue} vencidos</h3></div></div>
@@ -116,16 +132,16 @@ export default function TV() {
             <div className="tvx-panel main">
               <h2><span className="tvx-h-ic">▤</span>Le toca hoy<em>{pendingN} pendientes</em></h2>
               <div className="tvx-th"><span>Auditor</span><span>Área / línea</span><span>Capa</span><span>Estatus</span></div>
-              <List id="hoy" rows={todayRows} per={9} render={row} empty="Sin auditorías programadas." />
+              <List {...listProps} id="hoy" rows={todayRows} per={9} render={row} empty="Sin auditorías programadas." />
             </div>
             <div className="tvx-col">
               <div className="tvx-panel">
                 <h2>Completadas hoy<em>{data.doneToday.length} registradas</em></h2>
-                <List id="done" rows={data.doneToday} per={5} render={row} empty="Aún no hay auditorías registradas hoy." />
+                <List {...listProps} id="done" rows={data.doneToday} per={5} render={row} empty="Aún no hay auditorías registradas hoy." />
               </div>
               <div className="tvx-panel alert">
                 <h2>No realizadas esta semana<em>{missedBy.length} auditores</em></h2>
-                <List id="miss" rows={missedBy} per={5} empty="Ninguna. Programa al corriente."
+                <List {...listProps} id="miss" rows={missedBy} per={5} empty="Ninguna. Programa al corriente."
                   render={(a) => (
                     <div className="tvx-row simple" key={a.name}>
                       <span className="tvx-av" style={{ background: color(a.name) }}>{initials(a.name)}</span>

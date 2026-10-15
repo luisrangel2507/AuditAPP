@@ -1179,3 +1179,25 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .asg2 thead th { height: auto; }
 .asg2 td.off, .asg2 td.doneC { vertical-align: middle; }
 .asg2 { table-layout: fixed; } .asg2 thead th:first-child { width: 200px; } .asg2 thead th.dcol { width: 120px; }
+
+/* TV: pendiente en amarillo, realizada en verde; el rojo queda solo para "No realizada" */
+.tvx-st.pend { background: rgba(214,150,30,.35); color: #ffe3ad; }
+:root[data-theme="light"] .tvx-st.pend { background: #fdecc8; color: #8a5a00; }
+/* TV en pantalla grande: todo cabe en una sola pantalla, sin scroll */
+.tvx.wall { height: 100dvh; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 12px 26px 8px; max-width: none; }
+.tvx.wall .tvx-head { grid-template-columns: auto 1fr auto auto; gap: 6px 18px; } .tvx.wall .tvx-head h1 { grid-column: auto; margin: 0; text-align: center; max-width: none; font-size: 26px; }
+.tvx.wall .tvx-chips { grid-column: auto; } .tvx.wall .tvx-clock b { font-size: 26px; } .tvx.wall .tvx-chip { padding: 6px 12px; font-size: 13px; }
+.tvx.wall .tvx-kpis { margin-top: 10px; gap: 10px; } .tvx.wall .tvx-kpi { padding: 8px 12px; border-radius: 18px; } .tvx.wall .tvx-kpi h3 { font-size: 13px; } .tvx.wall .tvx-kpi b { font-size: 20px; } .tvx.wall .tvx-kpi.big b { font-size: 34px; }
+.tvx.wall .tvx-tabs { margin: 8px 0; padding-bottom: 0; } .tvx.wall .tvx-tabs button { padding: 6px 12px; font-size: 14px; }
+.tvx.wall .tvx-grid { flex: 1; min-height: 0; grid-template-columns: 1.5fr 1fr; }
+.tvx.wall .tvx-panel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 10px 14px; border-radius: 20px; }
+.tvx.wall .tvx-panel h2 { font-size: 18px; margin-bottom: 4px; flex: none; }
+.tvx.wall .tvx-col { min-height: 0; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto; align-content: stretch; }
+.tvx.wall .tvx-list { flex: 1; min-height: 0; overflow: hidden; }
+.tvx.wall .tvx-pager { flex: none; min-height: 18px; margin-top: 2px; }
+.tvx.wall .tvx-row { padding: 7px 6px; } .tvx.wall .tvx-foot { margin-top: 4px; font-size: 11px; flex: none; }
+.tvx.wall .tvx-bar { margin: 6px 0; }
+.tvx.wall .tvx-col .tvx-row { grid-template-columns: 34px minmax(0, 1.3fr) minmax(0, 1fr) auto; grid-template-areas: "av name area st"; padding: 5px 4px; gap: 0 10px; }
+.tvx.wall .tvx-col .tvx-row .tvx-cap { display: none; } .tvx.wall .tvx-col .tvx-av { width: 32px; height: 32px; font-size: 12px; }
+.tvx.wall .tvx-col .tvx-row.simple { grid-template-areas: "av name area st"; } .tvx.wall .tvx-col .tvx-area small { display: inline; margin-left: 6px; }
+.tvx.wall .tvx-col .tvx-st { padding: 4px 10px; font-size: 12.5px; }
