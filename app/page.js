@@ -26,7 +26,7 @@ function Ticket({ a, today }) {
           <span>{a.date === today ? 'Hoy' : multi ? `Semana ${fmtDate(a.date, { day: 'numeric', month: 'short' })} – ${fmtDate(a.due_date, { day: 'numeric', month: 'short' })}` : fmtDate(a.date)}</span>
           <span className={`pill ${cls}`}>{label}</span>
         </div>
-        <div className="area">{a.kind === 'process' && a.status !== 'completed' ? `Auditoría de proceso ${a.slot}` : a.area || 'Sin zona asignada'}</div>
+        <div className="area"><span className={`ktag ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? 'Auditoría de proceso' : 'LPA'}</span>{a.kind === 'process' && a.status !== 'completed' ? `Proceso ${a.slot}` : a.area || 'Sin zona asignada'}</div>
         {a.part_number && <div className={`partno ${a.part_edited ? 'edited' : ''}`}>N/P <b>{a.part_number}</b>{a.part_edited ? <em> ✎ corregido</em> : null}</div>}
         <div className="meta">
           {a.kind === 'process' ? (a.status === 'completed' ? `${a.area} · ` : 'Zona y máquina al iniciar · ') : ''}{a.template} · {a.total_questions} preguntas
