@@ -33,9 +33,9 @@ function Item({ f, today, lead, user, reload, startOpen }) {
   const pend = f.owners.filter((o) => o.status !== 'done').length;
   return (
     <div id={`oi-${f.id}`} className="card issue" style={{ marginBottom: 10, borderColor: overdue ? 'rgba(200,60,50,.5)' : undefined }}>
-      <div className="row" style={{ alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
-        <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
-        <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span>{f.item ? <span className="oi-item">Ítem {f.item}</span> : null} <Bi text={f.question} /></div>
+      <div style={{ cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+        <div className="row oi-top"><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span><span className="oi-no">{no(f.id)}</span>{f.item ? <span className="oi-item">Ítem {f.item}</span> : null}</div>
+        <div className="oi-q"><Bi text={f.question} /></div>
       </div>
       <div className="oi-meta">
         <span><i>Zona / Máquina</i><b>{f.area || '—'}</b></span>
