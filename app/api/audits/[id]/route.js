@@ -3,7 +3,8 @@ import { route, json, err, isLead } from '@/lib/api';
 import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
 import { SEED_MACHINES } from '@/lib/zones';
-import { mxToday, windowState, closesOn } from '@/lib/dates';
+import { mxToday, windowState, closesOn, mondayOf, isoWeekday } from '@/lib/dates';
+import { resetEnsured } from '@/lib/schedule';
 
 async function load(id) {
   const { rows } = await q(
@@ -60,11 +61,24 @@ export const PATCH = route(async (req, { params }, user) => {
   }
   if (typeof b.area === 'string') add('area', b.area.trim().slice(0, 80));
   if (typeof b.part_number === 'string') add('part_number', b.part_number.trim().slice(0, 40));
-  if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) { add('date', b.date); if (a.date === a.due_date) add('due_date', b.date); }
+  let moved = null;
+  if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date) && b.date !== a.date) {
+    // Cambio de día: solo auditorías de un día, dentro de la misma semana (lun–vie) y de hoy en adelante
+    if (a.date !== a.due_date) return err('Las auditorías semanales no se cambian de día');
+    if (b.date < mxToday()) return err('No se puede mover a un día que ya pasó');
+    if (mondayOf(b.date) !== mondayOf(a.date) || isoWeekday(b.date) > 5) return err('Elige un día de lunes a viernes de la misma semana');
+    add('date', b.date); add('due_date', b.date); moved = b.date;
+  }
   if (!sets.length) return err('Nada que cambiar');
   vals.push(a.id);
   try {
     await q(`UPDATE audits SET ${sets.join(',')} WHERE id=$${vals.length}`, vals);
+    if (moved) {
+      // El día original no se vuelve a generar; si se regresa a un día que estaba "movido", se libera
+      await q(`INSERT INTO audit_skips(user_id,date,kind,slot) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, [a.user_id, a.date, a.kind, a.slot]);
+      await q(`DELETE FROM audit_skips WHERE user_id=$1 AND date=$2 AND kind=$3 AND slot=$4`, [a.user_id, moved, a.kind, a.slot]);
+      resetEnsured();
+    }
   } catch (e) {
     if (e.code === '23505') return err('Ese auditor ya tiene una auditoría ese día');
     throw e;

@@ -158,6 +158,14 @@ CREATE TABLE IF NOT EXISTS question_versions (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_qversions_q ON question_versions(question_id,version DESC);
+-- Auditorías que el admin cambió de día: el día original no se vuelve a generar
+CREATE TABLE IF NOT EXISTS audit_skips (
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date    DATE NOT NULL,
+  kind    TEXT NOT NULL DEFAULT 'lpa',
+  slot    INT NOT NULL DEFAULT 1,
+  PRIMARY KEY (user_id, date, kind, slot)
+);
 -- LPA por usuario: NULL = según su rol (los QEs dependen del interruptor general), TRUE/FALSE = decisión del admin en su perfil
 ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_override BOOLEAN;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_from DATE;   -- desde cuándo se le generan LPA (no se crean días pasados al activarla)

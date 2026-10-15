@@ -1133,3 +1133,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ktag { display: table; margin-bottom: 4px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .ktag.lpa { background: rgba(31,107,240,.12); color: #1f6bf0; } .ktag.proc { background: rgba(124,77,222,.14); color: #7c4dde; }
 :root[data-theme="dark"] .ktag.lpa { background: rgba(79,147,255,.2); color: #8db8ff; } :root[data-theme="dark"] .ktag.proc { background: rgba(170,130,255,.2); color: #c3a6ff; }
+.asg-mx td { position: relative; } .asg-mv { position: absolute; top: 2px; right: 2px; border: 0; background: rgba(31,107,240,.1); border-radius: 8px; font-size: 11px; padding: 2px 4px; cursor: pointer; line-height: 1; }
