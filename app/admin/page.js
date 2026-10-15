@@ -176,6 +176,26 @@ const EXAMPLE = `Nombre\tDepto\tCapa\tPlantilla\tDías\tÁreas\tAcceso
 Ana López\tCalidad\t1\tQuality Engineer\tLun, Mié\tLínea 1|Línea 2\t
 Beto Ruiz\tProducción\t2\tProduction Manager\t\t\tlíder`;
 
+// Registro: cambios del administrador y eliminaciones con su razón
+function LogTab() {
+  const [d, setD] = useState(null), [f, setF] = useState('all');
+  useEffect(() => { api('/api/admin/log').then((r) => setD(r.items)).catch(() => setD([])); }, []);
+  const when = (ts) => new Date(ts).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+  const rows = (d || []).filter((x) => f === 'all' || (f === 'del' ? x.kind !== 'cambio' : x.kind === 'cambio'));
+  return (
+    <>
+      <div className="seg" style={{ margin: '4px 0 10px' }}>{[['all', 'Todo'], ['cambio', 'Cambios'], ['del', 'Eliminaciones']].map(([k, l]) => <button key={k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}</div>
+      {!d ? <div className="empty">Cargando…</div> : !rows.length ? <div className="card empty">Sin registros.</div> : rows.map((x, i) => (
+        <div className="card" key={i} style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{x.kind === 'cambio' ? '✎' : '🗑'} {x.title}</div>
+          {x.kind !== 'cambio' && x.reason && <div style={{ fontSize: 13, marginTop: 3 }}><b>Razón:</b> {x.reason}</div>}
+          {x.kind === 'cambio' && x.detail && <div className="sub" style={{ margin: '3px 0 0', fontFamily: 'var(--mono, monospace)', fontSize: 11, overflowWrap: 'anywhere' }}>{x.detail}</div>}
+          <div className="sub" style={{ margin: '4px 0 0' }}>{x.who || 'Sistema'} · {when(x.created_at)}</div>
+        </div>))}
+    </>
+  );
+}
+
 function ImportSheet({ site, onClose, onDone }) {
   const [text, setText] = useState(''), [pw, setPw] = useState(''), [prev, setPrev] = useState(null);
   const [res, setRes] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [copied, setCopied] = useState(false);
@@ -529,9 +549,11 @@ function Inner() {
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
         {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
         <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}>QEs</button>
+        <a className="seg-link" href="/reports">Reportes</a>
+        <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>Registro</button>
         {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'qes' ? <QEs /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'qes' ? <QEs /> : tab === 'log' ? <LogTab /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }
