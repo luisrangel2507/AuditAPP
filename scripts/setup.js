@@ -117,6 +117,30 @@ ALTER TABLE questions ADD COLUMN IF NOT EXISTS item_no INT; -- número de ítem 
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_audits_slot ON audits(user_id,date,kind,slot);
+-- Avisos para cualquier usuario (issues, recordatorios, resúmenes) y su envío push
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS dedupe TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_notif_dedupe ON notifications(dedupe) WHERE dedupe IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_notif_user ON notifications(user_id,created_at DESC);
+CREATE TABLE IF NOT EXISTS push_subs (
+  id         SERIAL PRIMARY KEY,
+  user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint   TEXT NOT NULL UNIQUE,
+  p256dh     TEXT NOT NULL,
+  auth       TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Bitácora de cambios del administrador
+CREATE TABLE IF NOT EXISTS admin_log (
+  id         SERIAL PRIMARY KEY,
+  site_id    INT,
+  user_id    INT,
+  user_name  TEXT,
+  action     TEXT NOT NULL,
+  detail     TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_admin_log_at ON admin_log(created_at DESC);
 CREATE TABLE IF NOT EXISTS finding_evidence (
   id         SERIAL PRIMARY KEY,
   finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,

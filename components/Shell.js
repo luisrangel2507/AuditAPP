@@ -1,4 +1,5 @@
 'use client';
+import { pushStatus, pushEnable, pushDisable, registerSW, clearOfflineCache } from '@/lib/pushClient';
 import { useEffect, useState, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,6 +12,8 @@ import { I } from '@/components/Icons';
 const ROLE = { quality: 'Calidad', process: 'Procesos', production: 'Producción', logistics: 'Logística', hr: 'RH', maintenance: 'Mantenimiento', toolroom: 'Tool Room', program: 'Programas', management: 'Gerencia' };
 
 const UserCtx = createContext(null);
+const NICON = { short_audit: '⚠️', issue_assigned: '📌', issue_soon: '⏳', issue_overdue: '🔴', issue_escalated: '🚨', audit_reminder: '⏰', daily_summary: '📋', weekly_report: '📊', repeat_finding: '🔁' };
+
 export const useUser = () => useContext(UserCtx);
 
 function PasswordGate({ onDone }) {
@@ -47,9 +50,12 @@ export default function Shell({ children, need }) {
   useEffect(() => { if (isMaster(user) && user.multi_site) api('/api/sites').then(setSites).catch(() => {}); }, [user?.access]);
   // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
-  const loadNotif = () => api('/api/admin/notifications').then(setNotif).catch(() => {});
-  useEffect(() => { if (user && isAdmin(user)) loadNotif(); }, [user, path]);
-  async function openBell() { setBell(true); if (notif?.unread) { await api('/api/admin/notifications', { method: 'POST' }).catch(() => {}); } }
+  useEffect(() => { registerSW(); }, []);
+  const loadNotif = () => api('/api/notifications').then(setNotif).catch(() => {});
+  useEffect(() => { if (user) loadNotif(); }, [user, path]);
+  async function openBell() { setBell(true); if (notif?.unread) { await api('/api/notifications', { method: 'POST' }).catch(() => {}); } }
+  const [pushState, setPushState] = useState('unknown');
+  useEffect(() => { if (user) pushStatus().then(setPushState); }, [user?.id, bell]);
   // Cierre por inactividad (15 min; 45 min administradores) con latido para no perder la sesión mientras se usa la app
   useEffect(() => {
     if (!user) return;
@@ -65,6 +71,7 @@ export default function Shell({ children, need }) {
       if (Date.now() - last > limit) {
         try { await api('/api/auth/logout', { method: 'POST' }); } catch {}
         try { sessionStorage.clear(); } catch {}
+        clearOfflineCache();
         window.location.href = '/login?expired=1';
       }
     };
@@ -83,7 +90,7 @@ export default function Shell({ children, need }) {
     if (user && !user.onboarded) { setUser({ ...user, onboarded: true }); api('/api/auth/onboarded', { method: 'POST' }).catch(() => {}); }
   }
   function pickSite(code) { setSiteCookie(code); setSiteSel(code); window.location.reload(); }
-  async function logout() { await api('/api/auth/logout', { method: 'POST' }); try { sessionStorage.clear(); } catch {} router.replace('/login'); }
+  async function logout() { await api('/api/auth/logout', { method: 'POST' }); try { sessionStorage.clear(); } catch {} clearOfflineCache(); router.replace('/login'); }
   if (!user) return <div className="empty" style={{ paddingTop: 120 }}>Cargando…</div>;
 
   const lead = isAdmin(user);
@@ -101,9 +108,9 @@ export default function Shell({ children, need }) {
           <div className="apphero-row">
             <img className="brand2-logo" src="/mitchell-logo-light.png" alt="Mitchell Plastics" />
             <div className="who"><b>{user.name}</b><span>{isAdmin(user) ? `${roleLabel(user)}${user.multi_site && user.site_code ? ' · ' + user.site_code : ''}` : `${user.site_code ? user.site_code + ' · ' : ''}${ROLE[user.dept] || ''} · ${LAYER[user.layer]}`}</span></div>
-            {isAdmin(user) && <button className="helpbtn bellbtn" onClick={openBell} aria-label="Avisos" title="Avisos">
+            <button className="helpbtn bellbtn" onClick={openBell} aria-label="Avisos" title="Avisos">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 17h12l-1.6-2.3V10a4.4 4.4 0 0 0-8.8 0v4.7zM10 20a2 2 0 0 0 4 0" /></svg>
-              {notif?.unread > 0 && <b className="bell-dot">{notif.unread > 9 ? '9+' : notif.unread}</b>}</button>}
+              {notif?.unread > 0 && <b className="bell-dot">{notif.unread > 9 ? '9+' : notif.unread}</b>}</button>
             <ThemeToggle className="helpbtn" />
             <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
@@ -129,10 +136,13 @@ export default function Shell({ children, need }) {
       </nav>
       {bell && <div className="sheet-bg" onClick={() => { setBell(false); loadNotif(); }}><div className="sheet" onClick={(e) => e.stopPropagation()}>
         <h2>Avisos</h2>
-        <p className="sub">Auditorías que se terminaron en menos de 10 minutos de tiempo activo.</p>
+        {pushState === 'off' && <button className="btn alt block" style={{ marginBottom: 10 }} onClick={async () => { setPushState(await pushEnable()); }}>🔔 Recibir avisos en este teléfono</button>}
+        {pushState === 'on' && <div className="sub" style={{ marginBottom: 8 }}>🔔 Avisos del teléfono activados. <button className="btn-ghost" onClick={async () => { await pushDisable(); setPushState('off'); }}>Desactivar</button></div>}
+        {pushState === 'ios' && <div className="sub" style={{ marginBottom: 8 }}>Para recibir avisos en iPhone, agrega LPApp a la pantalla de inicio (Compartir → Agregar a inicio) y ábrela desde ahí.</div>}
+        {pushState === 'denied' && <div className="sub" style={{ marginBottom: 8 }}>Los avisos del teléfono están bloqueados en los ajustes del navegador.</div>}
         {!notif?.items?.length ? <div className="empty">Sin avisos.</div> : notif.items.map((n) => (
-          <Link key={n.id} href={`/audit/${n.audit_id}`} className="card" style={{ display: 'block', marginBottom: 8 }} onClick={() => setBell(false)}>
-            <div style={{ fontSize: 14 }}>⚠️ {n.message}</div>
+          <Link key={n.id} href={n.link || (n.audit_id ? `/audit/${n.audit_id}` : '/')} className="card" style={{ display: 'block', marginBottom: 8 }} onClick={() => setBell(false)}>
+            <div style={{ fontSize: 14 }}>{NICON[n.type] || '🔔'} {n.message}</div>
             <div className="sub">{new Date(n.created_at).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{n.read ? '' : ' · nuevo'}</div>
           </Link>))}
         <button className="btn alt block" style={{ marginTop: 12 }} onClick={() => { setBell(false); loadNotif(); }}>Cerrar</button>

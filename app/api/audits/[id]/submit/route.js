@@ -1,6 +1,7 @@
 import { pool } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 import { addOwner, logUpdate } from '@/lib/issues';
+import { notifyAdmins } from '@/lib/notify';
 import { mxToday, addDays, closesOn } from '@/lib/dates';
 
 const MIN_SEC = 600; // duración mínima esperada de una auditoría
@@ -68,6 +69,15 @@ export const POST = route(async (req, { params }, user) => {
            VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
           [a.id, ins.rows[0].id, a.area, qq.text, r.result, String(r.notes || '').trim(), addDays(today, 7)]);
         await logUpdate(client, fin.rows[0].id, user.id, 'opened', 'Open issue abierto en auditoría');
+        // Hallazgo repetido: el mismo ítem ya falló 2 o más veces en la misma zona en los últimos 30 días
+        const { rows: [rep] } = await client.query(
+          `SELECT COUNT(*)::int n FROM findings f2 JOIN responses r2 ON r2.id=f2.response_id
+            WHERE r2.question_id=$1 AND f2.area=$2 AND f2.id<>$3 AND f2.created_at > NOW() - INTERVAL '30 days'`, [qid, a.area, fin.rows[0].id]);
+        if (rep.n >= 2) {
+          const { rows: [su] } = await client.query('SELECT site_id FROM users WHERE id=$1', [a.user_id]);
+          await notifyAdmins({ db: client, siteId: su.site_id, type: 'repeat_finding', link: '/reports',
+            message: `Hallazgo repetido (${rep.n + 1} veces en 30 días) en ${a.area}: ${String(qq.text).split('\n')[0].slice(0, 80)}`, dedupe: `rep:${qid}:${a.area}:${today}` });
+        }
         const ids = [...new Set((Array.isArray(r.owners) ? r.owners : []).map(Number).filter(Boolean))].slice(0, 10);
         for (const oid of ids) {
           const ok = await client.query('SELECT 1 FROM users WHERE id=$1 AND active', [oid]);
