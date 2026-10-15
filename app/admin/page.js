@@ -488,7 +488,7 @@ function Assign() {
 
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona o máquina</b> que auditará cada día; el auditor no puede modificarla. El <b>número de parte</b> lo captura el auditor al realizar su auditoría. Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría. El <b>número de parte</b> lo captura el auditor al realizar su auditoría. Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
@@ -498,7 +498,7 @@ function Assign() {
         <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
         <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>⬇ Importar desde Excel</button>
       </div>
-      {data && <div className={`asg-count ${asg.total - asg.done > 0 ? 'warn' : 'ok'}`}><b>{asg.total - asg.done > 0 ? '!' : '✓'}</b><span><b>{asg.done} de {asg.total} asignadas</b><small>(zona / máquina){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ''}</small></span></div>}
+      {data && <div className={`asg-count ${asg.total - asg.done > 0 ? 'warn' : 'ok'}`}><b>{asg.total - asg.done > 0 ? '!' : '✓'}</b><span><b>{asg.done} de {asg.total} asignadas</b><small>(zona){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ''}</small></span></div>}
       {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
@@ -526,32 +526,22 @@ function Assign() {
             {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E2'], ['pl', 'PL1 · PL3 · PL4'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
           </div>
           {pick && (() => {
-            const { x, list } = pick, z = pick.zone, ms = (data.machines && data.machines[z]) || [], cur = val(x).area || '';
+            const { x, list } = pick, cur = val(x).area || '';
             const apply = (area) => { set(x, 'area', area); setPick(null); };
             return (
               <div className="sheet-bg" onClick={() => setPick(null)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
                 <div className="apick-h">
-                  {pick.step === 'machine' && <button type="button" className="btn-ghost" onClick={() => setPick({ ...pick, step: 'zone' })}>‹ Zona</button>}
-                  <div className="grow"><h2>{pick.step === 'zone' ? 'Zona' : `Máquina · Zona ${z}`}</h2>
+                  <div className="grow"><h2>Zona</h2>
                     <div className="sub" style={{ margin: 0 }}>{x.name} · {fmtDate(x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</div></div>
                 </div>
-                {pick.step === 'zone' ? (<>
+                <>
                   <div className="apick-sub">Zona completa (cualquier área de la zona)</div>
                   <div className="apick-big">{['A', 'B', 'C', 'D', 'E'].map((L) => <button key={L} type="button" className={`apz t-${L.toLowerCase()} ${cur === `ZONA ${L}` ? 'on' : ''}`} onClick={() => apply(`ZONA ${L}`)}>{L}</button>)}</div>
                   <div className="apick-sub">O una zona específica</div>
                   <div className="apick-z">{ZONES.map((zz) => (
-                    <button key={zz} type="button" className={`apz t-${zz.startsWith('PL') ? 'pl' : zz[0].toLowerCase()} ${zz === z ? 'on' : ''}`}
-                      onClick={() => (NO_MACHINE.includes(zz) ? apply(zz) : setPick({ ...pick, zone: zz, step: 'machine' }))}>{zz}<em>{NO_MACHINE.includes(zz) ? '' : '›'}</em></button>))}</div>
-                </>) : (
-                  <>
-                    <button type="button" className="apm solo" onClick={() => apply(z)}>Solo la zona {z} <small>(el auditor elige la máquina)</small></button>
-                    <div className="zchips" style={{ marginTop: 10 }}>{ms.map((m) => <button key={m} type="button" className={`zchip ${cur === `${z} · ${m}` ? 'on' : ''}`} onClick={() => apply(`${z} · ${m}`)}>{m}</button>)}</div>
-                    <div className="row" style={{ gap: 8, marginTop: 10 }}>
-                      <input className="inp grow" placeholder="Otra máquina…" maxLength={40} value={otro} onChange={(e) => setOtro(e.target.value)} />
-                      <button type="button" className="btn sm" disabled={!otro.trim()} onClick={() => apply(`${z} · ${otro.trim()}`)}>Usar</button>
-                    </div>
-                  </>
-                )}
+                    <button key={zz} type="button" className={`apz t-${zz.startsWith('PL') ? 'pl' : zz[0].toLowerCase()} ${zz === cur || cur.startsWith(`${zz} · `) ? 'on' : ''}`}
+                      onClick={() => apply(zz)}>{zz}</button>))}</div>
+                </>
                 <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
                   <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMv({ x, list }); }}>📅 Cambiar de día</button>
                   {cur && <button type="button" className="btn-ghost" onClick={() => apply('')}>Quitar asignación</button>}
