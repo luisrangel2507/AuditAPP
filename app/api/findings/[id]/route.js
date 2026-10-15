@@ -26,6 +26,11 @@ export const PATCH = route(async (req, { params }, user) => {
     if (!f) { await client.query('ROLLBACK'); return err('No encontrado', 404); }
     const lead = isLead(user) && sameSite(user, f.site_id);
     const { rows: [mine] } = await client.query('SELECT * FROM finding_owners WHERE finding_id=$1 AND user_id=$2', [f.id, user.id]);
+    const closer = lead || f.auditor_id === user.id; // el líder o quien levantó el hallazgo pueden cerrarlo al momento
+    const addEvidence = async (img) => {
+      if (typeof img !== 'string' || !/^data:image\/[a-z+.-]+;base64,/.test(img) || img.length > 3_000_000) return;
+      await client.query('INSERT INTO finding_evidence(finding_id,user_id,data) VALUES($1,$2,$3)', [f.id, user.id, img]);
+    };
     const participant = lead || f.auditor_id === user.id || !!mine;
     if (!participant) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }
 
@@ -55,6 +60,7 @@ export const PATCH = route(async (req, { params }, user) => {
       if (!['in_progress', 'done', 'open'].includes(b.my_status)) { await client.query('ROLLBACK'); return err('Estatus inválido'); }
       const action = typeof b.action === 'string' ? b.action.trim() : mine.action;
       if (b.my_status === 'done' && !action) { await client.query('ROLLBACK'); return err('Para terminar describe la acción tomada'); }
+      if (b.my_status === 'done' && b.evidence) await addEvidence(b.evidence);
       await client.query(
         `UPDATE finding_owners SET status=$3,action=$4,done_at=$5 WHERE finding_id=$1 AND user_id=$2`,
         [f.id, user.id, b.my_status, action, b.my_status === 'done' ? new Date() : null]);
@@ -65,13 +71,14 @@ export const PATCH = route(async (req, { params }, user) => {
 
     // Cierre / reapertura forzada por un líder (por ejemplo, issue sin responsables)
     if (b.force_status) {
-      if (!lead) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }
+      if (b.force_status === 'closed' ? !closer : !lead) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }
       if (b.force_status === 'closed') {
+        if (b.evidence) await addEvidence(b.evidence);
         const action = String(b.action || '').trim();
         if (!action) { await client.query('ROLLBACK'); return err('Para cerrar describe la acción tomada'); }
         await client.query(`UPDATE findings SET status='closed',closed_at=NOW(),closed_by=$2,action=$3 WHERE id=$1`, [f.id, user.id, action]);
         await client.query(`UPDATE finding_owners SET status='done',done_at=COALESCE(done_at,NOW()) WHERE finding_id=$1`, [f.id]);
-        await logUpdate(client, f.id, user.id, 'closed', `Cerrado por líder: ${action}`);
+        await logUpdate(client, f.id, user.id, 'closed', `${lead ? 'Cerrado por líder' : 'Cerrado por el auditor'}: ${action}`);
       } else if (b.force_status === 'open') {
         await client.query(`UPDATE findings SET status='open',closed_at=NULL,closed_by=NULL WHERE id=$1`, [f.id]);
         await client.query(`UPDATE finding_owners SET status='open',done_at=NULL WHERE finding_id=$1`, [f.id]);

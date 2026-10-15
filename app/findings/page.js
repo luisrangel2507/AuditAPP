@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import OwnerPicker from '@/components/OwnerPicker';
-import { api, fmtDate, peek } from '@/lib/client';
+import { api, fmtDate, peek, compressImage } from '@/lib/client';
 import { isAdmin } from '@/lib/roles';
 
 const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
@@ -13,10 +13,30 @@ const KIND = { opened: '●', assign: '＋', unassign: '－', progress: '◐', d
 const no = (id) => 'OI-' + String(id).padStart(4, '0');
 const when = (ts) => new Date(ts).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
 
+// Adjuntar foto de evidencia (cierre del issue)
+function EvidencePick({ value, onChange, setErr }) {
+  async function pick(e) {
+    const file = e.target.files?.[0]; if (!file) return;
+    try { onChange(await compressImage(file)); } catch { setErr('No se pudo procesar la foto'); }
+    e.target.value = '';
+  }
+  return (
+    <div className="photo" style={{ marginTop: 8 }}>
+      {value && <Photo src={value} />}
+      <label className="btn alt sm" style={{ display: 'inline-block' }}>
+        {value ? 'Cambiar foto' : '📷 Subir evidencia de cierre'}
+        <input type="file" accept="image/*" capture="environment" hidden onChange={pick} />
+      </label>
+      {value && <button type="button" className="btn-ghost" onClick={() => onChange('')}>Quitar</button>}
+    </div>
+  );
+}
+
 function Item({ f, today, lead, user, reload, startOpen }) {
   const [open, setOpen] = useState(!!startOpen), [err, setErr] = useState(''), [tl, setTl] = useState(null);
   const mine = f.owners.find((o) => o.user_id === user.id);
-  const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState('');
+  const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState(''), [evid, setEvid] = useState(''), [closeAct, setCloseAct] = useState('');
+  const canClose = lead || f.auditor_id === user.id;
   const closed = f.status === 'closed';
   const overdue = !closed && f.due_date && f.due_date < today;
   const soon = !closed && !overdue && f.due_date && f.due_date <= addDays(today, 2);
@@ -27,7 +47,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
   useEffect(() => { if (open && !tl) loadTl(); /* eslint-disable-next-line */ }, [open]);
   async function patch(body) {
     setErr('');
-    try { await api(`/api/findings/${f.id}`, { method: 'PATCH', body }); setComment(''); await loadTl(); reload(); }
+    try { await api(`/api/findings/${f.id}`, { method: 'PATCH', body }); setComment(''); setEvid(''); setCloseAct(''); await loadTl(); reload(); }
     catch (e) { setErr(e.message); }
   }
   const pend = f.owners.filter((o) => o.status !== 'done').length;
@@ -54,6 +74,13 @@ function Item({ f, today, lead, user, reload, startOpen }) {
           {f.notes && <div style={{ fontSize: 14 }}><b>Hallazgo:</b> {f.notes}</div>}
           {f.evidence_id && <Photo className="thumb" src={`/api/evidence/${f.evidence_id}`} />}
 
+          {(f.closure || []).length > 0 && <>
+            <div className="sect" style={{ marginTop: 14 }}>Evidencia de cierre</div>
+            <div className="row wrap" style={{ gap: 10, alignItems: 'flex-start' }}>
+              {f.closure.map((c) => <div key={c.id}><Photo className="thumb" src={`/api/findings/${f.id}/evidence/${c.id}`} /><div className="sub" style={{ margin: '2px 0 0', fontSize: 11 }}>{c.name || '—'}</div></div>)}
+            </div>
+          </>}
+
           <div className="sect" style={{ marginTop: 14 }}>Responsables</div>
           {f.owners.length === 0 && <div className="sub">Nadie asignado todavía.</div>}
           {f.owners.map((o) => (
@@ -68,18 +95,29 @@ function Item({ f, today, lead, user, reload, startOpen }) {
           {mine && mine.status !== 'done' && !closed && <>
             <div className="sect" style={{ marginTop: 14 }}>Tu seguimiento</div>
             <textarea className="inp" rows={2} value={action} onChange={(e) => setAction(e.target.value)} placeholder="Acción / contramedida que tomaste o tomarás…" />
+            <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />
             <div className="row" style={{ marginTop: 10 }}>
               <button className="btn alt sm grow" onClick={() => patch({ my_status: 'in_progress', action })}>En proceso</button>
-              <button className="btn sm grow" onClick={() => patch({ my_status: 'done', action })}>Terminé mi parte</button>
+              <button className="btn sm grow" onClick={() => patch({ my_status: 'done', action, evidence: evid || undefined })}>Terminé mi parte</button>
             </div>
           </>}
           {mine && mine.status === 'done' && <button className="btn-ghost" style={{ marginTop: 8 }} onClick={() => patch({ my_status: 'open' })}>Reabrir mi parte</button>}
 
-          {lead && <div className="row wrap" style={{ marginTop: 14 }}>
-            <div><label className="lbl">Compromiso</label><input className="inp" type="date" value={f.due_date || ''} onChange={(e) => patch({ due_date: e.target.value })} /></div>
-            {!closed ? <button className="btn-ghost" onClick={() => { const a = prompt('Acción tomada para cerrar el issue'); if (a) patch({ force_status: 'closed', action: a }); }}>Cerrar como líder</button>
-              : <button className="btn-ghost" onClick={() => patch({ force_status: 'open' })}>Reabrir</button>}
-            {isAdmin(user) && <button className="btn-ghost" style={{ color: '#d11d2a' }} onClick={async () => {
+          {lead && <div style={{ marginTop: 14 }}>
+            <label className="lbl">Compromiso</label>
+            <input className="inp" type="date" value={f.due_date || ''} onChange={(e) => patch({ due_date: e.target.value })} />
+          </div>}
+
+          {canClose && !closed && <div className="oi-close">
+            <div className="sect" style={{ marginTop: 14 }}>{lead ? 'Cerrar como líder' : 'Cerrar este hallazgo'}</div>
+            <textarea className="inp" rows={2} value={closeAct} onChange={(e) => setCloseAct(e.target.value)} placeholder="Acción tomada para cerrar el issue…" />
+            <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />
+            <button type="button" className="btn sm block" style={{ marginTop: 10 }} disabled={!closeAct.trim()} onClick={() => patch({ force_status: 'closed', action: closeAct, evidence: evid || undefined })}>Cerrar issue</button>
+          </div>}
+
+          {(lead && closed || isAdmin(user)) && <div className="oi-actions">
+            {lead && closed && <button type="button" className="btn-ghost" onClick={() => patch({ force_status: 'open' })}>Reabrir</button>}
+            {isAdmin(user) && <button type="button" className="btn-ghost" style={{ color: '#d11d2a' }} onClick={async () => {
               const r = (prompt('Razón por la que se elimina este hallazgo (obligatoria):\nSe borra el issue y su bitácora. No se puede deshacer.') || '').trim();
               if (!r) return;
               try { await api(`/api/findings/${f.id}`, { method: 'DELETE', body: { reason: r } }); reload(); } catch (e) { setErr(e.message); }

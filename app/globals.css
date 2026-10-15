@@ -1105,3 +1105,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .issue .oi-top { gap: 8px; margin-bottom: 6px; flex-wrap: wrap; } .issue .oi-top .oi-item { margin: 0; }
 .issue .oi-q { font-size: 15px; text-align: justify; hyphens: auto; } .issue .oi-q * { text-align: justify; }
 .issue .oi-meta, .issue .sub, .issue [style*="font-size: 14px"] { text-align: justify; }
+.oi-close { margin-top: 4px; } .oi-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }

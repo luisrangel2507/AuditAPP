@@ -117,6 +117,14 @@ ALTER TABLE questions ADD COLUMN IF NOT EXISTS item_no INT; -- número de ítem 
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT '';
 ALTER TABLE audits DROP CONSTRAINT IF EXISTS audits_user_id_date_key;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_audits_slot ON audits(user_id,date,kind,slot);
+CREATE TABLE IF NOT EXISTS finding_evidence (
+  id         SERIAL PRIMARY KEY,
+  finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+  user_id    INT REFERENCES users(id) ON DELETE SET NULL,
+  data       TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_fevidence_finding ON finding_evidence(finding_id);
 CREATE TABLE IF NOT EXISTS finding_deletions (
   id         SERIAL PRIMARY KEY,
   finding_id INT,
