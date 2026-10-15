@@ -506,7 +506,7 @@ function Assign() {
             <thead><tr><th>Persona</th><th className="dcol">Departamento</th>{data.days.map((d, k) => <th key={d} className={d === data.today ? 'today' : ''}>{DAYS_SHORT[k]} {Number(d.slice(8))}</th>)}</tr></thead>
             <tbody>{people.map(({ id, a, list }) => (
               <tr key={id}>
-                <th className="asg-who"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></th>
+                <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></div></th>
                 <td className="dcol dtxt">{DEPT[a.dept]}</td>
                 {data.days.map((d) => {
                   const x = list.find((y) => y.date === d);

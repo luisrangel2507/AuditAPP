@@ -1172,3 +1172,10 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .asg2 .asg-who > div { min-width: 0; }
 .apick-sub { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); margin: 4px 2px 8px; }
 .apick-big { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; } .apick-big .apz { font-size: 26px; padding: 14px 4px; }
+/* Las filas deben alinear: la celda de la persona es una celda normal de tabla; el flex va dentro */
+.asg2 .asg-who { display: table-cell !important; align-items: initial; min-width: 170px; }
+.asg2 .aw { display: flex; align-items: center; gap: 10px; }
+.asg2 th, .asg2 td { height: 58px; box-sizing: border-box; }
+.asg2 thead th { height: auto; }
+.asg2 td.off, .asg2 td.doneC { vertical-align: middle; }
+.asg2 { table-layout: fixed; } .asg2 thead th:first-child { width: 200px; } .asg2 thead th.dcol { width: 120px; }
