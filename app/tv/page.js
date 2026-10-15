@@ -10,12 +10,12 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const PAGE_MS = 10000, REFRESH_MS = 60000;
 const AV = ['#2f6bff', '#2aa876', '#7c4dde', '#f08a24', '#d6417e', '#e7b416', '#5b6b88', '#12a6b8'];
 // Orden por zonas: A, A1, A2, B, B1, B2, C…, D…, E, E2, PL1, PL3, PL4 y al final lo demás (Shipping, Mix Room…)
-const ZORDER = ['A', 'A1', 'A2', 'B', 'B1', 'B2', 'C', 'C1', 'C2', 'C3', 'D', 'D1', 'D2', 'E', 'E2', 'PL', 'PL1', 'PL3', 'PL4'];
+const ZORDER = ['A', 'A1', 'A2', 'B', 'B1', 'B2', 'C', 'C1', 'C2', 'C3', 'D', 'D1', 'D2', 'E', 'E2', 'PL', 'PL1', 'PL3', 'PL4', 'TOOLROOM', 'SHIPPING', 'RECEIVING'];
 const zoneRank = (area) => {
   const a = String(area || '').toUpperCase().trim();
   let z = '';
   let m = /^ZONA ([A-E])\b/.exec(a); if (m) z = m[1];                       // "ZONA D-E" → D
-  if (!z) { m = /^(PL[134]?)\b/.exec(a); if (m) z = m[1]; }                  // PL, PL1, PL3, PL4
+  if (!z) { m = /^(PL[134]?|TOOLROOM|SHIPPING|RECEIVING)\b/.exec(a); if (m) z = m[1]; }                  // PL, PL1, PL3, PL4
   if (!z) { m = /^([A-E][0-9])\b/.exec(a); if (m) z = m[1]; }                // "B2 · B2-1", "B2-2" → B2
   if (!z) { m = /^([A-E])\b/.exec(a); if (m) z = m[1]; }
   const i = ORDER_IDX[z];

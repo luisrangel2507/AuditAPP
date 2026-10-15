@@ -213,7 +213,7 @@ Todas las rutas de escritura de admin se registran automáticamente en `admin_lo
 - Rendimiento: imágenes WebP con cabeceras de caché de 1 semana, `peek()`/`api()` guardan GET en `sessionStorage` para pintar al instante, `ensureWeek` memorizado, consultas agregadas, hero con `fetchPriority="high"`.
 
 ## 9. Decisiones y cosas que NO hay que “arreglar”
-- El `E1` no existe: es **E2**. Las zonas PL no tienen máquina.
+- El `E1` no existe: es **E2**. Las zonas PL, Toolroom, Shipping y Receiving no tienen máquina.
 - Layer 3/4 y Layer 2 **no** llevan N/P ni zona asignada.
 - El auditor no cambia la asignación del admin; sí puede **corregir** zona/máquina/N-P de su auditoría ya hecha (queda marcado).
 - QEs hoy: **solo auditorías de proceso**; su LPA se enciende por usuario (“Hace LPA”) o en bloque.

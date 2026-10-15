@@ -431,9 +431,9 @@ function PasteSheet({ data, onApply, onClose }) {
 // Asignaciones: por persona y por día, la zona o máquina a inspeccionar (el N/P lo captura el auditor).
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
 // Zona (A1…PL4) a partir del texto asignado ("B2", "B2 · B2-1" o textos antiguos como "ZONA C")
-const zoneOf = (area) => { const z = String(area || '').split(' · ')[0].trim().toUpperCase(); return ZONES.includes(z) ? z : ''; };
+const zoneOf = (area) => { const z = String(area || '').split(' · ')[0].trim().toUpperCase(); return ZONES.find((x) => x.toUpperCase() === z) || ''; };
 const toneOf = (area) => {
-  const z = zoneOf(area); if (z) return z.startsWith('PL') ? 'pl' : z[0].toLowerCase();
+  const z = zoneOf(area); if (z) return z.startsWith('PL') || ['Toolroom', 'Shipping', 'Receiving'].includes(z) ? 'pl' : z[0].toLowerCase();
   const m = /^ZONA ([A-E])\b/i.exec(String(area || '').trim()); // zona completa: "ZONA A" … "ZONA E"
   return m ? m[1].toLowerCase() : (area ? 'x' : '');
 };
@@ -523,7 +523,7 @@ function Assign() {
               </tr>))}</tbody>
           </table></div>
           <div className="asg-legend">
-            {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E2'], ['pl', 'PL1 · PL3 · PL4'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
+            {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E2'], ['pl', 'PL · Toolroom · Shipping · Receiving'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
           </div>
           {pick && (() => {
             const { x, list } = pick, cur = val(x).area || '';
@@ -539,7 +539,7 @@ function Assign() {
                   <div className="apick-big">{['A', 'B', 'C', 'D', 'E'].map((L) => <button key={L} type="button" className={`apz t-${L.toLowerCase()} ${cur === `ZONA ${L}` ? 'on' : ''}`} onClick={() => apply(`ZONA ${L}`)}>{L}</button>)}</div>
                   <div className="apick-sub">O una zona específica</div>
                   <div className="apick-z">{ZONES.map((zz) => (
-                    <button key={zz} type="button" className={`apz t-${zz.startsWith('PL') ? 'pl' : zz[0].toLowerCase()} ${zz === cur || cur.startsWith(`${zz} · `) ? 'on' : ''}`}
+                    <button key={zz} type="button" className={`apz ${['Toolroom', 'Shipping', 'Receiving'].includes(zz) ? 'long' : ''} t-${zz.startsWith('PL') || ['Toolroom', 'Shipping', 'Receiving'].includes(zz) ? 'pl' : zz[0].toLowerCase()} ${zz === cur || cur.startsWith(`${zz} · `) ? 'on' : ''}`}
                       onClick={() => apply(zz)}>{zz}</button>))}</div>
                 </>
                 <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
