@@ -22,6 +22,7 @@ export const PATCH = route(async (req, { params }, user) => {
   } else if (typeof b.text === 'string' && b.text.trim()) add('text', b.text.trim());
   if (typeof b.category === 'string') add('category', b.category.trim());
   if (typeof b.active === 'boolean') add('active', b.active);
+  if (typeof b.required === 'boolean') add('required', b.required);
   if (!sets.length) return err('Nada que cambiar');
   vals.push(params.id);
   if (!(await snapshot(params.id, 'edit', user))) return err('No encontrada', 404);

@@ -1,0 +1,39 @@
+{
+  "template": "Quality Engineer",
+  "groups": [
+    {
+      "category": "Dock Audit",
+      "note_es": "Formato QA-076-C. Plan de reacción: cuando se encuentren problemas, se deben llevar a la atención de los Gerentes de Logística para su resolución.",
+      "logistics_owners": true,
+      "questions": [
+        { "es": "¿El embarque preparado coincide con el shipper?", "en": "Does the staged shipment match the shipper?" },
+        { "es": "¿Se está siguiendo FIFO para el embarque?", "en": "Is FIFO being followed for the shipment?" },
+        { "es": "¿Las etiquetas de las cajas están en la ubicación correcta?", "en": "Are box labels in the correct location on the boxes?" },
+        { "es": "¿Las etiquetas de las cajas son legibles (escaneables)?", "en": "Are box labels readable (scannable) on the boxes?" },
+        { "es": "¿La tarima está estibada conforme al empaque estándar?", "en": "Is the pallet stacked according to standard pack?" },
+        { "es": "¿Se está usando la tarima (skid) correcta?", "en": "Is the correct skid being used?" },
+        { "es": "¿El empaque está en buenas condiciones y sin daños?", "en": "Is the packaging in good condition and not damaged?" },
+        { "es": "¿La tarima (skid) está correctamente flejada o envuelta con película (stretch wrap)?", "en": "Has the skid been appropriately strapped or stretch wrapped?" },
+        { "es": "¿Se usan etiquetas maestras (master labels) donde se necesitan?", "en": "Are master labels used where needed?" }
+      ]
+    },
+    {
+      "category": "Auditoría gerencial",
+      "note_es": "Formato QA-062-C. Al terminar las auditorías gerenciales, revisar lo siguiente. Los hallazgos se registran como en QA-075-C (sticker, número de operador y turno).",
+      "questions": [
+        { "es": "Inspección: ¿se verificó la presencia de todos los defectos visuales y de pintura?", "en": "Inspection: was the presence of all visual and paint defects verified?" },
+        { "es": "¿Todas las partes 100% lanzadas como nuevos proyectos fueron inspeccionadas e identificadas con una etiqueta verde de lanzamiento (partes y etiqueta)?", "en": "Have all parts 100% launched as new projects been inspected and identified with a green launch label (parts and label)?" },
+        { "es": "Empaque / etiqueta: ¿coincide en LHD o RHD?", "en": "Packaging / label: does it match LHD or RHD?" },
+        { "es": "Empaque / etiqueta: ¿coincide el color?", "en": "Packaging / label: does the color match?" },
+        { "es": "Empaque / etiqueta: ¿es correcta la cantidad empacada?", "en": "Packaging / label: is the packed quantity correct?" },
+        { "es": "Empaque / etiqueta: ¿se cuenta con la Carta de Cambio de Ingeniería?", "en": "Packaging / label: is the Engineering Change Letter available?" },
+        { "es": "¿Cada caja está etiquetada con 2 etiquetas y los números de serie coinciden?", "en": "Is each box labeled with 2 labels and do the serial numbers match?" },
+        { "es": "¿Todos los códigos de barras son legibles y claros?", "en": "Are all barcodes legible and clear?" },
+        { "es": "¿El empaque es apropiado y está en condiciones aceptables?", "en": "Is the packaging appropriate and in acceptable condition?" },
+        { "es": "¿El pick list es correcto?", "en": "Is the pick list correct?" },
+        { "es": "¿El packing slip es correcto?", "en": "Is the packing slip correct?" },
+        { "es": "¿Las etiquetas especiales y la documentación están completas?", "en": "Are special labels / documentation complete?" }
+      ]
+    }
+  ]
+}

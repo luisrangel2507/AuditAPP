@@ -158,6 +158,10 @@ CREATE TABLE IF NOT EXISTS question_versions (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_qversions_q ON question_versions(question_id,version DESC);
+-- Temas específicos de la LPA de los QEs (Dock Audit QA-076-C y auditoría gerencial QA-062-C / QA-075-C)
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS required BOOLEAN NOT NULL DEFAULT FALSE;   -- se incluye en todas las auditorías de la plantilla
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS shipper TEXT NOT NULL DEFAULT '';             -- shipper # revisado en el Dock Audit
+ALTER TABLE responses ADD COLUMN IF NOT EXISTS extra JSONB;                               -- sticker / operador / turno de los hallazgos gerenciales
 CREATE TABLE IF NOT EXISTS finding_evidence (
   id         SERIAL PRIMARY KEY,
   finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
@@ -308,6 +312,22 @@ async function main() {
     await pool.query(`UPDATE templates SET per_audit=19 WHERE name=$1`, [qeTpl.name]);
     await pool.query(`DELETE FROM audits WHERE kind='process' AND status='pending' AND date >= $1`, [mxToday]);
     console.log('[setup] QE Process Audit: 19 preguntas por auditoría');
+  }
+
+  // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
+  const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
+  const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagSpec.rowCount) {
+    const { rows: [st] } = await pool.query('SELECT id FROM templates WHERE name=$1', [spec.template]);
+    if (st) {
+      let order = Number((await pool.query('SELECT COALESCE(MAX(sort_order),0) m FROM questions WHERE template_id=$1', [st.id])).rows[0].m);
+      for (const g of spec.groups) for (const x of g.questions) {
+        await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,-1,TRUE)',
+          [st.id, `${x.es}\n${x.en}`, g.category, ++order]);
+      }
+      await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND a.kind='lpa' AND a.status='pending' AND a.date >= $1 AND u.dept='quality' AND u.layer=1`, [mxToday]);
+      console.log('[setup] QE LPA: temas específicos (Dock Audit y auditoría gerencial) agregados');
+    }
   }
 
   // Ajuste único: por ahora los QEs solo hacen auditorías de proceso (se quitan sus LPA pendientes)

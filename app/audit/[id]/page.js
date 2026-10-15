@@ -151,6 +151,7 @@ function RunnerInner({ audit, onExit, onDone }) {
   const [marking, setMarking] = useState(null), [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
   const needArea = false, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
+  const [shipper, setShipper] = useState(() => draft.read().shipper || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const qs = audit.questions;
   const users = useUsers();
@@ -170,15 +171,17 @@ function RunnerInner({ audit, onExit, onDone }) {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { draft.write({ answers, idx, area, part, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part]);
+  useEffect(() => { draft.write({ answers, idx, area, part, shipper, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper]);
 
   const q = qs[Math.min(idx, qs.length - 1)];
   const a = answers[q?.id] || {};
   const needsNote = a.result === 'nok' || a.result === 'partial';
   // Todo hallazgo (X / Δ) lleva descripción y foto; si se corrigió en el momento, también la acción y la foto del cierre
   const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || ((x.notes || '').trim().length >= 3 && !!x.evidence
-    && (!x.closed_now || ((x.corrective || '').trim().length >= 3 && !!x.close_evidence))));
-  const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], ...patch } }));
+    && (!x.closed_now || ((x.corrective || '').trim().length >= 3 && !!x.close_evidence))
+    && (x._cat !== 'Auditoría gerencial' || (!!x.sticker && !!(x.operator || '').trim() && !!(x.shift || '').trim()))));
+  const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], _cat: q.category, ...patch } }));
+  const hasDock = qs.some((x) => x.category === 'Dock Audit');
   const allValid = qs.every((x) => valid(answers[x.id]));
   // Se puede saltar una pregunta; al llegar al final regresan las que quedaron sin contestar hasta completarlas
   const [looped, setLooped] = useState(false);
@@ -207,16 +210,16 @@ function RunnerInner({ audit, onExit, onDone }) {
   async function submit() {
     setBusy(true); setErr('');
     try {
-      const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id] }));
-      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined } });
+      const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift } }));
+      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined } });
       draft.clear(); onDone(res);
     } catch (e) {
       if (e.network) {
         // Sin señal: se guarda en el teléfono y se envía sola al volver la conexión
-        const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id] }));
+        const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift } }));
         const c = { ok: 0, nok: 0, partial: 0, na: 0 }; qs.forEach((x) => { c[answers[x.id]?.result]++; });
         const scored = c.ok + c.nok + c.partial;
-        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
+        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
         draft.clear(); onDone({ queued: true, score: scored ? Math.round((c.ok / scored) * 1000) / 10 : 100, findings: c.nok + c.partial });
         return;
       }
@@ -259,11 +262,12 @@ function RunnerInner({ audit, onExit, onDone }) {
             <datalist id="aud-zones">{(audit.zones || []).map((z) => <option key={z} value={z} />)}</datalist>
             <input className="inp" list="aud-zones" placeholder="Área auditada" value={area} onChange={(e) => setArea(e.target.value)} />
           </div>}
+          {hasDock && !shipper.trim() && <div className="card" style={{ marginBottom: 12 }}><div className="sect" style={{ marginTop: 0 }}>Shipper # del Dock Audit</div><input className="inp" placeholder="Ej. QQ13497283" maxLength={40} autoCapitalize="characters" value={shipper} onChange={(e) => setShipper(e.target.value)} /></div>}
           {err && <div className="err">{err}</div>}
         </div>
         <div className="exec-foot">
           <button className="btn alt" onClick={() => setSummary(false)}>‹ Revisar</button>
-          <button className="btn grow" disabled={busy || (needArea && !area.trim()) || (needPart && !part.trim())} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
+          <button className="btn grow" disabled={busy || (needArea && !area.trim()) || (needPart && !part.trim()) || (hasDock && !shipper.trim())} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
         </div>
       </div>
     );
@@ -284,6 +288,11 @@ function RunnerInner({ audit, onExit, onDone }) {
       <div className="exec-body">
         <div className="qcat">{q.category || audit.template}{q.item ? <span className="qitem">Ítem {q.item}</span> : null}</div>
         <div className="qtext"><Bi text={q.text} /></div>
+        {q.category === 'Dock Audit' && <div className="qextra">
+          <label className="lbl">Shipper # revisado (obligatorio)</label>
+          <input className="inp" placeholder="Ej. QQ13497283" maxLength={40} autoCapitalize="characters" value={shipper} onChange={(e) => setShipper(e.target.value)} />
+          <div className="sub" style={{ marginTop: 4 }}>Plan de reacción: los hallazgos se turnan a los Gerentes de Logística.</div>
+        </div>}
         <div className="answers">
           {BTN.map(([k, sym, lbl, code]) => (
             <button key={k} className={`ans ${k} ${a.result === k ? 'sel' : ''}`} onClick={() => set({ result: k })}>
@@ -292,6 +301,14 @@ function RunnerInner({ audit, onExit, onDone }) {
         </div>
         {needsNote && (
           <div style={{ marginTop: 18 }}>
+            {q.category === 'Auditoría gerencial' && <div className="qextra">
+              <label className="lbl">Sticker (obligatorio)</label>
+              <div className="zchips">{[['White', 'Blanco'], ['Green', 'Verde'], ['Yellow', 'Amarillo'], ['Orange', 'Naranja'], ['Pink', 'Rosa']].map(([k, l]) => <button key={k} type="button" className={`zchip stk-${k} ${a.sticker === k ? 'on' : ''}`} onClick={() => set({ sticker: k })}>{l}</button>)}</div>
+              <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                <input className="inp grow" placeholder="Número de operador" maxLength={30} inputMode="numeric" value={a.operator || ''} onChange={(e) => set({ operator: e.target.value })} />
+                <select className="inp" style={{ width: 110 }} value={a.shift || ''} onChange={(e) => set({ shift: e.target.value })}><option value="">Turno</option><option value="1">1er</option><option value="2">2do</option><option value="3">3er</option></select>
+              </div>
+            </div>}
             <label className="lbl">Descripción del hallazgo (obligatorio)</label>
             <textarea className="inp" rows={3} value={a.notes || ''} onChange={(e) => set({ notes: e.target.value })} placeholder="Describe el hallazgo…" />
             <label className="lbl">{a.closed_now ? 'Acción realizada en el momento (obligatorio)' : 'Contención / acción inmediata'}</label>
@@ -410,7 +427,7 @@ export default function AuditPage() {
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
-      <div className="audit-meta"><span>{G.doc}{audit.template}</span>{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
+      <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
 
   if (err) return <Shell><div className="err">{err}</div></Shell>;

@@ -6,9 +6,11 @@ import { mxToday, addDays, closesOn } from '@/lib/dates';
 
 const MIN_SEC = 600; // duración mínima esperada de una auditoría
 const RESULTS = new Set(['ok', 'nok', 'partial', 'na']);
+const STICKERS = ['White', 'Green', 'Yellow', 'Orange', 'Pink'];
+const STICKER_ES = { White: 'Blanco', Green: 'Verde', Yellow: 'Amarillo', Orange: 'Naranja', Pink: 'Rosa' };
 
 export const POST = route(async (req, { params }, user) => {
-  const { responses, active_sec, area, part_number } = await req.json();
+  const { responses, active_sec, area, part_number, shipper } = await req.json();
   if (!Array.isArray(responses)) return err('responses requerido');
   const client = await pool.connect();
   try {
@@ -38,6 +40,9 @@ export const POST = route(async (req, { params }, user) => {
     const { rows: qs } = await client.query('SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])', [a.question_ids]);
     const qById = Object.fromEntries(qs.map((r) => [r.id, r]));
     const byQ = new Map(responses.map((r) => [Number(r.question_id), r]));
+    const hasDock = qs.some((x) => x.category === 'Dock Audit');
+    const ship = String(shipper || '').trim().slice(0, 40);
+    if (hasDock && !ship) { await client.query('ROLLBACK'); return err('Indica el Shipper # que revisaste en el Dock Audit'); }
 
     // Validación: todas contestadas; X y Δ exigen comentario
     for (const qid of a.question_ids) {
@@ -46,6 +51,12 @@ export const POST = route(async (req, { params }, user) => {
       if (!r || !RESULTS.has(r.result)) { await client.query('ROLLBACK'); return err('Faltan preguntas por contestar'); }
       if ((r.result === 'nok' || r.result === 'partial') && String(r.notes || '').trim().length < 3) {
         await client.query('ROLLBACK'); return err('Los hallazgos (X / Δ) requieren un comentario');
+      }
+      if ((r.result === 'nok' || r.result === 'partial') && qById[qid].category === 'Auditoría gerencial') {
+        const x = r.extra || {};
+        if (!STICKERS.includes(x.sticker) || !String(x.operator || '').trim() || !String(x.shift || '').trim()) {
+          await client.query('ROLLBACK'); return err('Los hallazgos de la auditoría gerencial requieren sticker, número de operador y turno');
+        }
       }
       if ((r.result === 'nok' || r.result === 'partial') && !r.evidence) {
         await client.query('ROLLBACK'); return err('Todo hallazgo (X / Δ) requiere una foto de evidencia');
@@ -64,17 +75,21 @@ export const POST = route(async (req, { params }, user) => {
       const qq = qById[qid]; if (!qq) continue;
       const r = byQ.get(qid);
       c[r.result]++;
+      // Hallazgos gerenciales (QA-075-C): sticker, operador y turno quedan también dentro de la descripción
+      const ex = (r.result === 'nok' || r.result === 'partial') && qq.category === 'Auditoría gerencial'
+        ? { sticker: r.extra.sticker, operator: String(r.extra.operator).trim().slice(0, 30), shift: String(r.extra.shift).trim().slice(0, 10) } : null;
+      const noteTxt = String(r.notes || '').trim() + (ex ? ` · Sticker: ${STICKER_ES[ex.sticker]} · Operador: ${ex.operator} · Turno: ${ex.shift}` : '');
       const ins = await client.query(
-        `INSERT INTO responses(audit_id,question_id,question,category,result,notes,corrective,evidence,item_no)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-        [a.id, qid, qq.text, qq.category || '', r.result, String(r.notes || '').trim(),
-         String(r.corrective || '').trim(), r.evidence || '', qq.item ?? null]);
+        `INSERT INTO responses(audit_id,question_id,question,category,result,notes,corrective,evidence,item_no,extra)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+        [a.id, qid, qq.text, qq.category || '', r.result, noteTxt,
+         String(r.corrective || '').trim(), r.evidence || '', qq.item ?? null, ex ? JSON.stringify(ex) : null]);
       if (r.result === 'nok' || r.result === 'partial') {
         // Se abre el open issue de inmediato; los responsables elegidos deben darle seguimiento
         const fin = await client.query(
           `INSERT INTO findings(audit_id,response_id,area,question,result,notes,due_date)
            VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-          [a.id, ins.rows[0].id, a.area, qq.text, r.result, String(r.notes || '').trim(), addDays(today, 7)]);
+          [a.id, ins.rows[0].id, a.area, qq.text, r.result, noteTxt, addDays(today, 7)]);
         await logUpdate(client, fin.rows[0].id, user.id, 'opened', 'Open issue abierto en auditoría');
         if (r.closed_now) {
           // Corregido en el momento: el mismo auditor sube la evidencia y el issue queda cerrado
@@ -92,7 +107,12 @@ export const POST = route(async (req, { params }, user) => {
           await notifyAdmins({ db: client, siteId: su.site_id, type: 'repeat_finding', link: '/reports',
             message: `Hallazgo repetido (${rep.n + 1} veces en 30 días) en ${a.area}: ${String(qq.text).split('\n')[0].slice(0, 80)}`, dedupe: `rep:${qid}:${a.area}:${today}` });
         }
-        const ids = [...new Set((Array.isArray(r.owners) ? r.owners : []).map(Number).filter(Boolean))].slice(0, 10);
+        let ids = [...new Set((Array.isArray(r.owners) ? r.owners : []).map(Number).filter(Boolean))].slice(0, 10);
+        if (qq.category === 'Dock Audit') {
+          // Plan de reacción (QA-076-C): el hallazgo se turna a los Gerentes de Logística de la planta
+          const { rows: lg } = await client.query(`SELECT id FROM users WHERE active AND dept='logistics' AND layer>=2 AND site_id=(SELECT site_id FROM users WHERE id=$1)`, [a.user_id]);
+          ids = [...new Set([...ids, ...lg.map((x) => x.id)])].slice(0, 12);
+        }
         for (const oid of ids) {
           const ok = await client.query('SELECT 1 FROM users WHERE id=$1 AND active', [oid]);
           if (ok.rowCount) await addOwner(client, fin.rows[0].id, oid, user.id);
@@ -106,8 +126,8 @@ export const POST = route(async (req, { params }, user) => {
     const startedAt = a.started_at ? new Date(a.started_at).getTime() : null;
     if (act !== null && startedAt) act = Math.min(act, Math.round((Date.now() - startedAt) / 1000) + 5);
     await client.query(
-      `UPDATE audits SET status='completed',completed_at=NOW(),started_at=COALESCE(started_at,NOW()),active_sec=$8,late=$1,ok_count=$2,nok_count=$3,partial_count=$4,na_count=$5,score_pct=$6 WHERE id=$7`,
-      [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act]);
+      `UPDATE audits SET shipper=$9,status='completed',completed_at=NOW(),started_at=COALESCE(started_at,NOW()),active_sec=$8,late=$1,ok_count=$2,nok_count=$3,partial_count=$4,na_count=$5,score_pct=$6 WHERE id=$7`,
+      [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act, ship]);
     // Auditoría muy corta (menos de 10 min de tiempo activo): se avisa al administrador
     if (act !== null && act < MIN_SEC && !proc) {
       const { rows: [au2] } = await client.query('SELECT name,site_id FROM users WHERE id=$1', [a.user_id]);

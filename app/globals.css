@@ -1125,3 +1125,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .offbar { background: #fff4d6; color: #6b4a00; border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; } .offbar.pend { background: #e8f0ff; color: #1b3a7a; }
 :root[data-theme="dark"] .offbar { background: rgba(242,178,0,.16); color: #f6c577; } :root[data-theme="dark"] .offbar.pend { background: rgba(79,147,255,.16); color: #a8c8ff; }
 .closenow { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; font-size: 14px; font-weight: 600; cursor: pointer; } .closenow input { width: 20px; height: 20px; margin-top: 1px; }
+.qextra { margin-top: 14px; padding: 12px; border-radius: 14px; background: var(--panel2, #eef2fb); }
+.zchip.stk-White.on { background: #fff; color: #1b2a4a; box-shadow: 0 0 0 2px #1f6bf0; } .zchip.stk-Green.on { background: #22a35a; color: #fff; } .zchip.stk-Yellow.on { background: #f2c200; color: #3a2d00; } .zchip.stk-Orange.on { background: #f2821e; color: #fff; } .zchip.stk-Pink.on { background: #e8508f; color: #fff; }

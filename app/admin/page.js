@@ -175,9 +175,11 @@ function Questions({ templates, reloadTemplates }) {
       )}
       {qs.map((q) => (
         <div key={q.id} className="card" style={{ marginBottom: 8, opacity: q.active ? 1 : .5 }}>
+          {q.category && (q.required || q.category === 'Dock Audit' || q.category === 'Auditoría gerencial') && <span className="pill gold" style={{ marginBottom: 4 }}>{q.category}{q.required ? ' · fija' : ''}</span>}
           <div style={{ fontSize: 14 }}><Bi text={q.text} /></div>
           <div className="row" style={{ marginTop: 8 }}>
             <button className="btn-ghost" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))}>{q.active ? 'Desactivar' : 'Activar'}</button>
+            <button className="btn-ghost" title="Una pregunta fija va en todas las auditorías de esta plantilla, además de las que rotan" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { required: !q.required } }))}>{q.required ? '📌 Fija' : 'Hacer fija'}</button>
             <button className="btn-ghost" onClick={() => setEdit({ id: q.id, es: q.text_es, en: q.text_en })}>Editar</button>
             <button className="btn-ghost" onClick={async () => { setHist({ loading: true }); try { setHist(await api(`/api/admin/questions/${q.id}/history`)); } catch { setHist(null); } }}>Historial</button>
             <button className="btn-ghost" style={{ color: 'var(--nok)' }} onClick={() => { if (confirm('¿Eliminar pregunta? Es mejor desactivarla.')) run(() => api(`/api/admin/questions/${q.id}`, { method: 'DELETE' })); }}>Eliminar</button>

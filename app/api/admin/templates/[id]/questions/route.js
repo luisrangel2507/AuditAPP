@@ -4,7 +4,7 @@ import { joinBi, splitBi } from '@/lib/bi';
 
 export const GET = route(async (req, { params }) => {
   const { rows } = await q(
-    'SELECT id,text,category,active FROM questions WHERE template_id=$1 ORDER BY sort_order,id', [params.id]);
+    'SELECT id,text,category,active,required FROM questions WHERE template_id=$1 ORDER BY sort_order,id', [params.id]);
   return json(rows.map((r) => ({ ...r, text_es: splitBi(r.text).es, text_en: splitBi(r.text).en })));
 }, { need: 'master' });
 
