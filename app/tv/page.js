@@ -9,6 +9,19 @@ const fmt = (s, o) => new Date(s + 'T12:00:00').toLocaleDateString('es-MX', o);
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const PAGE_MS = 10000, REFRESH_MS = 60000;
 const AV = ['#2f6bff', '#2aa876', '#7c4dde', '#f08a24', '#d6417e', '#e7b416', '#5b6b88', '#12a6b8'];
+// Orden por zonas: A, A1, A2, B, B1, B2, C…, D…, E, E2, PL1, PL3, PL4 y al final lo demás (Shipping, Mix Room…)
+const ZORDER = ['A', 'A1', 'A2', 'B', 'B1', 'B2', 'C', 'C1', 'C2', 'C3', 'D', 'D1', 'D2', 'E', 'E2', 'PL', 'PL1', 'PL3', 'PL4'];
+const zoneRank = (area) => {
+  const a = String(area || '').toUpperCase().trim();
+  let z = '';
+  let m = /^ZONA ([A-E])\b/.exec(a); if (m) z = m[1];                       // "ZONA D-E" → D
+  if (!z) { m = /^(PL[134]?)\b/.exec(a); if (m) z = m[1]; }                  // PL, PL1, PL3, PL4
+  if (!z) { m = /^([A-E][0-9])\b/.exec(a); if (m) z = m[1]; }                // "B2 · B2-1", "B2-2" → B2
+  if (!z) { m = /^([A-E])\b/.exec(a); if (m) z = m[1]; }
+  const i = ORDER_IDX[z];
+  return i === undefined ? 99 : i;
+};
+const ORDER_IDX = Object.fromEntries(ZORDER.map((z, i) => [z, i]));
 const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 const color = (n) => AV[[...n].reduce((s, c) => s + c.charCodeAt(0), 0) % AV.length];
 
@@ -77,7 +90,7 @@ export default function TV() {
 
   const k = data?.kpi;
   const pctCls = (p) => (p == null ? '' : p >= 90 ? 'ok' : p >= 75 ? 'warn' : 'nok');
-  const sorted = (l) => [...l].sort((a, b) => (a.status === 'completed') - (b.status === 'completed') || a.layer - b.layer || a.name.localeCompare(b.name));
+  const sorted = (l) => [...l].sort((a, b) => (a.status === 'completed') - (b.status === 'completed') || zoneRank(a.area) - zoneRank(b.area) || String(a.area).localeCompare(String(b.area)) || a.layer - b.layer || a.name.localeCompare(b.name));
   const tabs = useMemo(() => data ? [
     { l: 0, label: 'Todas', n: Object.values(data.layerCounts).reduce((s, x) => s + x, 0) },
     ...[1, 2, 3, 4].map((l) => ({ l, label: `Layer ${l}`, n: data.layerCounts[l] })),
