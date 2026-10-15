@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Shell, { useUser } from '@/components/Shell';
 import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
+import { ZONES, NO_MACHINE } from '@/lib/zones';
 import { api, peek, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
@@ -429,10 +430,15 @@ function PasteSheet({ data, onApply, onClose }) {
 
 // Asignaciones: por persona y por día, la zona o máquina a inspeccionar (el N/P lo captura el auditor).
 // El auditor no elige nada: lo que aquí se carga es lo que ve en "Hoy".
+// Zona (A1…PL4) a partir del texto asignado ("B2", "B2 · B2-1" o textos antiguos como "ZONA C")
+const zoneOf = (area) => { const z = String(area || '').split(' · ')[0].trim().toUpperCase(); return ZONES.includes(z) ? z : ''; };
+const toneOf = (area) => { const z = zoneOf(area); return z ? (z.startsWith('PL') ? 'pl' : z[0].toLowerCase()) : (area ? 'x' : ''); };
+const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+
 function Assign() {
   const me = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
-  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null);
+  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
   const dirty = Object.keys(edits).length;
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
@@ -486,32 +492,67 @@ function Assign() {
       </div>
       <div className="row" style={{ marginBottom: 12 }}>
         <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
-        <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>Pegar desde Excel</button>
+        <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>⬇ Importar desde Excel</button>
       </div>
-      {data && <div className="sub" style={{ margin: '0 0 8px' }}><b>{asg.done}</b> de {asg.total} asignadas (zona / máquina){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ' ✓'}</div>}
+      {data && <div className={`asg-count ${asg.total - asg.done > 0 ? 'warn' : 'ok'}`}><b>{asg.total - asg.done > 0 ? '!' : '✓'}</b><span><b>{asg.done} de {asg.total} asignadas</b><small>(zona / máquina){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ''}</small></span></div>}
       {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
-          <datalist id="zones">{data.zones.map((z) => <option key={z} value={z} />)}</datalist>
-          <div className="asg-mx-wrap"><table className="asg-mx">
-            <thead><tr><th>Persona</th>{data.days.map((d, k) => <th key={d} className={d === data.today ? 'today' : ''}>{DAYS_SHORT[k]} {Number(d.slice(8))}</th>)}</tr></thead>
+          <div className="asg-mx-wrap"><table className="asg-mx asg2">
+            <thead><tr><th>Persona</th><th className="dcol">Departamento</th>{data.days.map((d, k) => <th key={d} className={d === data.today ? 'today' : ''}>{DAYS_SHORT[k]} {Number(d.slice(8))}</th>)}</tr></thead>
             <tbody>{people.map(({ id, a, list }) => (
               <tr key={id}>
-                <th className="asg-who"><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></th>
+                <th className="asg-who"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></th>
+                <td className="dcol dtxt">{DEPT[a.dept]}</td>
                 {data.days.map((d) => {
                   const x = list.find((y) => y.date === d);
                   if (!x) return <td key={d} className="off" />;
                   const v = val(x);
                   if (x.status === 'completed') return <td key={d} className="doneC">✓ {x.area}{x.part_number ? <small>N/P {x.part_number}</small> : null}</td>;
-                  const miss = !v.area;
                   return (
-                    <td key={d} className={miss ? 'miss' : ''}>
-                      <input className="inp" list="zones" placeholder="Zona" value={v.area} onChange={(e) => set(x, 'area', e.target.value)} />
-                      <button type="button" className="asg-mv" title="Cambiar de día" aria-label="Cambiar de día" onClick={() => setMv({ x, list })}>📅</button>
+                    <td key={d}>
+                      <button type="button" className={`acell t-${toneOf(v.area) || 'none'} ${edits[x.id] ? 'edited' : ''}`} onClick={() => { setOtro(''); setPick({ x, list, step: 'zone', zone: zoneOf(v.area) }); }}>
+                        <span>{v.area || '—'}</span><i aria-hidden="true">▾</i>
+                      </button>
                     </td>);
                 })}
               </tr>))}</tbody>
           </table></div>
+          <div className="asg-legend">
+            {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E2'], ['pl', 'PL1 · PL3 · PL4'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
+          </div>
+          {pick && (() => {
+            const { x, list } = pick, z = pick.zone, ms = (data.machines && data.machines[z]) || [], cur = val(x).area || '';
+            const apply = (area) => { set(x, 'area', area); setPick(null); };
+            return (
+              <div className="sheet-bg" onClick={() => setPick(null)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+                <div className="apick-h">
+                  {pick.step === 'machine' && <button type="button" className="btn-ghost" onClick={() => setPick({ ...pick, step: 'zone' })}>‹ Zona</button>}
+                  <div className="grow"><h2>{pick.step === 'zone' ? 'Zona' : `Máquina · Zona ${z}`}</h2>
+                    <div className="sub" style={{ margin: 0 }}>{x.name} · {fmtDate(x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</div></div>
+                </div>
+                {pick.step === 'zone' ? (
+                  <div className="apick-z">{ZONES.map((zz) => (
+                    <button key={zz} type="button" className={`apz t-${zz.startsWith('PL') ? 'pl' : zz[0].toLowerCase()} ${zz === z ? 'on' : ''}`}
+                      onClick={() => (NO_MACHINE.includes(zz) ? apply(zz) : setPick({ ...pick, zone: zz, step: 'machine' }))}>{zz}<em>{NO_MACHINE.includes(zz) ? '' : '›'}</em></button>))}</div>
+                ) : (
+                  <>
+                    <button type="button" className="apm solo" onClick={() => apply(z)}>Solo la zona {z} <small>(el auditor elige la máquina)</small></button>
+                    <div className="zchips" style={{ marginTop: 10 }}>{ms.map((m) => <button key={m} type="button" className={`zchip ${cur === `${z} · ${m}` ? 'on' : ''}`} onClick={() => apply(`${z} · ${m}`)}>{m}</button>)}</div>
+                    <div className="row" style={{ gap: 8, marginTop: 10 }}>
+                      <input className="inp grow" placeholder="Otra máquina…" maxLength={40} value={otro} onChange={(e) => setOtro(e.target.value)} />
+                      <button type="button" className="btn sm" disabled={!otro.trim()} onClick={() => apply(`${z} · ${otro.trim()}`)}>Usar</button>
+                    </div>
+                  </>
+                )}
+                <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
+                  <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMv({ x, list }); }}>📅 Cambiar de día</button>
+                  {cur && <button type="button" className="btn-ghost" onClick={() => apply('')}>Quitar asignación</button>}
+                  <span className="grow" />
+                  <button type="button" className="btn alt sm" onClick={() => setPick(null)}>Cerrar</button>
+                </div>
+              </div></div>);
+          })()}
           {mv && <div className="sheet-bg" onClick={() => setMv(null)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
             <h2>Cambiar día de auditoría</h2>
             <p className="sub">{mv.x.name} · hoy está en <b>{fmtDate(mv.x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</b>. Elige el nuevo día de esta semana; el día original ya no se le vuelve a asignar.</p>
@@ -528,9 +569,9 @@ function Assign() {
             setPaste(false); setMsg('');
           }} />}
           <div className="asg-bar">
-            <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : 'Todo guardado'}</span>
+            <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : '✓ Todo guardado'}</span>
             {dirty > 0 && <button className="btn alt sm" onClick={() => { setEdits({}); setMsg(''); }}>Descartar</button>}
-            <button className="btn sm" disabled={!dirty || busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+            <button className="btn sm" disabled={!dirty || busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
           </div>
         </>)}
     </>

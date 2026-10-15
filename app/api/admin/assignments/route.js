@@ -4,6 +4,7 @@ import { route, json, err } from '@/lib/api';
 import { siteScope, sameSite } from '@/lib/site';
 import { ensureWeek } from '@/lib/schedule';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
+import { SEED_MACHINES } from '@/lib/zones';
 
 // Semana de asignaciones: por auditor y día, la zona y el número de parte a inspeccionar.
 export const GET = route(async (req, ctx, user) => {
@@ -23,7 +24,11 @@ export const GET = route(async (req, ctx, user) => {
       WHERE a.date BETWEEN $1 AND $2 AND a.date >= $4 AND a.kind='lpa' AND u.layer=1 AND ($3::int IS NULL OR u.site_id=$3)
       ORDER BY u.layer DESC,u.dept,u.name,a.date`, [monday, addDays(monday, 4), scope, gl]);
   const zones = [...new Set(rows.flatMap((r) => r.pool || []).concat(rows.map((r) => r.area)).filter(Boolean))].sort();
-  return json({ monday, today, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows, zones });
+  const machines = {};
+  for (const [z, list] of Object.entries(SEED_MACHINES)) machines[z] = [...list];
+  const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
+  for (const r of m) { const l = (machines[r.zone] ||= []); if (!l.includes(r.machine)) l.push(r.machine); }
+  return json({ monday, today, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows, zones, machines });
 }, { need: 'admin' });
 
 // Guarda varias asignaciones de una vez: [{ id, area, part_number }]. Solo auditorías pendientes.
