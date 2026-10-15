@@ -28,7 +28,7 @@ export const GET = route(async (req, { params }, user) => {
   if (a.status === 'completed') {
     const { rows } = await q(
       `SELECT r.id,r.question_id,r.question,r.category,r.result,r.notes,r.corrective,(r.evidence <> '') AS has_evidence,
-              (SELECT CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END FROM questions x WHERE x.id=r.question_id) AS item
+              COALESCE(r.item_no, (SELECT CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END FROM questions x WHERE x.id=r.question_id)) AS item
          FROM responses r WHERE r.audit_id=$1 ORDER BY r.id`, [a.id]);
     return json({ ...base, machines, responses: rows });
   }

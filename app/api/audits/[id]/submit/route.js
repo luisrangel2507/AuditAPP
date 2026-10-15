@@ -35,7 +35,7 @@ export const POST = route(async (req, { params }, user) => {
       return err(`La auditoría ya no se puede registrar: solo se permite el mismo día programado (${closesOn(a)}).`, 403);
     }
 
-    const { rows: qs } = await client.query('SELECT id,text,category FROM questions WHERE id = ANY($1::int[])', [a.question_ids]);
+    const { rows: qs } = await client.query('SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])', [a.question_ids]);
     const qById = Object.fromEntries(qs.map((r) => [r.id, r]));
     const byQ = new Map(responses.map((r) => [Number(r.question_id), r]));
 
@@ -58,10 +58,10 @@ export const POST = route(async (req, { params }, user) => {
       const r = byQ.get(qid);
       c[r.result]++;
       const ins = await client.query(
-        `INSERT INTO responses(audit_id,question_id,question,category,result,notes,corrective,evidence)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+        `INSERT INTO responses(audit_id,question_id,question,category,result,notes,corrective,evidence,item_no)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
         [a.id, qid, qq.text, qq.category || '', r.result, String(r.notes || '').trim(),
-         String(r.corrective || '').trim(), r.evidence || '']);
+         String(r.corrective || '').trim(), r.evidence || '', qq.item ?? null]);
       if (r.result === 'nok' || r.result === 'partial') {
         // Se abre el open issue de inmediato; los responsables elegidos deben darle seguimiento
         const fin = await client.query(

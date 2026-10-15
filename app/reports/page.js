@@ -30,6 +30,13 @@ function Inner() {
       <div className="row wrap" style={{ gap: 8 }}>{dl('compliance')}{dl('issues')}{dl('audits')}{dl('assignments')}</div>
       <div className="sub" style={{ marginTop: 6 }}>Archivos .csv que abre Excel directo, con el periodo seleccionado.</div>
 
+      <div className="sect" style={{ marginTop: 18 }}>Respaldo</div>
+      <div className="row wrap" style={{ gap: 8 }}>
+        <a className="btn alt sm" href="/api/admin/backup" download>⬇ Respaldo completo (JSON)</a>
+        <a className="btn alt sm" href="/api/admin/backup?fotos=1" download>⬇ Con fotos (pesa más)</a>
+      </div>
+      <div className="sub" style={{ marginTop: 6 }}>Incluye usuarios, preguntas y sus versiones, auditorías, respuestas, issues y bitácora. No incluye contraseñas.</div>
+
       <div className="sect" style={{ marginTop: 18 }}>Pareto de hallazgos</div>
       <div className="seg" style={{ margin: '6px 0 10px' }}>{BY.map(([k, l]) => <button key={k} className={by === k ? 'on' : ''} onClick={() => setBy(k)}>{l}</button>)}</div>
       {!par ? <div className="empty">Cargando…</div> : !par.rows.length ? <div className="card empty">Sin hallazgos en el periodo.</div> : (

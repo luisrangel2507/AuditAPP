@@ -122,7 +122,7 @@ function Users({ templates }) {
 }
 
 function Questions({ templates, reloadTemplates }) {
-  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [es, setEs] = useState(''), [en, setEn] = useState(''), [edit, setEdit] = useState(null), [err, setErr] = useState('');
+  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [es, setEs] = useState(''), [en, setEn] = useState(''), [edit, setEdit] = useState(null), [err, setErr] = useState(''), [hist, setHist] = useState(null);
   const t = templates.find((x) => x.id === Number(tid));
   const load = () => tid && api(`/api/admin/templates/${tid}/questions`).then(setQs);
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tid]);
@@ -157,12 +157,29 @@ function Questions({ templates, reloadTemplates }) {
           </div>
         </div></div>
       )}
+      {hist && (
+        <div className="sheet-bg" onClick={() => setHist(null)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+          <h2>Historial de la pregunta</h2>
+          <p className="sub">Las auditorías ya realizadas conservan el texto y el número de ítem con los que se contestaron.</p>
+          {hist.loading ? <div className="empty">Cargando…</div> : <>
+            <div className="card" style={{ marginBottom: 8 }}><b>Versión actual (v{hist.current?.version})</b><div style={{ fontSize: 14 }}><Bi text={hist.current?.text || ''} /></div></div>
+            {!hist.versions.length && <div className="sub">Aún no se ha modificado.</div>}
+            {hist.versions.map((v) => (
+              <div key={v.version} className="card" style={{ marginBottom: 8 }}>
+                <b>v{v.version}</b> <span className="sub" style={{ margin: 0 }}>· {v.change === 'delete' ? 'eliminada' : 'reemplazada'} por {v.changed_by_name || '—'} · {new Date(v.created_at).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                <div style={{ fontSize: 14 }}><Bi text={v.text} /></div>
+              </div>))}
+          </>}
+          <button className="btn alt block" style={{ marginTop: 10 }} onClick={() => setHist(null)}>Cerrar</button>
+        </div></div>
+      )}
       {qs.map((q) => (
         <div key={q.id} className="card" style={{ marginBottom: 8, opacity: q.active ? 1 : .5 }}>
           <div style={{ fontSize: 14 }}><Bi text={q.text} /></div>
           <div className="row" style={{ marginTop: 8 }}>
             <button className="btn-ghost" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))}>{q.active ? 'Desactivar' : 'Activar'}</button>
             <button className="btn-ghost" onClick={() => setEdit({ id: q.id, es: q.text_es, en: q.text_en })}>Editar</button>
+            <button className="btn-ghost" onClick={async () => { setHist({ loading: true }); try { setHist(await api(`/api/admin/questions/${q.id}/history`)); } catch { setHist(null); } }}>Historial</button>
             <button className="btn-ghost" style={{ color: 'var(--nok)' }} onClick={() => { if (confirm('¿Eliminar pregunta? Es mejor desactivarla.')) run(() => api(`/api/admin/questions/${q.id}`, { method: 'DELETE' })); }}>Eliminar</button>
           </div>
         </div>))}
@@ -223,7 +240,11 @@ function ImportSheet({ site, onClose, onDone }) {
         <p className="sub">Pega desde Excel una fila por persona, con estas columnas: <b>Nombre, Depto, Capa, Plantilla, Días, Áreas, Acceso</b>. Varias áreas se separan con <b>|</b>; Capa 2 y 3 no necesitan días ni áreas.</p>
         <details style={{ margin: '8px 0' }}><summary className="sub" style={{ cursor: 'pointer' }}>Ver ejemplo</summary>
           <pre className="imp-ta" style={{ whiteSpace: 'pre-wrap', background: '#f1f4fa', borderRadius: 12, padding: 10 }}>{EXAMPLE}</pre></details>
-        <textarea className="inp imp-ta" placeholder="Pega aquí…" value={text} onChange={(e) => { setText(e.target.value); setPrev(null); }} />
+        <div className="row wrap" style={{ gap: 8, marginBottom: 8 }}>
+        <a className="btn alt sm" href={`/api/admin/export?type=assignments&date=${data.monday}`} download>⬇ Descargar plantilla de la semana (.csv)</a>
+        <label className="btn alt sm" style={{ display: 'inline-block' }}>📂 Cargar archivo .csv<input type="file" accept=".csv,.txt,text/csv,text/plain" hidden onChange={pickFile} /></label>
+      </div>
+      <textarea className="inp imp-ta" placeholder="Pega aquí…" value={text} onChange={(e) => { setText(e.target.value); setPrev(null); }} />
         <label className="lbl">Contraseña inicial (opcional)</label>
         <input className="inp" autoComplete="off" placeholder="Vacío = una contraseña aleatoria distinta por persona" value={pw} onChange={(e) => { setPw(e.target.value); setPrev(null); }} />
         {prev && <table className="imp-table"><tbody>{prev.rows.map((r) => (
@@ -299,7 +320,7 @@ function parseAssignments(text, audits, days) {
   String(text || '').split(/\r?\n/).forEach((raw, i) => {
     if (!raw.trim()) return;
     const c = raw.split(raw.includes('\t') ? '\t' : ';').map((x) => x.trim());
-    if (i === 0 && /^nombre/.test(norm(c[0]))) return;
+    if (i === 0 && /^(nombre|persona)/.test(norm(c[0]))) return;
     const [name, day, zone, part] = c;
     // Tabla completa de Excel: Nombre + Lun..Vie (una zona o máquina por día)
     const oldFmt = c.length <= 4 && (!norm(day) || ['todos', 'todo', 'semana'].includes(norm(day)) || DAY_IDX[norm(day)] !== undefined || /^[1-5]$/.test(norm(day)));
@@ -342,6 +363,15 @@ function parseAssignments(text, audits, days) {
 function PasteSheet({ data, onApply, onClose }) {
   const [text, setText] = useState(''), [res, setRes] = useState(null);
   const run = () => setRes(parseAssignments(text, data.audits, data.days));
+  // Archivo .csv (o .txt) guardado desde Excel: se convierte a columnas separadas por tabulador
+  const csvToTabs = (raw) => raw.replace(/^\ufeff/, '').split(/\r?\n/).map((line) => {
+    if (line.includes('\t')) return line;
+    const sep = line.includes(';') && !line.includes(',') ? ';' : ',';
+    const out = []; let cur = '', q = false;
+    for (const ch of line) { if (ch === '"') q = !q; else if (ch === sep && !q) { out.push(cur); cur = ''; } else cur += ch; }
+    out.push(cur); return out.join('\t');
+  }).join('\n');
+  const pickFile = async (e) => { const f = e.target.files?.[0]; if (!f) return; setText(csvToTabs(await f.text())); setRes(null); e.target.value = ''; };
   return (
     <div className="sheet-bg" onClick={onClose}><div className="sheet" onClick={(e) => e.stopPropagation()}>
       <h2>Pegar desde Excel</h2>

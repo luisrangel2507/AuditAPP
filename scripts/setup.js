@@ -141,6 +141,23 @@ CREATE TABLE IF NOT EXISTS admin_log (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_admin_log_at ON admin_log(created_at DESC);
+-- Versiones de preguntas: cada cambio guarda la versión anterior y las respuestas conservan texto e ítem del momento
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS version INT NOT NULL DEFAULT 1;
+ALTER TABLE responses ADD COLUMN IF NOT EXISTS item_no INT;
+CREATE TABLE IF NOT EXISTS question_versions (
+  id          SERIAL PRIMARY KEY,
+  question_id INT NOT NULL,
+  version     INT NOT NULL,
+  text        TEXT NOT NULL,
+  category    TEXT NOT NULL DEFAULT '',
+  item_no     INT,
+  active      BOOLEAN,
+  change      TEXT NOT NULL DEFAULT 'edit',
+  changed_by  INT,
+  changed_by_name TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_qversions_q ON question_versions(question_id,version DESC);
 CREATE TABLE IF NOT EXISTS finding_evidence (
   id         SERIAL PRIMARY KEY,
   finding_id INT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
