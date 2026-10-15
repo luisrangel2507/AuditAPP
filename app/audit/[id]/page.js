@@ -153,12 +153,13 @@ const EMPTY_PART = { name: '', number: '', color: '', freq: '' };
 function RunnerInner({ audit, onExit, onDone }) {
   const draft = useLocal(`lpa-draft-${audit.id}`, { answers: {}, idx: 0 });
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
-  const [idx, setIdx] = useState(() => draft.read().idx || 0);
+  const [idx, setIdx_] = useState(() => Math.max(0, Math.min(draft.read().idx || 0, audit.questions.length - 1)));
   const [marking, setMarking] = useState(null), [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
   const needArea = false, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [shipper, setShipper] = useState(() => draft.read().shipper || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
+  const setIdx = (n) => setIdx_(Math.max(0, Math.min(n, audit.questions.length - 1)));
   const qs = useMemo(() => [...audit.questions].sort((x, y) => RANK[STAGE(x.category)] - RANK[STAGE(y.category)]), [audit.questions]);
   const [parts, setParts] = useState(() => draft.read().parts || [{ ...EMPTY_PART }]);
   const [introDone, setIntroDone] = useState(() => draft.read().introDone || {});
@@ -213,7 +214,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     }
     if (miss(idx)) return setErr('Falta contestar esta pregunta para poder continuar.');
     setLooped(false); setErr('');
-    if (idx < qs.length - 1) return setIdx(sLast + 1);
+    if (sLast < qs.length - 1) return setIdx(sLast + 1); // hay otra etapa
     if (allValid) setSummary(true);
     else setErr('Faltan preguntas por contestar para poder enviar la auditoría.');
   }
