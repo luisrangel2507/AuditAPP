@@ -1,5 +1,6 @@
 'use client';
 import { pushStatus, pushEnable, pushDisable, registerSW, clearOfflineCache } from '@/lib/pushClient';
+import { outboxList, flushOutbox, discardQueued } from '@/lib/outbox';
 import { useEffect, useState, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -51,6 +52,17 @@ export default function Shell({ children, need }) {
   // Primer ingreso (ya con su contraseña propia): se muestra la guía una vez
   useEffect(() => { if (user && !user.must_change && !user.onboarded) setGuide(true); }, [user]);
   useEffect(() => { registerSW(); }, []);
+  // Sin señal: aviso y envío automático de lo guardado en el teléfono
+  const [outbox, setOutbox] = useState([]), [online, setOnline] = useState(true);
+  useEffect(() => {
+    const refresh = () => setOutbox(outboxList());
+    const up = () => { setOnline(navigator.onLine); flushOutbox().then((r) => { refresh(); if (r.sent) loadNotif(); }); };
+    refresh(); setOnline(navigator.onLine); up();
+    window.addEventListener('lpa-outbox', refresh); window.addEventListener('online', up); window.addEventListener('offline', up);
+    const iv = setInterval(() => { if (outboxList().length) up(); }, 30000);
+    return () => { window.removeEventListener('lpa-outbox', refresh); window.removeEventListener('online', up); window.removeEventListener('offline', up); clearInterval(iv); };
+    // eslint-disable-next-line
+  }, []);
   const loadNotif = () => api('/api/notifications').then(setNotif).catch(() => {});
   useEffect(() => { if (user) loadNotif(); }, [user, path]);
   async function openBell() { setBell(true); if (notif?.unread) { await api('/api/notifications', { method: 'POST' }).catch(() => {}); } }
@@ -128,7 +140,15 @@ export default function Shell({ children, need }) {
           </div>
         </div>
       </header>
-      <main className="page sheetpage">{children}</main>
+      <main className="page sheetpage">
+        {!online && <div className="offbar">📵 Sin señal. Puedes seguir contestando; se guardará y se enviará al volver la conexión.</div>}
+        {outbox.length > 0 && <div className="offbar pend">
+          <b>{outbox.length} auditoría(s) pendiente(s) de enviar</b>
+          {outbox.map((o) => <div key={o.id} className="sub" style={{ margin: '2px 0' }}>{o.label}{o.error ? ` · ${o.error}` : ''} {o.error && <button className="btn-ghost" onClick={() => discardQueued(o.id)}>Descartar</button>}</div>)}
+          {online && <button className="btn alt sm" style={{ marginTop: 6 }} onClick={() => flushOutbox()}>Reintentar envío</button>}
+        </div>}
+        {children}
+      </main>
       <nav className="nav">
         {items.map(([href, label, icon]) => (
           <Link key={href} href={href} className={path === href ? 'on' : ''}><span className="ni">{icon(22)}{href === '/findings' && issues > 0 && <b className="badge">{issues > 9 ? '9+' : issues}</b>}</span><span>{label}</span></Link>

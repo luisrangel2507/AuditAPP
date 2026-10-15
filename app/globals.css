@@ -1114,3 +1114,13 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .wk-table { width: 100%; border-collapse: collapse; font-size: 13px; } .wk-table th, .wk-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; } .wk-table tr.bad td { background: rgba(217,47,58,.1); } .wk-table tr.mid td { background: rgba(242,178,0,.12); }
 @media print { .nav, .apphero, .wk-bar { display: none !important; } .sheetpage { padding: 0 !important; margin: 0 !important; box-shadow: none !important; } body { background: #fff !important; } }
 .seg .seg-link { white-space: nowrap; color: var(--sub); padding: 8px 16px; font-size: 14px; font-weight: 500; border-radius: var(--r-pill); text-decoration: none; }
+/* Escáner de N/P */
+.scan { position: fixed; inset: 0; z-index: 400; background: #000; display: flex; flex-direction: column; color: #fff; }
+.scan-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(12px + env(safe-area-inset-top)) 14px 10px; }
+.scan-stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; } .scan-stage video { width: 100%; height: 100%; object-fit: cover; }
+.scan-frame { position: absolute; width: min(78vw, 420px); height: min(38vw, 190px); border: 3px solid #4f93ff; border-radius: 16px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); pointer-events: none; }
+.scan-msg { position: absolute; left: 16px; right: 16px; text-align: center; background: rgba(0,0,0,.65); padding: 12px; border-radius: 12px; } .scan-msg.err { color: #ffb4b4; }
+.scan-hint { padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); text-align: center; font-size: 13px; opacity: .85; }
+.npscan { flex: none; border: 0; background: var(--panel2, #eef2fb); color: var(--ink); border-radius: 10px; padding: 8px 10px; font-size: 14px; font-weight: 700; margin-left: 6px; cursor: pointer; }
+.offbar { background: #fff4d6; color: #6b4a00; border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; } .offbar.pend { background: #e8f0ff; color: #1b3a7a; }
+:root[data-theme="dark"] .offbar { background: rgba(242,178,0,.16); color: #f6c577; } :root[data-theme="dark"] .offbar.pend { background: rgba(79,147,255,.16); color: #a8c8ff; }

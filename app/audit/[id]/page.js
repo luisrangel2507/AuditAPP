@@ -12,6 +12,8 @@ import PhotoMark from '@/components/PhotoMark';
 import { ZONES, NO_MACHINE } from '@/lib/zones';
 import OwnerPicker, { useUsers } from '@/components/OwnerPicker';
 import { useUser } from '@/components/Shell';
+import { queueAudit } from '@/lib/outbox';
+import BarcodeScan from '@/components/BarcodeScan';
 
 const BTN = [
   ['ok', '✓', 'Cumple', 'OK'], ['nok', '✕', 'No cumple', 'NOK'], ['partial', 'Δ', 'Cumple parcialmente', 'Parcial'], ['na', '—', 'No aplica', 'N/A'],
@@ -30,7 +32,7 @@ function Setup({ audit, onSaved, onExit }) {
   const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
   const [step, setStep] = useState('zone');
   const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [mirror, setMirror] = useState(false);
-  const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
   const partOk = p1.trim() && (!mirror || p2.trim());
@@ -76,12 +78,13 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {step === 'part' && <>
           <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
-          <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /></label>
+          <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p1')} aria-label="Escanear código">📷 Escanear</button></label>
           {mirror
-            ? <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="Segundo N/P (RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npx" onClick={() => { setMirror(false); setP2(''); }} aria-label="Quitar segundo N/P">✕</button></label>
+            ? <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="Segundo N/P (RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p2')} aria-label="Escanear código">📷</button><button type="button" className="npx" onClick={() => { setMirror(false); setP2(''); }} aria-label="Quitar segundo N/P">✕</button></label>
             : <button className="npadd" type="button" onClick={() => setMirror(true)}><span className="npplus">+</span><i className="npsep" /><b>Segundo N/P (pieza espejo RH / LH)</b></button>}
         </>}
         {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
+        {scan && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { if (scan === 'p1') setP1(t); else { setP2(t); if (typeof setMirror === 'function') setMirror(true); } setScan(''); }} />}
       </div>
       <div className="setup-foot">
         <button className="setup-go" disabled={busy || (full ? !(step === 'part' && partOk) : !zone)} onClick={go}><span>→</span><b>{busy ? 'Guardando…' : 'Comenzar preguntas'}</b></button>
@@ -93,7 +96,7 @@ function Setup({ audit, onSaved, onExit }) {
 // Zona, máquina y N/P con opción de corregirlos (quedan marcados como corregidos)
 function PartEdit({ audit, onSaved }) {
   const full = audit.layer === 1 || audit.kind === 'process';
-  const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const edited = !!audit.part_edited_at;
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
@@ -122,9 +125,10 @@ function PartEdit({ audit, onSaved }) {
             </>}
           </>}
           <label className="lbl">Número de parte</label>
-          <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} />
-          <input className="inp" style={{ marginTop: 8 }} placeholder="Segundo N/P (pieza espejo, opcional)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} />
+          <div className="row" style={{ gap: 6 }}><input className="inp grow" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p1')}>📷</button></div>
+          <div className="row" style={{ gap: 6, marginTop: 8 }}><input className="inp grow" placeholder="Segundo N/P (pieza espejo, opcional)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p2')}>📷</button></div>
           {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+          {scan && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { if (scan === 'p1') setP1(t); else { setP2(t); } setScan(''); }} />}
           <div className="row" style={{ marginTop: 14 }}>
             <button className="btn alt grow" onClick={() => setOpen(false)}>Cancelar</button>
             <button className="btn grow" disabled={busy || !p1.trim() || (full && (!zone || (!noMach && !machine.trim())))} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
@@ -199,7 +203,18 @@ function RunnerInner({ audit, onExit, onDone }) {
       const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id] }));
       const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined } });
       draft.clear(); onDone(res);
-    } catch (e) { setErr(e.message); setBusy(false); }
+    } catch (e) {
+      if (e.network) {
+        // Sin señal: se guarda en el teléfono y se envía sola al volver la conexión
+        const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id] }));
+        const c = { ok: 0, nok: 0, partial: 0, na: 0 }; qs.forEach((x) => { c[answers[x.id]?.result]++; });
+        const scored = c.ok + c.nok + c.partial;
+        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
+        draft.clear(); onDone({ queued: true, score: scored ? Math.round((c.ok / scored) * 1000) / 10 : 100, findings: c.nok + c.partial });
+        return;
+      }
+      setErr(e.message); setBusy(false);
+    }
   }
 
   const marker = marking ? <PhotoMark src={marking} onCancel={() => setMarking(null)} onDone={(d) => { set({ evidence: d }); setMarking(null); }} /> : null;
@@ -386,7 +401,7 @@ export default function AuditPage() {
     <Shell>
       <div className="card" style={{ textAlign: 'center', marginTop: 40 }}>
         <Ring value={done.score} size={120} stroke={10} cls={scoreCls(done.score)} label={`${done.score}%`} sub="Score" />
-        <p>Auditoría registrada.{done.findings > 0 ? ` Se abrieron ${done.findings} open issue(s) para seguimiento.` : ' Sin hallazgos.'}</p>
+        <p>{done.queued ? 'Guardada en tu teléfono porque no hay señal. Se enviará sola cuando vuelva la conexión (deja la app abierta o vuelve a abrirla con señal).' : 'Auditoría registrada.'}{done.queued ? '' : done.findings > 0 ? ` Se abrieron ${done.findings} open issue(s) para seguimiento.` : ' Sin hallazgos.'}</p>
         {audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="rep-link" style={{ marginBottom: 12 }}>{G.doc}<b>Descargar reporte</b>{G.arrow}</Link>}
         <button className="btn block" onClick={() => router.replace('/')}>Listo</button>
       </div>
