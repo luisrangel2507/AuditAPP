@@ -128,3 +128,16 @@ Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador 
 **LPA de los QEs apagada por ahora:** los QEs (Calidad, Layer 1) solo hacen auditorías de proceso; su LPA no se genera, no aparece en Hoy/Semana/TV/Panel y no cuenta en los cumplimientos. Se enciende cuando se necesite desde **Admin → QEs → LPA de los QEs → Encender** (`settings.qe_lpa_on`). Las LPA que ya hicieron se conservan.
 
 **Programa piloto:** el programa arranca el **14-Oct-2026** para todos (`settings.go_live` y el arranque de cada planta). Los días anteriores no se generan ni cuentan: no hay "no realizadas" ni rojos de antes de esa fecha, y lo que se hubiera hecho en pruebas antes de ella no aparece en Hoy, Semana, Panel, TV ni Admin → QEs. Para mover la fecha: Admin → Plantas (arranque) o `settings.go_live`.
+
+## Avisos, reportes, sin señal y respaldo
+
+- **Campana de avisos (todos los usuarios):** asignación de issues, issues por vencer (≤ 2 días) y vencidos, recordatorios de auditoría pendiente (12:30 y 16:00, hora de planta), cierre del día para el admin (17:30), reporte semanal (viernes 16:00) y hallazgos repetidos. Cada aviso lleva una llave `dedupe`, así no se repite.
+- **Escalamiento:** un issue con 3 y con 7 días de retraso avisa a los administradores y a los gerentes (Layer 2+) del departamento.
+- **Tareas programadas:** `instrumentation.js` → `lib/jobs.js` corre cada 5 min dentro del servidor (con candado de PostgreSQL para que solo una instancia las ejecute).
+- **Avisos en el teléfono (push):** botón en la campana. Las llaves VAPID se generan solas y se guardan en `settings`. En iPhone solo funciona con la app agregada a la pantalla de inicio.
+- **Reportes (`/reports`, solo admin):** pareto de hallazgos (ítem / zona / máquina / N/P), hallazgos repetidos, cumplimiento por persona, reporte semanal imprimible (`/reports/weekly`), descargas CSV para Excel (cumplimiento, issues, auditorías, asignación semanal) y respaldo JSON (`/api/admin/backup`, con o sin fotos).
+- **Asignación semanal:** en "Pegar desde Excel" se puede descargar la plantilla de la semana y cargar un archivo `.csv`.
+- **Registro (Admin → Registro):** bitácora automática de cambios del admin (`admin_log`, se escribe desde `route()`), más auditorías y hallazgos eliminados con su razón.
+- **Versiones de preguntas:** cada edición/borrado guarda la versión anterior (`question_versions`); las respuestas conservan el texto y el ítem del momento (`responses.item_no`).
+- **Sin señal:** `public/sw.js` guarda lo ya visitado; si se envía una auditoría sin conexión queda en el teléfono (`lpa-outbox`) y se envía sola al volver la señal. La zona/máquina/N-P se capturan con señal (al iniciar).
+- **Escáner de N/P:** botón 📷 en la captura del número de parte (lector nativo del navegador o ZXing en iPhone); siempre se puede escribir a mano.
