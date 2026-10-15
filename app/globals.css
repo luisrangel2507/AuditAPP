@@ -1134,3 +1134,10 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ktag.lpa { background: rgba(31,107,240,.12); color: #1f6bf0; } .ktag.proc { background: rgba(124,77,222,.14); color: #7c4dde; }
 :root[data-theme="dark"] .ktag.lpa { background: rgba(79,147,255,.2); color: #8db8ff; } :root[data-theme="dark"] .ktag.proc { background: rgba(170,130,255,.2); color: #c3a6ff; }
 .asg-mx td { position: relative; } .asg-mv { position: absolute; top: 2px; right: 2px; border: 0; background: rgba(31,107,240,.1); border-radius: 8px; font-size: 11px; padding: 2px 4px; cursor: pointer; line-height: 1; }
+/* Etapas de la auditoría (piso → gerencial → Dock) */
+.stagechip { display: inline-block; margin: 8px auto 0; padding: 3px 12px; border-radius: 999px; background: rgba(31,107,240,.14); color: #1f6bf0; font-size: 12px; font-weight: 800; letter-spacing: .03em; }
+.exec-top .stagechip { display: table; }
+:root[data-theme="dark"] .stagechip { background: rgba(79,147,255,.22); color: #9cc2ff; }
+.stageintro { display: grid; gap: 6px; padding: 14px; border-radius: 16px; background: var(--panel2, #eef2fb); margin-bottom: 14px; } .stageintro b { font-size: 16px; } .stageintro span { font-size: 14px; color: var(--sub); }
+.partcard { margin-bottom: 10px; }
+.exec-top .stagechip, :root[data-theme="dark"] .exec-top .stagechip { background: rgba(255,255,255,.22); color: #fff; margin: 8px auto 0; }

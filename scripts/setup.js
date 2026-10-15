@@ -171,7 +171,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_override BOOLEAN;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_from DATE;   -- desde cuándo se le generan LPA (no se crean días pasados al activarla)
 -- Temas específicos de la LPA de los QEs (Dock Audit QA-076-C y auditoría gerencial QA-062-C / QA-075-C)
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS required BOOLEAN NOT NULL DEFAULT FALSE;   -- se incluye en todas las auditorías de la plantilla
-ALTER TABLE audits ADD COLUMN IF NOT EXISTS shipper TEXT NOT NULL DEFAULT '';             -- shipper # revisado en el Dock Audit
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS shipper TEXT NOT NULL DEFAULT '';
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS extra JSONB;                                  -- partes revisadas en la etapa gerencial (QA-062-C)             -- shipper # revisado en el Dock Audit
 ALTER TABLE responses ADD COLUMN IF NOT EXISTS extra JSONB;                               -- sticker / operador / turno de los hallazgos gerenciales
 CREATE TABLE IF NOT EXISTS finding_evidence (
   id         SERIAL PRIMARY KEY,

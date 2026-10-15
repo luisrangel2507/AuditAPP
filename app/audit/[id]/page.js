@@ -144,6 +144,12 @@ function Runner({ audit, onExit, onDone, onSetup }) {
   return <RunnerInner audit={audit} onExit={onExit} onDone={onDone} />;
 }
 
+// Etapas de la auditoría: la de piso y, para la LPA de los QEs, dos etapas adicionales al terminar (cada una por separado)
+const STAGE = (c) => (c === 'Auditoría gerencial' ? 'gerencial' : c === 'Dock Audit' ? 'dock' : 'piso');
+const RANK = { piso: 0, gerencial: 1, dock: 2 };
+const STAGE_LABEL = { piso: 'Auditoría en piso', gerencial: 'Auditoría gerencial', dock: 'Dock Audit' };
+const EMPTY_PART = { name: '', number: '', color: '', freq: '' };
+
 function RunnerInner({ audit, onExit, onDone }) {
   const draft = useLocal(`lpa-draft-${audit.id}`, { answers: {}, idx: 0 });
   const [answers, setAnswers] = useState(() => draft.read().answers || {});
@@ -153,7 +159,9 @@ function RunnerInner({ audit, onExit, onDone }) {
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [shipper, setShipper] = useState(() => draft.read().shipper || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
-  const qs = audit.questions;
+  const qs = useMemo(() => [...audit.questions].sort((x, y) => RANK[STAGE(x.category)] - RANK[STAGE(y.category)]), [audit.questions]);
+  const [parts, setParts] = useState(() => draft.read().parts || [{ ...EMPTY_PART }]);
+  const [introDone, setIntroDone] = useState(() => draft.read().introDone || {});
   const users = useUsers();
 
   // Tiempo activo: solo cuenta con la pantalla visible y actividad reciente (≤ 60 s sin tocar)
@@ -171,30 +179,43 @@ function RunnerInner({ audit, onExit, onDone }) {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { draft.write({ answers, idx, area, part, shipper, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper]);
+  useEffect(() => { draft.write({ answers, idx, area, part, shipper, parts, introDone, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper, parts, introDone]);
 
   const q = qs[Math.min(idx, qs.length - 1)];
+  const cleanParts = parts.filter((x) => x.name.trim() && x.number.trim());
   const a = answers[q?.id] || {};
   const needsNote = a.result === 'nok' || a.result === 'partial';
   // Todo hallazgo (X / Δ) lleva descripción y foto; si se corrigió en el momento, también la acción y la foto del cierre
   const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || ((x.notes || '').trim().length >= 3 && !!x.evidence
     && (!x.closed_now || ((x.corrective || '').trim().length >= 3 && !!x.close_evidence))
-    && (x._cat !== 'Auditoría gerencial' || (!!x.sticker && !!(x.operator || '').trim() && !!(x.shift || '').trim()))));
+    && (x._cat !== 'Auditoría gerencial' || (!!x.sticker && !!(x.operator || '').trim() && !!(x.shift || '').trim() && (cleanParts.length <= 1 || !!x.part)))));
   const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], _cat: q.category, ...patch } }));
   const hasDock = qs.some((x) => x.category === 'Dock Audit');
   const allValid = qs.every((x) => valid(answers[x.id]));
-  // Se puede saltar una pregunta; al llegar al final regresan las que quedaron sin contestar hasta completarlas
+  // Etapas: cada una se completa por separado; dentro de una etapa se puede saltar y al final regresan las pendientes
+  const stage = STAGE(q.category);
+  const stages = [...new Set(qs.map((x) => STAGE(x.category)))];
+  const sIdx = stages.indexOf(stage);
+  const sQ = qs.map((x, i) => ({ x, i })).filter((o) => STAGE(o.x.category) === stage);
+  const sFirst = sQ[0].i, sLast = sQ[sQ.length - 1].i;
   const [looped, setLooped] = useState(false);
-  const pending = qs.filter((x) => !valid(answers[x.id])).length;
+  const pending = sQ.filter((o) => !valid(answers[o.x.id])).length;
+  const hasGer = qs.some((x) => x.category === 'Auditoría gerencial');
+  const partsOk = cleanParts.length > 0;
+  const needIntro = stage !== 'piso' && !introDone[stage];
   function next() {
     const miss = (i) => !valid(answers[qs[i].id]);
-    if (!looped && idx < qs.length - 1) return setIdx(idx + 1);
-    for (let k = 1; k <= qs.length; k++) {
-      const i = (idx + k) % qs.length;
-      if (i !== idx && miss(i)) { setLooped(true); setErr(''); return setIdx(i); }
+    if (!looped && idx < sLast) return setIdx(idx + 1);
+    const pos = sQ.findIndex((o) => o.i === idx);
+    for (let k = 1; k <= sQ.length; k++) {
+      const o = sQ[(pos + k) % sQ.length];
+      if (o.i !== idx && miss(o.i)) { setLooped(true); setErr(''); return setIdx(o.i); }
     }
+    if (miss(idx)) return setErr('Falta contestar esta pregunta para poder continuar.');
+    setLooped(false); setErr('');
+    if (idx < qs.length - 1) return setIdx(sLast + 1);
     if (allValid) setSummary(true);
-    else setErr('Falta contestar esta pregunta para poder enviar la auditoría.');
+    else setErr('Faltan preguntas por contestar para poder enviar la auditoría.');
   }
 
   async function pickClosePhoto(e) {
@@ -210,16 +231,16 @@ function RunnerInner({ audit, onExit, onDone }) {
   async function submit() {
     setBusy(true); setErr('');
     try {
-      const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift } }));
-      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined } });
+      const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
+      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined } });
       draft.clear(); onDone(res);
     } catch (e) {
       if (e.network) {
         // Sin señal: se guarda en el teléfono y se envía sola al volver la conexión
-        const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift } }));
+        const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
         const c = { ok: 0, nok: 0, partial: 0, na: 0 }; qs.forEach((x) => { c[answers[x.id]?.result]++; });
         const scored = c.ok + c.nok + c.partial;
-        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
+        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
         draft.clear(); onDone({ queued: true, score: scored ? Math.round((c.ok / scored) * 1000) / 10 : 100, findings: c.nok + c.partial });
         return;
       }
@@ -273,6 +294,52 @@ function RunnerInner({ audit, onExit, onDone }) {
     );
   }
 
+  if (needIntro) {
+    const stageBar = <div className="stagechip">Etapa {sIdx + 1} de {stages.length} · {STAGE_LABEL[stage]}</div>;
+    const setPart_ = (i, k, v) => setParts((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+    const ok = stage === 'gerencial' ? partsOk : !!shipper.trim();
+    return (
+      <div className="exec">
+        <div className="exec-top">
+          <div className="row"><button className="btn-ghost" onClick={onExit}>✕ Salir</button>
+            <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.zone ? `Zona ${audit.zone}` : audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.template}</div></div><span /></div>
+          {stageBar}
+        </div>
+        <div className="exec-body">
+          <div className="stageintro">
+            <b>Terminaste la auditoría en piso{stage === 'dock' && stages.includes('gerencial') ? ' y la auditoría gerencial' : ''}.</b>
+            <span>{stage === 'gerencial' ? 'Ahora, al terminar las auditorías gerenciales, revisa lo siguiente (QA-062-C). Los hallazgos se registran como en QA-075-C.' : 'Ahora realiza el Dock Audit (QA-076-C). Plan de reacción: los hallazgos se turnan a los Gerentes de Logística.'}</span>
+          </div>
+          {stage === 'gerencial' && <>
+            <div className="sect">El producto en la auditoría gerencial</div>
+            {parts.map((x, i) => (
+              <div key={i} className="card partcard">
+                <div className="row" style={{ gap: 8 }}>
+                  <input className="inp grow" placeholder="Nombre de la parte" maxLength={80} value={x.name} onChange={(e) => setPart_(i, 'name', e.target.value)} />
+                  {parts.length > 1 && <button type="button" className="btn-ghost" aria-label="Quitar parte" onClick={() => setParts((l) => l.filter((_, j) => j !== i))}>✕</button>}
+                </div>
+                <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                  <input className="inp grow" placeholder="Número de parte" maxLength={40} autoCapitalize="characters" value={x.number} onChange={(e) => setPart_(i, 'number', e.target.value)} />
+                  <input className="inp grow" placeholder="Color" maxLength={30} value={x.color} onChange={(e) => setPart_(i, 'color', e.target.value)} />
+                </div>
+                <input className="inp" style={{ marginTop: 8 }} placeholder="Frecuencia / Shipper (ej. QQ13497283)" maxLength={40} autoCapitalize="characters" value={x.freq} onChange={(e) => setPart_(i, 'freq', e.target.value)} />
+              </div>))}
+            {parts.length < 10 && <button type="button" className="npadd" onClick={() => setParts((l) => [...l, { ...EMPTY_PART }])}><span className="npplus">+</span><i className="npsep" /><b>Agregar otra parte</b></button>}
+            <div className="sub" style={{ marginTop: 6 }}>Nombre y número de parte son obligatorios.</div>
+          </>}
+          {stage === 'dock' && <>
+            <label className="lbl">Shipper # revisado (obligatorio)</label>
+            <input className="inp" placeholder="Ej. QQ13497283" maxLength={40} autoCapitalize="characters" value={shipper} onChange={(e) => setShipper(e.target.value)} />
+          </>}
+        </div>
+        <div className="exec-foot">
+          <button className="btn alt" disabled={sFirst === 0} onClick={() => setIdx(sFirst - 1)}>‹</button>
+          <button className="btn grow" disabled={!ok} onClick={() => { setIntroDone({ ...introDone, [stage]: true }); setLooped(false); }}>Comenzar etapa ›</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="exec">
       {marker}
@@ -280,19 +347,15 @@ function RunnerInner({ audit, onExit, onDone }) {
         <div className="row">
           <button className="btn-ghost" onClick={onExit}>✕ Salir</button>
           <div className="grow" style={{ textAlign: 'center', fontSize: 16, fontWeight: 600 }}>{audit.zone ? `Zona ${audit.zone}${audit.machine ? ` · Máquina ${audit.machine}` : ''}` : audit.area}<div className="sub" style={{ margin: 0, fontSize: 12 }}>{audit.part_number ? `N/P ${audit.part_number} · ` : ''}{audit.template}</div></div>
-          <div className="sub" style={{ margin: 0 }}>{idx + 1}/{qs.length}</div>
+          <div className="sub" style={{ margin: 0 }}>{idx - sFirst + 1}/{sQ.length}</div>
         </div>
-        {pending > 0 && (looped || idx === qs.length - 1) && <div className="sub" style={{ margin: '6px 0 0', textAlign: 'center' }}>Faltan {pending} pregunta{pending === 1 ? '' : 's'} por contestar</div>}
-        <div className="prog"><i style={{ width: `${((idx + 1) / qs.length) * 100}%` }} /></div>
+        {stages.length > 1 && <div className="stagechip">Etapa {sIdx + 1} de {stages.length} · {STAGE_LABEL[stage]}</div>}
+        {pending > 0 && (looped || idx === sLast) && <div className="sub" style={{ margin: '6px 0 0', textAlign: 'center' }}>Faltan {pending} pregunta{pending === 1 ? '' : 's'} por contestar</div>}
+        <div className="prog"><i style={{ width: `${((idx - sFirst + 1) / sQ.length) * 100}%` }} /></div>
       </div>
       <div className="exec-body">
         <div className="qcat">{q.category || audit.template}{q.item ? <span className="qitem">Ítem {q.item}</span> : null}</div>
         <div className="qtext"><Bi text={q.text} /></div>
-        {q.category === 'Dock Audit' && <div className="qextra">
-          <label className="lbl">Shipper # revisado (obligatorio)</label>
-          <input className="inp" placeholder="Ej. QQ13497283" maxLength={40} autoCapitalize="characters" value={shipper} onChange={(e) => setShipper(e.target.value)} />
-          <div className="sub" style={{ marginTop: 4 }}>Plan de reacción: los hallazgos se turnan a los Gerentes de Logística.</div>
-        </div>}
         <div className="answers">
           {BTN.map(([k, sym, lbl, code]) => (
             <button key={k} className={`ans ${k} ${a.result === k ? 'sel' : ''}`} onClick={() => set({ result: k })}>
@@ -302,6 +365,10 @@ function RunnerInner({ audit, onExit, onDone }) {
         {needsNote && (
           <div style={{ marginTop: 18 }}>
             {q.category === 'Auditoría gerencial' && <div className="qextra">
+              {cleanParts.length > 1 && <>
+                <label className="lbl">Parte (obligatorio)</label>
+                <div className="zchips">{cleanParts.map((pp) => <button key={pp.number} type="button" className={`zchip ${a.part === pp.number ? 'on' : ''}`} onClick={() => set({ part: pp.number })}>{pp.number}</button>)}</div>
+              </>}
               <label className="lbl">Sticker (obligatorio)</label>
               <div className="zchips">{[['White', 'Blanco'], ['Green', 'Verde'], ['Yellow', 'Amarillo'], ['Orange', 'Naranja'], ['Pink', 'Rosa']].map(([k, l]) => <button key={k} type="button" className={`zchip stk-${k} ${a.sticker === k ? 'on' : ''}`} onClick={() => set({ sticker: k })}>{l}</button>)}</div>
               <div className="row" style={{ gap: 8, marginTop: 8 }}>
@@ -344,7 +411,8 @@ function RunnerInner({ audit, onExit, onDone }) {
       <div className="exec-foot">
         <button className="btn alt" disabled={idx === 0} onClick={() => setIdx(idx - 1)}>‹</button>
         <button className="btn grow" onClick={next}>
-          {valid(a) ? (looped || idx === qs.length - 1 ? (pending ? 'Siguiente pendiente ›' : 'Ver resumen') : 'Siguiente ›') : (looped || idx === qs.length - 1 ? 'Siguiente pendiente ›' : 'Saltar ›')}
+          {(() => { const atEnd = looped || idx === sLast; const last = sLast === qs.length - 1;
+            return valid(a) ? (atEnd ? (pending ? 'Siguiente pendiente ›' : last ? 'Ver resumen' : stages.length > 1 ? 'Terminar etapa ›' : 'Siguiente ›') : 'Siguiente ›') : (atEnd ? 'Siguiente pendiente ›' : 'Saltar ›'); })()}
         </button>
       </div>
     </div>

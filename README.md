@@ -146,6 +146,7 @@ Las auditorías de proceso de los QEs **solo aplican a MPQ** y el administrador 
 ## Temas específicos de la LPA de los QEs
 
 La plantilla "Quality Engineer" lleva 21 preguntas **fijas** (van siempre en cada LPA de los QEs, además de las 10 que rotan): el **Dock Audit** (QA-076-C, 9 preguntas) y la revisión al terminar las **auditorías gerenciales** (QA-062-C / QA-075-C, 12 preguntas). Cargadas por `data/qe-specific.json`; en Admin → Preguntas se puede fijar o quitar cualquier pregunta (📌).
+- **Etapas:** la LPA de los QEs va en 3 etapas separadas: auditoría en piso → auditoría gerencial (captura las partes revisadas) → Dock Audit (captura el Shipper #). Cada etapa se completa antes de pasar a la siguiente.
 - Dock Audit: pide el **Shipper #** (obligatorio) y los hallazgos se turnan a los Gerentes de Logística (plan de reacción).
 - Auditoría gerencial: cada hallazgo pide **sticker** (blanco/verde/amarillo/naranja/rosa), **número de operador** y **turno**.
 - Se activan al encender la LPA de los QEs en Admin → QEs (por ahora los QEs solo hacen auditorías de proceso).
