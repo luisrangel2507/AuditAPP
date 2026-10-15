@@ -1124,3 +1124,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .npscan { flex: none; border: 0; background: var(--panel2, #eef2fb); color: var(--ink); border-radius: 10px; padding: 8px 10px; font-size: 14px; font-weight: 700; margin-left: 6px; cursor: pointer; }
 .offbar { background: #fff4d6; color: #6b4a00; border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; } .offbar.pend { background: #e8f0ff; color: #1b3a7a; }
 :root[data-theme="dark"] .offbar { background: rgba(242,178,0,.16); color: #f6c577; } :root[data-theme="dark"] .offbar.pend { background: rgba(79,147,255,.16); color: #a8c8ff; }
+.closenow { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; font-size: 14px; font-weight: 600; cursor: pointer; } .closenow input { width: 20px; height: 20px; margin-top: 1px; }

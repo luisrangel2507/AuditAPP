@@ -47,6 +47,13 @@ export const POST = route(async (req, { params }, user) => {
       if ((r.result === 'nok' || r.result === 'partial') && String(r.notes || '').trim().length < 3) {
         await client.query('ROLLBACK'); return err('Los hallazgos (X / Δ) requieren un comentario');
       }
+      if ((r.result === 'nok' || r.result === 'partial') && !r.evidence) {
+        await client.query('ROLLBACK'); return err('Todo hallazgo (X / Δ) requiere una foto de evidencia');
+      }
+      if ((r.result === 'nok' || r.result === 'partial') && r.closed_now) {
+        const okImg = typeof r.close_evidence === 'string' && r.close_evidence.startsWith('data:image/') && r.close_evidence.length <= 2_500_000;
+        if (!okImg || String(r.corrective || '').trim().length < 3) { await client.query('ROLLBACK'); return err('Si se corrigió en el momento, indica la acción y sube la foto del cierre'); }
+      }
       if (r.evidence && (typeof r.evidence !== 'string' || !r.evidence.startsWith('data:image/') || r.evidence.length > 2_500_000)) {
         await client.query('ROLLBACK'); return err('Foto inválida o muy pesada');
       }
@@ -69,6 +76,13 @@ export const POST = route(async (req, { params }, user) => {
            VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
           [a.id, ins.rows[0].id, a.area, qq.text, r.result, String(r.notes || '').trim(), addDays(today, 7)]);
         await logUpdate(client, fin.rows[0].id, user.id, 'opened', 'Open issue abierto en auditoría');
+        if (r.closed_now) {
+          // Corregido en el momento: el mismo auditor sube la evidencia y el issue queda cerrado
+          const act = String(r.corrective || '').trim();
+          await client.query('INSERT INTO finding_evidence(finding_id,user_id,data) VALUES($1,$2,$3)', [fin.rows[0].id, user.id, r.close_evidence]);
+          await client.query(`UPDATE findings SET status='closed',closed_at=NOW(),closed_by=$2,action=$3 WHERE id=$1`, [fin.rows[0].id, user.id, act]);
+          await logUpdate(client, fin.rows[0].id, user.id, 'closed', `Corregido en el momento por el auditor: ${act}`);
+        }
         // Hallazgo repetido: el mismo ítem ya falló 2 o más veces en la misma zona en los últimos 30 días
         const { rows: [rep] } = await client.query(
           `SELECT COUNT(*)::int n FROM findings f2 JOIN responses r2 ON r2.id=f2.response_id

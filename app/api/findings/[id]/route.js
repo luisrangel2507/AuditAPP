@@ -60,7 +60,11 @@ export const PATCH = route(async (req, { params }, user) => {
       if (!['in_progress', 'done', 'open'].includes(b.my_status)) { await client.query('ROLLBACK'); return err('Estatus inválido'); }
       const action = typeof b.action === 'string' ? b.action.trim() : mine.action;
       if (b.my_status === 'done' && !action) { await client.query('ROLLBACK'); return err('Para terminar describe la acción tomada'); }
-      if (b.my_status === 'done' && b.evidence) await addEvidence(b.evidence);
+      if (b.my_status === 'done') {
+        if (b.evidence) await addEvidence(b.evidence);
+        const { rows: [ev] } = await client.query('SELECT 1 FROM finding_evidence WHERE finding_id=$1 LIMIT 1', [f.id]);
+        if (!ev) { await client.query('ROLLBACK'); return err('Para terminar sube la foto de evidencia del cierre'); }
+      }
       await client.query(
         `UPDATE finding_owners SET status=$3,action=$4,done_at=$5 WHERE finding_id=$1 AND user_id=$2`,
         [f.id, user.id, b.my_status, action, b.my_status === 'done' ? new Date() : null]);
@@ -74,6 +78,8 @@ export const PATCH = route(async (req, { params }, user) => {
       if (b.force_status === 'closed' ? !closer : !lead) { await client.query('ROLLBACK'); return err('Sin permiso', 403); }
       if (b.force_status === 'closed') {
         if (b.evidence) await addEvidence(b.evidence);
+        const { rows: [ev2] } = await client.query('SELECT 1 FROM finding_evidence WHERE finding_id=$1 LIMIT 1', [f.id]);
+        if (!ev2) { await client.query('ROLLBACK'); return err('Para cerrar sube la foto de evidencia'); }
         const action = String(b.action || '').trim();
         if (!action) { await client.query('ROLLBACK'); return err('Para cerrar describe la acción tomada'); }
         await client.query(`UPDATE findings SET status='closed',closed_at=NOW(),closed_by=$2,action=$3 WHERE id=$1`, [f.id, user.id, action]);

@@ -24,7 +24,7 @@ function EvidencePick({ value, onChange, setErr }) {
     <div className="photo" style={{ marginTop: 8 }}>
       {value && <Photo src={value} />}
       <label className="btn alt sm" style={{ display: 'inline-block' }}>
-        {value ? 'Cambiar foto' : '📷 Subir evidencia de cierre'}
+        {value ? 'Cambiar foto' : '📷 Subir evidencia de cierre (obligatoria)'}
         <input type="file" accept="image/*" capture="environment" hidden onChange={pick} />
       </label>
       {value && <button type="button" className="btn-ghost" onClick={() => onChange('')}>Quitar</button>}
@@ -98,7 +98,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
             <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />
             <div className="row" style={{ marginTop: 10 }}>
               <button className="btn alt sm grow" onClick={() => patch({ my_status: 'in_progress', action })}>En proceso</button>
-              <button className="btn sm grow" onClick={() => patch({ my_status: 'done', action, evidence: evid || undefined })}>Terminé mi parte</button>
+              <button className="btn sm grow" disabled={!evid && !(f.closure || []).length} onClick={() => patch({ my_status: 'done', action, evidence: evid || undefined })}>Terminé mi parte</button>
             </div>
           </>}
           {mine && mine.status === 'done' && <button className="btn-ghost" style={{ marginTop: 8 }} onClick={() => patch({ my_status: 'open' })}>Reabrir mi parte</button>}
@@ -112,7 +112,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
             <div className="sect" style={{ marginTop: 14 }}>{lead ? 'Cerrar como líder' : 'Cerrar este hallazgo'}</div>
             <textarea className="inp" rows={2} value={closeAct} onChange={(e) => setCloseAct(e.target.value)} placeholder="Acción tomada para cerrar el issue…" />
             <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />
-            <button type="button" className="btn sm block" style={{ marginTop: 10 }} disabled={!closeAct.trim()} onClick={() => patch({ force_status: 'closed', action: closeAct, evidence: evid || undefined })}>Cerrar issue</button>
+            <button type="button" className="btn sm block" style={{ marginTop: 10 }} disabled={!closeAct.trim() || (!evid && !(f.closure || []).length)} onClick={() => patch({ force_status: 'closed', action: closeAct, evidence: evid || undefined })}>Cerrar issue</button>
           </div>}
 
           {(lead && closed || isAdmin(user)) && <div className="oi-actions">

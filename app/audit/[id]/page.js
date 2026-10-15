@@ -175,7 +175,9 @@ function RunnerInner({ audit, onExit, onDone }) {
   const q = qs[Math.min(idx, qs.length - 1)];
   const a = answers[q?.id] || {};
   const needsNote = a.result === 'nok' || a.result === 'partial';
-  const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || (x.notes || '').trim().length >= 3);
+  // Todo hallazgo (X / Δ) lleva descripción y foto; si se corrigió en el momento, también la acción y la foto del cierre
+  const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || ((x.notes || '').trim().length >= 3 && !!x.evidence
+    && (!x.closed_now || ((x.corrective || '').trim().length >= 3 && !!x.close_evidence))));
   const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], ...patch } }));
   const allValid = qs.every((x) => valid(answers[x.id]));
   // Se puede saltar una pregunta; al llegar al final regresan las que quedaron sin contestar hasta completarlas
@@ -192,6 +194,11 @@ function RunnerInner({ audit, onExit, onDone }) {
     else setErr('Falta contestar esta pregunta para poder enviar la auditoría.');
   }
 
+  async function pickClosePhoto(e) {
+    const f = e.target.files?.[0]; if (!f) return;
+    try { set({ close_evidence: await compressImage(f) }); } catch { setErr('No se pudo procesar la foto'); }
+    e.target.value = '';
+  }
   async function pickPhoto(e) {
     const f = e.target.files?.[0]; if (!f) return;
     try { setMarking(await compressImage(f)); } catch { setErr('No se pudo procesar la foto'); }
@@ -287,11 +294,11 @@ function RunnerInner({ audit, onExit, onDone }) {
           <div style={{ marginTop: 18 }}>
             <label className="lbl">Descripción del hallazgo (obligatorio)</label>
             <textarea className="inp" rows={3} value={a.notes || ''} onChange={(e) => set({ notes: e.target.value })} placeholder="Describe el hallazgo…" />
-            <label className="lbl">Contención / acción inmediata</label>
+            <label className="lbl">{a.closed_now ? 'Acción realizada en el momento (obligatorio)' : 'Contención / acción inmediata'}</label>
             <textarea className="inp" rows={2} value={a.corrective || ''} onChange={(e) => set({ corrective: e.target.value })} placeholder="Contención / corrección en sitio…" />
             <OwnerPicker value={a.owners || []} onChange={(owners) => set({ owners })} />
             <div className="sub" style={{ marginTop: 6 }}>Al enviar se abre un open issue; cada responsable que agregues deberá darle seguimiento hasta cerrarlo.</div>
-            <label className="lbl">Foto del hallazgo</label>
+            <label className="lbl">Foto del hallazgo (obligatoria)</label>
             <div className="photo">
               {a.evidence && <Photo src={a.evidence} />}
               <label className="btn alt sm" style={{ display: 'inline-block' }}>
@@ -301,6 +308,18 @@ function RunnerInner({ audit, onExit, onDone }) {
               {a.evidence && <button className="btn-ghost" onClick={() => setMarking(a.evidence)}>✎ Marcar</button>}
               {a.evidence && <button className="btn-ghost" onClick={() => set({ evidence: '' })}>Quitar</button>}
             </div>
+            <label className="closenow"><input type="checkbox" checked={!!a.closed_now} onChange={(e) => set({ closed_now: e.target.checked, ...(e.target.checked ? {} : { close_evidence: '' }) })} /> <span>✅ Se corrigió en el momento (el issue queda cerrado)</span></label>
+            {a.closed_now && <>
+              <label className="lbl">Foto de la corrección (obligatoria)</label>
+              <div className="photo">
+                {a.close_evidence && <Photo src={a.close_evidence} />}
+                <label className="btn alt sm" style={{ display: 'inline-block' }}>
+                  {a.close_evidence ? 'Cambiar foto' : '📷 Subir evidencia de cierre'}
+                  <input type="file" accept="image/*" capture="environment" hidden onChange={pickClosePhoto} />
+                </label>
+                {a.close_evidence && <button className="btn-ghost" onClick={() => set({ close_evidence: '' })}>Quitar</button>}
+              </div>
+            </>}
           </div>
         )}
         {err && <div className="err">{err}</div>}
