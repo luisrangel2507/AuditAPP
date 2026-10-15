@@ -37,7 +37,12 @@ function Item({ f, today, lead, user, reload, startOpen }) {
         <span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span>
         <div className="grow" style={{ fontSize: 15 }}><span className="oi-no">{no(f.id)}</span>{f.item ? <span className="oi-item">Ítem {f.item}</span> : null} <Bi text={f.question} /></div>
       </div>
-      <div className="sub">{f.area}{f.part_number ? ` · N/P ${f.part_number}` : ''} · {fmtDate(f.audit_date)} · {f.auditor}</div>
+      <div className="oi-meta">
+        <span><i>Zona / Máquina</i><b>{f.area || '—'}</b></span>
+        {f.part_number && <span><i>N/P</i><b>{f.part_number}</b></span>}
+        <span><i>Fecha</i><b>{fmtDate(f.audit_date, { day: 'numeric', month: 'short' })}</b></span>
+        <span><i>Auditor</i><b>{f.auditor}</b></span>
+      </div>
       <div className="row wrap" style={{ marginTop: 8 }}>
         <span className={`pill ${stCls}`}>{stTxt}</span>
         {f.owners.length === 0 && !closed && <span className="pill nok">Sin responsable</span>}

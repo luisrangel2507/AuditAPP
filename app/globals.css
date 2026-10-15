@@ -1098,3 +1098,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .uc-name { font-size: 14.5px; } .uc .sub { margin: 1px 0 0; font-size: 12px; line-height: 1.25; }
 .uc .pill { padding: 1px 7px; font-size: 11px; }
 @media (min-width: 900px) { .ugd { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; } .ugd > .ugd-h { grid-column: 1 / -1; } }
+.oi-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 8px 0 2px; }
+.oi-meta span { min-width: 0; } .oi-meta i { display: block; font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--sub); }
+.oi-meta b { display: block; font-size: 14px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+@media (min-width: 700px) { .oi-meta { grid-template-columns: repeat(4, auto); justify-content: start; gap: 6px 28px; } }
