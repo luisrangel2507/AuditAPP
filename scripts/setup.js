@@ -158,6 +158,9 @@ CREATE TABLE IF NOT EXISTS question_versions (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_qversions_q ON question_versions(question_id,version DESC);
+-- LPA por usuario: NULL = según su rol (los QEs dependen del interruptor general), TRUE/FALSE = decisión del admin en su perfil
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_override BOOLEAN;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lpa_from DATE;   -- desde cuándo se le generan LPA (no se crean días pasados al activarla)
 -- Temas específicos de la LPA de los QEs (Dock Audit QA-076-C y auditoría gerencial QA-062-C / QA-075-C)
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS required BOOLEAN NOT NULL DEFAULT FALSE;   -- se incluye en todas las auditorías de la plantilla
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS shipper TEXT NOT NULL DEFAULT '';             -- shipper # revisado en el Dock Audit

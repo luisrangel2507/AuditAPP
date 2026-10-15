@@ -23,6 +23,10 @@ export const PATCH = route(async (req, { params }, user) => {
   const sets = [], vals = [];
   const add = (c, v) => { vals.push(v); sets.push(`${c}=$${vals.length}`); };
   for (const f of FIELDS) if (b[f] !== undefined) add(f, b[f] === '' ? null : b[f]);
+  if (typeof b.lpa_enabled === 'boolean') {
+    add('lpa_override', b.lpa_enabled);
+    if (b.lpa_enabled) add('lpa_from', mxToday()); // al encenderla no se crean LPA de días que ya pasaron
+  }
   if (b.reset_password) {
     const bad = passwordError(b.reset_password);
     if (bad) return err(bad);
@@ -40,6 +44,11 @@ export const PATCH = route(async (req, { params }, user) => {
         AND (NOT u.active OR u.access IN ('admin','master')
           OR (u.layer=1 AND (a.date<>a.due_date OR NOT (EXTRACT(ISODOW FROM a.date)::int = ANY(u.days))))
           OR (u.layer>=2 AND a.date=a.due_date))`, [params.id, mxToday()]);
+  // LPA apagada en su perfil (o por rol): se quitan las pendientes de hoy en adelante
+  await q(
+    `DELETE FROM audits a USING users u
+      WHERE a.user_id=u.id AND u.id=$1 AND a.kind='lpa' AND a.status='pending' AND a.date>=$2
+        AND NOT COALESCE(u.lpa_override, NOT (u.dept='quality' AND u.layer=1) OR COALESCE((SELECT value FROM settings WHERE key='qe_lpa_on'),'0')='1')`, [params.id, mxToday()]);
   resetEnsured();
   return json({ ok: true });
 }, { need: 'admin' });

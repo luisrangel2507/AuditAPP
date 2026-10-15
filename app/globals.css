@@ -1127,3 +1127,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .closenow { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; font-size: 14px; font-weight: 600; cursor: pointer; } .closenow input { width: 20px; height: 20px; margin-top: 1px; }
 .qextra { margin-top: 14px; padding: 12px; border-radius: 14px; background: var(--panel2, #eef2fb); }
 .zchip.stk-White.on { background: #fff; color: #1b2a4a; box-shadow: 0 0 0 2px #1f6bf0; } .zchip.stk-Green.on { background: #22a35a; color: #fff; } .zchip.stk-Yellow.on { background: #f2c200; color: #3a2d00; } .zchip.stk-Orange.on { background: #f2821e; color: #fff; } .zchip.stk-Pink.on { background: #e8508f; color: #fff; }
+.lpa-sw { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px; padding: 12px; border-radius: 14px; background: var(--panel2, #eef2fb); cursor: pointer; }
+.lpa-sw input { width: 22px; height: 22px; margin-top: 2px; flex: none; } .lpa-sw b { display: block; font-size: 15px; } .lpa-sw small { display: block; color: var(--sub); font-size: 12.5px; margin-top: 2px; }

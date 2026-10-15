@@ -149,3 +149,7 @@ La plantilla "Quality Engineer" lleva 21 preguntas **fijas** (van siempre en cad
 - Dock Audit: pide el **Shipper #** (obligatorio) y los hallazgos se turnan a los Gerentes de Logística (plan de reacción).
 - Auditoría gerencial: cada hallazgo pide **sticker** (blanco/verde/amarillo/naranja/rosa), **número de operador** y **turno**.
 - Se activan al encender la LPA de los QEs en Admin → QEs (por ahora los QEs solo hacen auditorías de proceso).
+
+## LPA por usuario
+
+En el perfil de cada usuario (Admin → Usuarios) hay un interruptor **Hace LPA**. Por defecto depende del rol (los QEs, hoy apagado por el interruptor general de Admin → QEs). Al encenderla para un usuario se le generan LPA **desde hoy** (no de días pasados); al apagarla se quitan sus LPA pendientes de hoy en adelante. Se guarda en `users.lpa_override` / `users.lpa_from`.

@@ -19,7 +19,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       pool: pool.split(',').map((s) => s.trim()).filter(Boolean), days: Number(f.layer) >= 2 ? [] : f.days };
     try {
       if (isNew) await api('/api/admin/users', { method: 'POST', body: { ...body, password: pin } });
-      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(pin ? { reset_password: pin } : {}) } });
+      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(pin ? { reset_password: pin } : {}), ...(f.lpa_on !== u.lpa_on ? { lpa_enabled: !!f.lpa_on } : {}) } });
       onSaved();
     } catch (e) { setErr(e.message); }
   }
@@ -56,6 +56,10 @@ function UserSheet({ u, templates, onClose, onSaved }) {
           <label className="row" style={{ marginTop: 24 }}><input type="checkbox" checked={f.rotate_daily} onChange={(e) => set('rotate_daily', e.target.checked)} /> Cambia de área cada día</label>
         </div>
       </>}
+      {!isNew && f.access !== 'admin' && f.access !== 'master' && <label className="lpa-sw">
+        <input type="checkbox" checked={!!f.lpa_on} onChange={(e) => set('lpa_on', e.target.checked)} />
+        <span><b>Hace LPA</b><small>{f.lpa_on ? 'Le aparece su auditoría LPA según su capa y días.' : 'No se le generan auditorías LPA.'}{u.dept === 'quality' && Number(u.layer) === 1 && u.lpa_override == null ? ' (los QEs hoy solo hacen auditorías de proceso; actívala aquí para este usuario)' : ''}</small></span>
+      </label>}
       <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
       <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
       {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} /> Activo</label>}

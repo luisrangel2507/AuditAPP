@@ -41,7 +41,7 @@ export const PUT = route(async (req, ctx, user) => {
   // Encender / apagar la LPA de los QEs (por ahora solo auditorías de proceso)
   if (typeof body.lpa_on === 'boolean') {
     await q(`INSERT INTO settings(key,value) VALUES('qe_lpa_on',$1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [body.lpa_on ? '1' : '0']);
-    if (!body.lpa_on) await q(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND a.kind='lpa' AND a.status='pending' AND u.dept='quality' AND u.layer=1`);
+    if (!body.lpa_on) await q(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND a.kind='lpa' AND a.status='pending' AND u.dept='quality' AND u.layer=1 AND u.lpa_override IS NOT TRUE`);
     resetEnsured();
     return json({ ok: true, lpa_on: body.lpa_on });
   }

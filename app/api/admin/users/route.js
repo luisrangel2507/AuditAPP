@@ -11,7 +11,9 @@ export const GET = route(async (req, ctx, user) => {
   const scope = await siteScope(user);
   const { rows } = await q(
     `SELECT u.id,u.name,u.username,u.dept,u.layer,u.access,u.template_id,t.name AS template,
-            u.days,u.pool,u.start_idx,u.rotate_daily,u.active,u.site_id,s.code AS site
+            u.days,u.pool,u.start_idx,u.rotate_daily,u.active,u.site_id,s.code AS site,
+            u.lpa_override,
+            COALESCE(u.lpa_override, NOT (u.dept='quality' AND u.layer=1) OR COALESCE((SELECT value FROM settings WHERE key='qe_lpa_on'),'0')='1') AS lpa_on
        FROM users u LEFT JOIN templates t ON t.id=u.template_id LEFT JOIN sites s ON s.id=u.site_id
       WHERE ($1::int IS NULL OR u.site_id=$1) AND ($2::boolean OR u.access <> 'master') ORDER BY u.layer DESC,u.dept,u.name`, [scope, isMaster(user)]);
   return json(rows);
