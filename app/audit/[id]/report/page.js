@@ -113,6 +113,10 @@ export default function Report() {
           .rep .ft .q { font-size: 12px; margin: 3px 0 5px; } .rep .fr { gap: 7px; margin-bottom: 4px; } .rep .fr p, .rep .fr i { font-size: 11px; line-height: 1.25; }
           .rep .fi { width: 140px !important; height: 100px !important; border-width: 2px; border-radius: 8px; } .rep footer { margin-top: 5px; padding-top: 4px; font-size: 9px; } .rep footer .ric { width: 16px; height: 16px; } .rep footer svg { width: 12px; height: 12px; }
         }
+        .rep .find, .rep .find.pt { flex-direction: column !important; }
+        .rep .fi { width: 100% !important; height: auto !important; max-height: none; background: #fff; } .rep .fi img { position: static !important; width: 100%; height: auto; max-height: 460px; object-fit: contain; }
+        .rep .fi > span { position: static; padding: 10px; }
+        @media print { .rep .find { flex-direction: column !important; } .rep .fi { width: 100% !important; height: auto !important; } .rep .fi img { max-height: 300px; } }
       `}</style>
     </div>
   );
