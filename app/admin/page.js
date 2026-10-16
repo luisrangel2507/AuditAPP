@@ -4,7 +4,7 @@ import Shell, { useUser } from '@/components/Shell';
 import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
 import { ZONES, NO_MACHINE } from '@/lib/zones';
-import { api, peek, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
+import { api, peek, useUrlState, useWeekUrl, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
 function UserSheet({ u, templates, onClose, onSaved }) {
   const me = useUser(), master = isMaster(me);
@@ -447,9 +447,10 @@ function Assign() {
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
   useEffect(() => { load(); }, []);
+  const setWk = useWeekUrl(load);
   const go = (n) => {
     if (dirty && !confirm('Tienes cambios sin guardar. ¿Cambiar de semana y descartarlos?')) return;
-    setEdits({}); setMsg(''); load(shiftDay(data.monday, n * 7));
+    setEdits({}); setMsg(''); setWk(shiftDay(data.monday, n * 7));
   };
 
   const val = (a) => ({ area: a.area, ...(edits[a.id] || {}) });
@@ -583,10 +584,11 @@ function Assign() {
 
 // Seguimiento de las auditorías de proceso de los QEs (etapa de pruebas)
 function QEs() {
-  const [data, setData] = useState(null), [err, setErr] = useState(''), [saving, setSaving] = useState(false), [filter, setFilter] = useState('all'), [openId, setOpenId] = useState(null);
+  const [data, setData] = useState(null), [err, setErr] = useState(''), [saving, setSaving] = useState(false), [filter, setFilter] = useUrlState('f', 'all'), [openId, setOpenId] = useState(null);
   const setPer = async (n) => { setSaving(true); try { await api('/api/admin/qes', { method: 'PUT', body: { per_day: n } }); load(data.monday); } catch (e) { setErr(e.message); } finally { setSaving(false); } };
   const load = (d) => { const c = !d ? peek('/api/admin/qes') : null; if (c) setData(c); else setData(null); api(`/api/admin/qes${d ? `?date=${d}` : ''}`).then(setData).catch((e) => setErr(e.message)); };
   useEffect(() => { load(); }, []);
+  const setWk = useWeekUrl(load);
   if (err) return <div className="err">{err}</div>;
   const t = data?.totals || {};
   const pct = t.total ? Math.round((t.done / t.total) * 100) : 0;
@@ -616,9 +618,9 @@ function QEs() {
         <button className={`btn sm ${data.lpa_on ? 'alt' : ''}`} disabled={saving} onClick={async () => { setSaving(true); try { await api('/api/admin/qes', { method: 'PUT', body: { lpa_on: !data.lpa_on } }); load(data.monday); } catch (e) { setErr(e.message); } finally { setSaving(false); } }}>{data.lpa_on ? 'Apagar' : 'Encender'}</button>
       </div>}
       <div className="row wrap" style={{ margin: '4px 0 10px' }}>
-        <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
+        <button className="btn alt sm" onClick={() => setWk(shiftDay(data.monday, -7))} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data?.days?.length ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
-        <button className="btn alt sm" onClick={() => load(shiftDay(data.monday, 7))} disabled={!data}>›</button>
+        <button className="btn alt sm" onClick={() => setWk(shiftDay(data.monday, 7))} disabled={!data}>›</button>
       </div>
       {!data ? <div className="empty">Cargando…</div> : <>
         <div className="qx-kpis">
@@ -658,7 +660,7 @@ function QEs() {
 
 function Inner() {
   const me = useUser(), master = isMaster(me);
-  const [tab, setTab] = useState('assign'), [templates, setTemplates] = useState(null);
+  const [tab, setTab] = useUrlState('tab', 'assign'), [templates, setTemplates] = useState(null);
   const loadT = () => api('/api/admin/templates').then(setTemplates);
   useEffect(() => { loadT(); }, []);
   return (

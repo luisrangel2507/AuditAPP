@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import OwnerPicker from '@/components/OwnerPicker';
-import { api, fmtDate, peek, compressImage } from '@/lib/client';
+import { api, fmtDate, peek, compressImage, useUrlState } from '@/lib/client';
 import { isAdmin } from '@/lib/roles';
 
 const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
@@ -142,10 +142,15 @@ function Item({ f, today, lead, user, reload, startOpen }) {
 function Inner() {
   const user = useUser();
   const lead = isAdmin(user);
-  const [status, setStatus] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
+  const [status, setStatus] = useUrlState('v', null), [data, setData] = useState(null), [err, setErr] = useState('');
   const focus = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('oi')) || null : null;
   // Vista inicial: "Mis issues" si tienes alguno a cargo; si no, abiertos
-  useEffect(() => { const c0 = peek('/api/findings/count'); if (c0) setStatus(c0.n > 0 ? 'mine' : 'open'); api('/api/findings/count').then((c) => setStatus(c.n > 0 ? 'mine' : 'open')).catch(() => setStatus('open')); }, []);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('v')) return; // la pestaña viene en la URL
+    const c0 = peek('/api/findings/count'); if (c0) setStatus(c0.n > 0 ? 'mine' : 'open', { replace: true });
+    api('/api/findings/count').then((c) => setStatus(c.n > 0 ? 'mine' : 'open', { replace: true })).catch(() => setStatus('open', { replace: true }));
+    // eslint-disable-next-line
+  }, []);
   const load = () => status && api(`/api/findings?status=${status}`).then(setData).catch((e) => setErr(e.message));
   useEffect(() => { setData(status ? peek(`/api/findings?status=${status}`) : null); load(); /* eslint-disable-next-line */ }, [status]);
   const tabs = [['mine', 'A mi cargo'], ['open', 'Abiertos'], ...(lead ? [['unassigned', 'Sin responsable']] : []), ['closed', 'Cerrados']];

@@ -234,3 +234,6 @@ Todas las rutas de escritura de admin se registran automáticamente en `admin_lo
 
 ## Anexo: auditorías de proceso tardías
 Las auditorías de proceso (QEs) **sí se pueden hacer después de su día programado**: la pantalla ofrece “Realizar de forma tardía”, el servidor las acepta y se guardan con `late=true`. En el resultado sale la etiqueta “⏰ Realizada tarde · programada …” y el **reporte** lleva una franja amarilla con la fecha programada y la fecha real. Las LPA normales siguen sin poder registrarse fuera de su día.
+
+## Anexo: navegación con “atrás”
+Las pestañas y filtros viven en la URL (`useUrlState` / `useWeekUrl` en `lib/client.js`): Admin (`?tab=`), Issues (`?v=`), Panel (`?w=`), Reportes (`?d=&by=`), Semana (`?dept=&layer=&wk=`), QEs (`?f=&wk=`) y la semana de Asignaciones (`?wk=`). Cada cambio añade una entrada al historial, así el botón/gesto de regresar vuelve a la pestaña o semana anterior; recargar conserva la vista.

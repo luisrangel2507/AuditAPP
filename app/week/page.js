@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Shell, { useUser } from '@/components/Shell';
 import { isAdmin } from '@/lib/roles';
-import { api, fmtDate, DEPT, LAYER, DAYS_SHORT, peek } from '@/lib/client';
+import { api, fmtDate, DEPT, LAYER, DAYS_SHORT, peek, useUrlState, useWeekUrl } from '@/lib/client';
 
 const shift = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 
@@ -14,13 +14,14 @@ export default function Week() {
 function WeekInner() {
   const user = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
-  const [dept, setDept] = useState('all'), [layer, setLayer] = useState('all');
+  const [dept, setDept] = useUrlState('dept', 'all'), [layer, setLayer] = useUrlState('layer', 'all');
   const [mine, setMine] = useState(false);
 
   const load = (d) => api(`/api/week${d ? `?date=${d}` : ''}`).then((r) => { setData(r); if (!d) setDate(r.monday); }).catch((e) => setErr(e.message));
   useEffect(() => { const c = peek('/api/week'); if (c) { setData(c); setDate(c.monday); } load(); }, []);
 
-  const go = (n) => { const d = shift(data.monday, n * 7); setDate(d); setData(null); load(d); };
+  const setWk = useWeekUrl((d) => { setData(null); if (d) setDate(d); load(d); });
+  const go = (n) => { setWk(shift(data.monday, n * 7)); };
 
   const rows = useMemo(() => {
     if (!data) return [];

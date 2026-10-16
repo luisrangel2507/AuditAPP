@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Bi from '@/components/Bi';
 import Shell from '@/components/Shell';
-import { api, fmtDate, DEPT, LAYER, scoreCls, getSiteCookie } from '@/lib/client';
+import { api, fmtDate, useUrlState, DEPT, LAYER, scoreCls, getSiteCookie } from '@/lib/client';
 
 const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
@@ -102,7 +102,7 @@ function printReport() {
 }
 
 function Inner() {
-  const [weeks, setWeeks] = useState(4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
+  const [weeks, setWeeks] = useUrlState('w', 4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
   // La TV usa la planta que ve el admin; un líder siempre ve la suya (lo resuelve el servidor)
   useEffect(() => { const c = getSiteCookie(); setSiteTv(c !== 'ALL' ? `?site=${c}` : ''); }, []);
   useEffect(() => { setD(null); api(`/api/dashboard?weeks=${weeks}`).then(setD).catch((e) => setErr(e.message)); }, [weeks]);

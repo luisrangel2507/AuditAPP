@@ -2,13 +2,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Shell from '@/components/Shell';
-import { api, fmtDate, DEPT } from '@/lib/client';
+import { api, fmtDate, DEPT, useUrlState } from '@/lib/client';
 
 const PERIODS = [[7, '7 días'], [28, '4 semanas'], [90, '3 meses']];
 const BY = [['item', 'Ítem'], ['zone', 'Zona'], ['machine', 'Máquina'], ['part', 'N/P']];
 
 function Inner() {
-  const [days, setDays] = useState(28), [by, setBy] = useState('item');
+  const [days, setDays] = useUrlState('d', 28), [by, setBy] = useUrlState('by', 'item');
   const [par, setPar] = useState(null), [rep, setRep] = useState(null), [comp, setComp] = useState(null), [err, setErr] = useState('');
   useEffect(() => { setPar(null); api(`/api/admin/reports/pareto?days=${days}&by=${by}`).then(setPar).catch((e) => setErr(e.message)); }, [days, by]);
   useEffect(() => {
