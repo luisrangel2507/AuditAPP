@@ -1212,3 +1212,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ah-simple .ah-tr b.ahwho { text-align: left !important; }
 @media (min-width: 900px) { .ah-simple { display: block; column-count: 2; column-gap: 28px; } .ah-simple .ah-tr { break-inside: avoid; } }
 .ah-simple .ah-tr b.ahwho { justify-self: start !important; text-align: left !important; display: block; }
+.tvx-note { color: #7d8fb6; font-size: 11.5px; margin-top: 4px; } :root[data-theme="light"] .tvx-note { color: #5b6b8c; }
+.tvx-bar { grid-template-columns: 70px 1fr auto; } .tvx-bar em { white-space: nowrap; min-width: 56px; }

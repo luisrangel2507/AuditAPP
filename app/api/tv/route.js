@@ -6,7 +6,7 @@ import { isAdmin, isMaster } from '@/lib/roles';
 import { MULTI_SITE, HOME_SITE } from '@/lib/config';
 import { siteScope } from '@/lib/site';
 import { json, err } from '@/lib/api';
-import { mxToday, mondayOf, addDays, windowState } from '@/lib/dates';
+import { mxToday, mondayOf, addDays, windowState, isoWeekday } from '@/lib/dates';
 
 // LPA TV: acceso con sesión de líder/admin, o con ?key=TV_KEY para la pantalla de planta (sin login).
 function keyOk(k) {
@@ -77,7 +77,13 @@ export async function GET(req) {
       [pm, addDays(pm, 4), gl, scope, today]);
     const pDone = pr.filter((a) => a.status === 'completed');
     const pScores = pDone.map((a) => Number(a.score_pct)).filter((n) => !isNaN(n));
+    // Cumplimiento diario: Layer 1 de hoy y del día hábil anterior (para comparar)
+    const prevDay = addDays(today, isoWeekday(today) === 1 ? -3 : -1);
+    const { rows: yd } = await q(
+      `SELECT a.status FROM audits a JOIN users u ON u.id=a.user_id
+        WHERE a.kind='lpa' AND u.layer=1 AND a.date=$1 AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3)`, [prevDay, gl, scope]);
     const prev = {
+      day_pct: yd.length ? Math.round((yd.filter((a) => a.status === 'completed').length / yd.length) * 100) : null,
       week_pct: pr.length ? Math.round((pDone.length / pr.length) * 100) : null,
       avg_score: pScores.length ? Math.round((pScores.reduce((x, y) => x + y, 0) / pScores.length) * 10) / 10 : null,
     };
@@ -96,6 +102,7 @@ export async function GET(req) {
         week_pct: counted.length ? Math.round((done.length / counted.length) * 100) : null,
         week_done: done.length, week_counted: counted.length,
         today_total: scheduled.length, today_done: scheduled.filter((a) => a.status === 'completed').length,
+        day_pct: scheduled.length ? Math.round((scheduled.filter((a) => a.status === 'completed').length / scheduled.length) * 100) : null,
         done_today: doneTodayList.length,
         avg_score: scores.length ? Math.round((scores.reduce((x, y) => x + y, 0) / scores.length) * 10) / 10 : null,
         findings_open: f[0].open, findings_overdue: f[0].overdue,

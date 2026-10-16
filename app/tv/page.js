@@ -13,11 +13,11 @@ const AV = ['#2f6bff', '#2aa876', '#7c4dde', '#f08a24', '#d6417e', '#e7b416', '#
 const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 const color = (n) => AV[[...n].reduce((s, c) => s + c.charCodeAt(0), 0) % AV.length];
 
-function Delta({ now, before, unit = ' pts' }) {
-  if (now == null || before == null) return <small className="tvx-delta flat">sin semana anterior</small>;
+function Delta({ now, before, unit = ' pts', label = 'semana anterior' }) {
+  if (now == null || before == null) return <small className="tvx-delta flat">sin {label === 'ayer' ? 'día anterior' : 'semana anterior'}</small>;
   const d = Math.round((now - before) * 10) / 10;
-  if (d === 0) return <small className="tvx-delta flat">= vs. semana anterior</small>;
-  return <small className={`tvx-delta ${d > 0 ? 'up' : 'down'}`}>{d > 0 ? '▲' : '▼'} {d > 0 ? '+' : ''}{d} pts<i> vs. semana anterior</i></small>;
+  if (d === 0) return <small className="tvx-delta flat">= vs. {label}</small>;
+  return <small className={`tvx-delta ${d > 0 ? 'up' : 'down'}`}>{d > 0 ? '▲' : '▼'} {d > 0 ? '+' : ''}{d} pts<i> vs. {label}</i></small>;
 }
 
 function Status({ a }) {
@@ -114,11 +114,10 @@ export default function TV() {
       {data && (
         <>
           <section className="tvx-kpis">
+            <div className={`tvx-kpi ${pctCls(k.day_pct)}`}><Ring value={k.day_pct || 0} size={wall ? 70 : 92} stroke={10} label={k.day_pct == null ? '—' : `${k.day_pct}%`} />
+              <div><h3>Cumplimiento diario</h3><b>{k.today_done} / {k.today_total}</b><Delta now={k.day_pct} before={data.prev.day_pct} unit=" pts" label="ayer" /></div></div>
             <div className={`tvx-kpi ${pctCls(k.week_pct)}`}><Ring value={k.week_pct || 0} size={wall ? 70 : 92} stroke={10} label={k.week_pct == null ? '—' : `${k.week_pct}%`} />
               <div><h3>Cumplimiento semana</h3><b>{k.week_done} / {k.week_counted}</b><Delta now={k.week_pct} before={data.prev.week_pct} /></div></div>
-            <div className="tvx-kpi blue"><Ring value={k.today_total ? (k.today_done / k.today_total) * 100 : 0} size={wall ? 70 : 92} stroke={10} label={`${k.today_done} / ${k.today_total}`} />
-              <div><h3>Layer 1 completadas hoy</h3><div className="tvx-prog"><i style={{ width: `${k.today_total ? Math.round((k.today_done / k.today_total) * 100) : 0}%` }} /></div>
-                <b className="sm">{k.today_total ? Math.round((k.today_done / k.today_total) * 100) : 0}%</b></div></div>
             <div className={`tvx-kpi ${pctCls(k.avg_score)}`}><Ring value={k.avg_score || 0} size={wall ? 70 : 92} stroke={10} label={k.avg_score == null ? '—' : `${k.avg_score}%`} />
               <div><h3>Score promedio semana</h3><Delta now={k.avg_score} before={data.prev.avg_score} /></div></div>
             <div className={`tvx-kpi big ${data.missed.length ? 'nok' : 'ok'}`}><div><b>{data.missed.length}</b><h3>No realizadas esta semana</h3></div><span className="tvx-ic">▤</span></div>
@@ -152,11 +151,13 @@ export default function TV() {
                     </div>)} />
               </div>
               <div className="tvx-panel">
-                <h2>Cumplimiento por capa</h2>
+                <h2>Cumplimiento por capa<em>diario</em></h2>
                 {data.byLayer.map((l) => {
                   const p = l.counted ? Math.round((l.done / l.counted) * 100) : null;
-                  return (<div className="tvx-bar" key={l.layer}><span>Layer {l.layer}</span><div><i className={pctCls(p)} style={{ width: `${p ?? 0}%` }} /></div><em>{p == null ? '—' : `${p}%`}</em></div>);
+                  const d = l.layer === 1 ? k.day_pct : null;
+                  return (<div className="tvx-bar" key={l.layer}><span>Layer {l.layer}</span><div><i className={pctCls(d ?? p)} style={{ width: `${d ?? p ?? 0}%` }} /></div><em>{l.layer === 1 ? `hoy ${d == null ? '—' : d + '%'}` : p == null ? '—' : `${p}%`}</em></div>);
                 })}
+                <div className="tvx-note">Layer 1: cumplimiento de hoy · Layer 2, 3 y 4: auditoría semanal</div>
               </div>
             </div>
           </section>
