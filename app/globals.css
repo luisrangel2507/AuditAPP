@@ -1214,3 +1214,13 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ah-simple .ah-tr b.ahwho { justify-self: start !important; text-align: left !important; display: block; }
 .tvx-note { color: #7d8fb6; font-size: 11.5px; margin-top: 4px; } :root[data-theme="light"] .tvx-note { color: #5b6b8c; }
 .tvx-bar { grid-template-columns: 70px 1fr auto; } .tvx-bar em { white-space: nowrap; min-width: 56px; }
+/* TV: el recuadro de quienes NO hicieron su auditoría es el más grande */
+.tvx.wall .tvx-col { grid-template-rows: minmax(0, .5fr) minmax(0, 1.9fr) auto; }
+.tvx.wall .tvx-panel.alert { border-width: 2px; }
+.tvx.wall .tvx-panel.alert h2 { font-size: 22px; } .tvx.wall .tvx-panel.alert h2 em { font-size: 16px; color: #ffb4b9; }
+.tvx.wall .tvx-panel.alert .tvx-row { padding: 8px 4px; } .tvx.wall .tvx-panel.alert .tvx-name { font-size: 18px; } .tvx.wall .tvx-panel.alert .tvx-name span { font-size: 13px; }
+.tvx.wall .tvx-panel.alert .tvx-area { font-size: 15px; } .tvx.wall .tvx-panel.alert .tvx-av { width: 38px; height: 38px; font-size: 14px; }
+.tvx.wall .tvx-panel.alert .tvx-st { font-size: 15px; padding: 5px 13px; }
+:root[data-theme="light"] .tvx.wall .tvx-panel.alert h2 em { color: #b3202c; }
+.tvx.wall .tvx-col { grid-template-rows: minmax(0, .75fr) minmax(0, 1.75fr) auto; }
+.tvx.wall .tvx-panel.alert .tvx-row { padding: 5px 4px; } .tvx.wall .tvx-empty { padding: 6px 4px; }
