@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
-import { api, peek, fmtDate, scoreCls } from '@/lib/client';
+import { api, peek, fmtDate, scoreCls, DEPT } from '@/lib/client';
 import Ring from '@/components/Ring';
 import { I } from '@/components/Icons';
 import { isAdmin, isMaster } from '@/lib/roles';
@@ -145,8 +145,8 @@ function AdminHome() {
           <div className="ah-table ah-simple">
             {rows.map((a) => (
               <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr">
-                <b>{a.name}</b>
-                <span className="z">{a.area || <em>Sin zona</em>}</span>
+                <b className="who">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
+                <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.kind === 'process' ? <em className="gray">zona al iniciar</em> : (a.area || <em>Sin zona</em>)}</span>
                 <span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
               </Link>))}
           </div>
@@ -155,8 +155,8 @@ function AdminHome() {
           <h3 className="ah-sub">Completadas ({done.length})</h3>
           <div className="ah-table ah-simple">{done.map((a) => (
             <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr done">
-              <b>{a.name}</b>
-              <span className="z">{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
+              <b className="who">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
+              <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
               <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b>
             </Link>))}</div></>}
       </section>
