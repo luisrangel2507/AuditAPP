@@ -1207,6 +1207,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .asg-save { display: flex; gap: 10px; align-items: center; padding: 10px 12px; margin: 10px 0; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
 .latetag { display: inline-block; margin: 6px 0 0; padding: 4px 12px; border-radius: 999px; background: rgba(242,178,0,.18); color: #8a5a00; font-size: 13px; font-weight: 800; }
 :root[data-theme="dark"] .latetag { color: #f6c577; }
-.ah-simple .ah-tr b.who { line-height: 1.2; } .ah-tr b.who small { display: block; font-weight: 500; color: var(--sub); font-size: 11.5px; }
+.ah-simple .ah-tr b.ahwho { line-height: 1.2; } .ah-tr b.ahwho small { display: block; font-weight: 500; color: var(--sub); font-size: 11.5px; }
 .ktag.inl { display: inline-block; margin: 0 8px 0 0; padding: 1px 8px; font-size: 10.5px; vertical-align: 1px; } .ah-tr .z em.gray { color: var(--sub); font-style: normal; }
-.ah-simple .ah-tr b.who { text-align: left !important; }
+.ah-simple .ah-tr b.ahwho { text-align: left !important; }
+@media (min-width: 900px) { .ah-simple { display: block; column-count: 2; column-gap: 28px; } .ah-simple .ah-tr { break-inside: avoid; } }
+.ah-simple .ah-tr b.ahwho { justify-self: start !important; text-align: left !important; display: block; }

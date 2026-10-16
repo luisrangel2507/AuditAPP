@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Bi from '@/components/Bi';
 import Shell, { useUser } from '@/components/Shell';
 import { api, peek, fmtDate, scoreCls, DEPT } from '@/lib/client';
+import { zoneRank } from '@/lib/zones';
 import Ring from '@/components/Ring';
 import { I } from '@/components/Icons';
 import { isAdmin, isMaster } from '@/lib/roles';
@@ -99,7 +100,9 @@ function AdminHome() {
   if (!w) return <div className="empty">Cargando…</div>;
   const today = w.today;
   const l1 = w.audits.filter((a) => a.layer === 1 && a.date === today);
-  const done = l1.filter((a) => a.status === 'completed'), pend = l1.filter((a) => a.status !== 'completed');
+  // Ordenadas por zona: A, B, C, D, E, PL1, PL3, PL4, Toolroom, Shipping, Receiving…
+  const byZone = (x, y) => zoneRank(x.area) - zoneRank(y.area) || String(x.area).localeCompare(String(y.area)) || x.name.localeCompare(y.name);
+  const done = l1.filter((a) => a.status === 'completed').sort(byZone), pend = l1.filter((a) => a.status !== 'completed').sort(byZone);
   const mg = w.audits.filter((a) => a.layer >= 2), mgDone = mg.filter((a) => a.status === 'completed');
   const missed = w.audits.filter((a) => a.window === 'missed');
   const noPart = pend.filter((a) => !a.area);
@@ -145,7 +148,7 @@ function AdminHome() {
           <div className="ah-table ah-simple">
             {rows.map((a) => (
               <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr">
-                <b className="who">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
+                <b className="ahwho">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
                 <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.kind === 'process' ? <em className="gray">zona al iniciar</em> : (a.area || <em>Sin zona</em>)}</span>
                 <span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
               </Link>))}
@@ -155,7 +158,7 @@ function AdminHome() {
           <h3 className="ah-sub">Completadas ({done.length})</h3>
           <div className="ah-table ah-simple">{done.map((a) => (
             <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr done">
-              <b className="who">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
+              <b className="ahwho">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
               <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
               <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b>
             </Link>))}</div></>}
