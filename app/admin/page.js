@@ -486,6 +486,13 @@ function Assign() {
     p.list.push(a);
   });
 
+  const saveBar = (
+          <div className="asg-save">
+            <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : '✓ Todo guardado'}</span>
+            {dirty > 0 && <button className="btn alt sm" onClick={() => { setEdits({}); setMsg(''); }}>Descartar</button>}
+            <button className="btn sm" disabled={!dirty || busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
+          </div>
+  );
   return (
     <>
       <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría. El <b>número de parte</b> lo captura el auditor al realizar su auditoría. Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
@@ -499,6 +506,7 @@ function Assign() {
         <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>⬇ Importar desde Excel</button>
       </div>
       {data && <div className={`asg-count ${asg.total - asg.done > 0 ? 'warn' : 'ok'}`}><b>{asg.total - asg.done > 0 ? '!' : '✓'}</b><span><b>{asg.done} de {asg.total} asignadas</b><small>(zona){asg.total - asg.done > 0 ? ` · faltan ${asg.total - asg.done}` : ''}</small></span></div>}
+      {data && dirty > 0 && saveBar}
       {msg && <div className={msg.startsWith('Guardado') ? 'card' : 'err'} style={{ marginBottom: 12 }}>{msg}</div>}
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
@@ -567,11 +575,7 @@ function Assign() {
               const same = (m.area ?? a.area) === a.area; if (same) delete n[id]; else n[id] = m; }); return n; });
             setPaste(false); setMsg('');
           }} />}
-          <div className="asg-bar">
-            <span className="sub grow">{dirty ? `${dirty} cambio(s) sin guardar` : '✓ Todo guardado'}</span>
-            {dirty > 0 && <button className="btn alt sm" onClick={() => { setEdits({}); setMsg(''); }}>Descartar</button>}
-            <button className="btn sm" disabled={!dirty || busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
-          </div>
+          {saveBar}
         </>)}
     </>
   );
