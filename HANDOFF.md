@@ -237,3 +237,15 @@ Las auditorías de proceso (QEs) **sí se pueden hacer después de su día progr
 
 ## Anexo: navegación con “atrás”
 Las pestañas y filtros viven en la URL (`useUrlState` / `useWeekUrl` en `lib/client.js`): Admin (`?tab=`), Issues (`?v=`), Panel (`?w=`), Reportes (`?d=&by=`), Semana (`?dept=&layer=&wk=`), QEs (`?f=&wk=`) y la semana de Asignaciones (`?wk=`). Cada cambio añade una entrada al historial, así el botón/gesto de regresar vuelve a la pestaña o semana anterior; recargar conserva la vista.
+
+## Anexo: cambios recientes (16 oct 2026)
+- **Asignaciones (admin):** tabla persona × día con botones de color por zona; al tocar uno se elige *Zona* (A, B, C, D, E completa, o una zona específica como A1…E2, PL1, PL3, PL4, Toolroom, Shipping, Receiving) y la **máquina la captura el auditor** al auditar. Los días no disponibles se ven tachados con el motivo; “Guardar cambios” va en barra fija arriba/abajo. Cambiar el día de una auditoría pendiente no regenera el día original (`audit_skips`).
+- **Zonas sin máquina:** PL1, PL3, PL4, Toolroom, Shipping, Receiving (`lib/zones.js`, `NO_MACHINE`); orden A, B, C, D, E, PL1, PL3, PL4… (`zoneRank`).
+- **Resumen de hoy (admin):** pendientes y completadas ordenadas por zona; cada persona con departamento y tipo (LPA / Proceso).
+- **Corrección 20/19:** el índice de pregunta ya no se sale de rango al terminar las saltadas.
+- **QEs (admin):** casilla de auditoría hecha **tarde en morado** (verde = a tiempo, rojo = no realizada, gris = pendiente).
+- **Reporte (`/audit/[id]/report`):** la foto de cada hallazgo (con marcas) va **en grande debajo del texto**, ancho completo (en PDF con tope de altura), ya no como miniatura a la derecha.
+- **TV (`/tv`, ≥1200 px = una pantalla sin scroll):** encabezado con logos a la izquierda, título centrado en la hoja, chips y reloj a la derecha; KPI “Cumplimiento diario” (hoy vs. día hábil anterior), “No realizadas esta semana” grande y cumplimiento por capa compacto; pendiente = amarillo, realizada = verde, rojo solo para no realizadas; “Le toca hoy” ordenado por zona.
+- **Navegación:** pestañas/filtros/semana en la URL (botón atrás regresa a la vista previa).
+- **Nota de captura:** en capturas completas de iPhone el menú inferior (fixed) aparece a media página; es artefacto de la captura, no un fallo.
+- Los tableros QIA/Safe Launch (foto de “Días sin defectos”) **no son parte de LPApp**.
