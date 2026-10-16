@@ -1231,3 +1231,12 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .tvx.wall .tvx-head h1 { grid-column: 2; justify-self: center; }
 .tvx.wall .tvx-right { display: flex; align-items: center; justify-content: flex-end; gap: 16px; grid-column: 3; }
 .tvx.wall .tvx-chips { flex-wrap: nowrap; }
+/* TV: más espacio para "No realizadas", cumplimiento por capa compacto */
+.tvx.wall .tvx-col { grid-template-rows: minmax(0, .5fr) minmax(0, 2.6fr) auto; }
+.tvx.wall .tvx-col > .tvx-panel:last-child { padding: 6px 12px; }
+.tvx.wall .tvx-col > .tvx-panel:last-child h2 { font-size: 14px; margin-bottom: 0; }
+.tvx.wall .tvx-col > .tvx-panel:last-child .tvx-bar { margin: 2px 0; font-size: 12px; }
+.tvx.wall .tvx-col > .tvx-panel:last-child .tvx-note { display: none; }
+.tvx.wall .tvx-panel.alert h2 { font-size: 26px; } .tvx.wall .tvx-panel.alert .tvx-name { font-size: 22px; } .tvx.wall .tvx-panel.alert .tvx-name span { font-size: 15px; }
+.tvx.wall .tvx-panel.alert .tvx-area { font-size: 18px; } .tvx.wall .tvx-panel.alert .tvx-av { width: 44px; height: 44px; font-size: 16px; }
+.tvx.wall .tvx-panel.alert .tvx-st { font-size: 18px; padding: 6px 15px; }
