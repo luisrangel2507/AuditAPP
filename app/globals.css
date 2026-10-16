@@ -1202,3 +1202,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .tvx.wall .tvx-col .tvx-row.simple { grid-template-areas: "av name area st"; } .tvx.wall .tvx-col .tvx-area small { display: inline; margin-left: 6px; }
 .tvx.wall .tvx-col .tvx-st { padding: 4px 10px; font-size: 12.5px; }
 .ztile b.zlong { font-size: 12.5px; letter-spacing: -.01em; } .apz.long { font-size: 15px; padding: 18px 4px; }
+.zchip.off { opacity: .45; text-decoration: line-through; cursor: not-allowed; }

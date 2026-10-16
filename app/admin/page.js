@@ -442,7 +442,7 @@ const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[
 function Assign() {
   const me = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
-  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
+  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [mvErr, setMvErr] = useState(''), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
   const dirty = Object.keys(edits).length;
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
@@ -543,7 +543,7 @@ function Assign() {
                       onClick={() => apply(zz)}>{zz}</button>))}</div>
                 </>
                 <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
-                  <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMv({ x, list }); }}>📅 Cambiar de día</button>
+                  <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMvErr(''); setMv({ x, list }); }}>📅 Cambiar de día</button>
                   {cur && <button type="button" className="btn-ghost" onClick={() => apply('')}>Quitar asignación</button>}
                   <span className="grow" />
                   <button type="button" className="btn alt sm" onClick={() => setPick(null)}>Cerrar</button>
@@ -555,10 +555,12 @@ function Assign() {
             <p className="sub">{mv.x.name} · hoy está en <b>{fmtDate(mv.x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</b>. Elige el nuevo día de esta semana; el día original ya no se le vuelve a asignar.</p>
             <div className="zchips">{data.days.map((d, k) => {
               const taken = mv.list.some((y) => y.date === d), past = d < data.today, same = d === mv.x.date;
-              return <button key={d} type="button" className={`zchip ${same ? 'on' : ''}`} disabled={taken && !same || past}
-                onClick={async () => { if (same) return setMv(null); try { await api(`/api/audits/${mv.x.id}`, { method: 'PATCH', body: { date: d } }); setMv(null); setMsg('Guardado: día cambiado'); await load(date); } catch (e) { setMsg(e.message); setMv(null); } }}>{DAYS_SHORT[k]} {Number(d.slice(8))}</button>; })}</div>
-            <div className="sub" style={{ marginTop: 8 }}>Los días ocupados o que ya pasaron no se pueden elegir.</div>
-            <button className="btn alt block" style={{ marginTop: 12 }} onClick={() => setMv(null)}>Cancelar</button>
+              const why = same ? '' : past ? 'Ese día ya pasó' : taken ? `${mv.x.name} ya tiene una auditoría ese día` : '';
+              return <button key={d} type="button" className={`zchip ${same ? 'on' : ''} ${why ? 'off' : ''}`} aria-disabled={!!why} title={why}
+                onClick={async () => { if (same) return setMv(null); if (why) return setMvErr(why + '. Elige un día de hoy en adelante que esté libre.'); try { await api(`/api/audits/${mv.x.id}`, { method: 'PATCH', body: { date: d } }); setMv(null); setMvErr(''); setMsg('Guardado: día cambiado'); await load(date); } catch (e) { setMvErr(e.message); } }}>{DAYS_SHORT[k]} {Number(d.slice(8))}</button>; })}</div>
+            {mvErr && <div className="err" style={{ marginTop: 10 }}>{mvErr}</div>}
+            <div className="sub" style={{ marginTop: 8 }}>Los días tachados ya pasaron o ya tienen una auditoría de esta persona.</div>
+            <button className="btn alt block" style={{ marginTop: 12 }} onClick={() => { setMv(null); setMvErr(''); }}>Cancelar</button>
           </div></div>}
           {paste && <PasteSheet data={data} onClose={() => setPaste(false)} onApply={(ch) => {
             setEdits((e) => { const n = { ...e }; Object.entries(ch).forEach(([id, v]) => { const a = data.audits.find((x) => x.id === Number(id)); const m = { ...(n[id] || {}), ...v };
