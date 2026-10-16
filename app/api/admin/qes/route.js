@@ -24,7 +24,7 @@ export const GET = route(async (req, ctx, user) => {
             ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) AS avg_score,
             COALESCE(SUM(a.nok_count + a.partial_count) FILTER (WHERE a.status='completed'),0)::int AS findings,
             ROUND(AVG(a.active_sec) FILTER (WHERE a.status='completed' AND a.active_sec IS NOT NULL))::int AS avg_sec,
-            COALESCE(json_agg(json_build_object('id',a.id,'date',a.date,'slot',a.slot,'status',a.status,'score',a.score_pct,'area',a.area,'due',a.due_date) ORDER BY a.date,a.slot) FILTER (WHERE a.id IS NOT NULL),'[]') AS items
+            COALESCE(json_agg(json_build_object('id',a.id,'date',a.date,'slot',a.slot,'status',a.status,'score',a.score_pct,'area',a.area,'due',a.due_date,'late',a.late) ORDER BY a.date,a.slot) FILTER (WHERE a.id IS NOT NULL),'[]') AS items
        FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='process' AND a.date BETWEEN $1 AND $2 AND a.date >= $5::date
       WHERE u.active AND u.dept='quality' AND u.layer=1 AND u.access NOT IN ('admin','master') AND ($3::int IS NULL OR u.site_id=$3)
       GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today, gl]);

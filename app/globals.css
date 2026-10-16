@@ -1240,3 +1240,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .tvx.wall .tvx-panel.alert h2 { font-size: 26px; } .tvx.wall .tvx-panel.alert .tvx-name { font-size: 22px; } .tvx.wall .tvx-panel.alert .tvx-name span { font-size: 15px; }
 .tvx.wall .tvx-panel.alert .tvx-area { font-size: 18px; } .tvx.wall .tvx-panel.alert .tvx-av { width: 44px; height: 44px; font-size: 16px; }
 .tvx.wall .tvx-panel.alert .tvx-st { font-size: 18px; padding: 6px 15px; }
+.qx-h.late { background: #ece3fb; color: #7c3aed; } [data-theme="dark"] .qx-h.late { background: rgba(139,92,246,.22); color: #a78bfa; }

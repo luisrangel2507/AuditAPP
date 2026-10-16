@@ -604,7 +604,7 @@ function QEs() {
     const late = its.some((x) => x.status !== 'completed' && x.due < data.today);
     return { k: late ? 'bad' : dn ? 'part' : 'off', f: Math.round((dn / its.length) * 100) || (late ? 40 : 0), dn, n: its.length };
   };
-  const icon = (k) => k === 'ok' ? <path d="m7.5 12.5 3 3 6-6.5" /> : k === 'bad' ? <path d="m8 8 8 8M16 8l-8 8" /> : k === 'part' ? <path d="M8 12h8M12 8v8" /> : <path d="M8 12h8" />;
+  const icon = (k) => (k === 'ok' || k === 'late') ? <path d="m7.5 12.5 3 3 6-6.5" /> : k === 'bad' ? <path d="m8 8 8 8M16 8l-8 8" /> : k === 'part' ? <path d="M8 12h8M12 8v8" /> : <path d="M8 12h8" />;
   return (
     <>
       <div className="qx-card qx-per">
@@ -641,11 +641,11 @@ function QEs() {
             <div className="qx-days">{data.days.map((d, i) => {
               const its = r.items.filter((x) => x.date === d).sort((x, y) => x.slot - y.slot);
               const lbl = (x) => (its.length === 2 ? (x.slot === 1 ? 'Mañana' : 'Tarde') : `P${x.slot}`);
-              const st = (x) => (x.status === 'completed' ? 'ok' : x.due < data.today ? 'bad' : 'off');
+              const st = (x) => (x.status === 'completed' ? (x.late ? 'late' : 'ok') : x.due < data.today ? 'bad' : 'off');
               return (
                 <div key={d} className="qx-dc"><small className={d === data.today ? 'today' : ''}>{DAYS_SHORT[i]}</small>
                   {its.length ? <div className="qx-split">{its.map((x) => (
-                    <a key={x.slot} href={`/audit/${x.id}`} className={`qx-h ${st(x)}`} title={x.status === 'completed' ? `${x.area} · ${Math.round(x.score)}%` : st(x) === 'bad' ? 'no realizada' : 'pendiente'}>
+                    <a key={x.slot} href={`/audit/${x.id}`} className={`qx-h ${st(x)}`} title={x.status === 'completed' ? `${x.late ? 'Tarde · ' : ''}${x.area} · ${Math.round(x.score)}%` : st(x) === 'bad' ? 'no realizada' : 'pendiente'}>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="currentColor" stroke="none" />{icon(st(x))}</svg>
                       <em>{lbl(x)}</em>
                     </a>))}</div> : <div className="qx-d none">—</div>}
