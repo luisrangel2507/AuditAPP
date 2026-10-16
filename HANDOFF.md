@@ -231,3 +231,6 @@ Todas las rutas de escritura de admin se registran automáticamente en `admin_lo
 
 ## 11. Prompt sugerido para la IA de la empresa
 > “Eres el equipo de ingeniería de LPApp. Lee `HANDOFF.md` completo y luego el código. No cambies reglas de negocio ni diseño sin pedir confirmación. Para reproducir la UI, usa las capturas de `reference-screenshots/` y los assets de `public/`. Corre `npm install`, define las variables de entorno de §1, apunta `DATABASE_URL` a un Postgres vacío y ejecuta `npm run build && npm start` (el esquema se crea solo). Entra con `admin` / `ADMIN_PASSWORD`.”
+
+## Anexo: auditorías de proceso tardías
+Las auditorías de proceso (QEs) **sí se pueden hacer después de su día programado**: la pantalla ofrece “Realizar de forma tardía”, el servidor las acepta y se guardan con `late=true`. En el resultado sale la etiqueta “⏰ Realizada tarde · programada …” y el **reporte** lleva una franja amarilla con la fecha programada y la fecha real. Las LPA normales siguen sin poder registrarse fuera de su día.

@@ -494,6 +494,7 @@ export default function AuditPage() {
         <span className="btn-ghost audit-date">{G.cal}{fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
       </div>
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
+      {audit.status === 'completed' && audit.late && <div className="latetag">⏰ Realizada tarde · programada {fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</div>}
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
@@ -513,7 +514,8 @@ export default function AuditPage() {
     </Shell>
   );
 
-  const canRun = audit.editable && (audit.window === 'open' || audit.window === 'last_day');
+  const lateOk = audit.kind === 'process' && audit.window === 'missed'; // proceso: se puede hacer tarde
+  const canRun = audit.editable && (audit.window === 'open' || audit.window === 'last_day' || lateOk);
   const why = !audit.editable ? (audit.status === 'pending' ? 'Aún no realizado' : 'Solo el auditor asignado puede realizarla.')
     : audit.window === 'upcoming' ? `Se habilita el ${fmtDate(audit.date)}.`
     : audit.window === 'missed' ? `No realizada. Solo se podía registrar el ${fmtDate(audit.closes_on)} (día programado).` : '';
@@ -524,7 +526,7 @@ export default function AuditPage() {
       {audit.status === 'completed' && <ResetAudit audit={audit} onDone={() => router.push('/admin')} />}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>
-          {canRun ? <button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>Iniciar auditoría</b>{G.arrow}</button>
+          {canRun ? <>{lateOk && <div className="offbar" style={{ marginTop: 14 }}>⏰ Esta auditoría estaba programada para el {fmtDate(audit.date, { weekday: 'long', day: 'numeric', month: 'short' })}. Puedes hacerla ahora; quedará registrada como <b>tardía</b>.</div>}<button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>{lateOk ? 'Realizar de forma tardía' : 'Iniciar auditoría'}</b>{G.arrow}</button></>
             : !audit.editable && audit.status === 'pending' ? <div className="notyet"><i>{G.clock}</i><b>Aún no realizado</b><span>{audit.auditor} todavía no la realiza.</span></div>
             : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
           <div className="audit-info">

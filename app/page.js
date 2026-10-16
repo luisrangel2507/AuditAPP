@@ -39,7 +39,7 @@ function Ticket({ a, today }) {
         <span className="chev">{I.chevron(18)}</span>
         {a.window === 'completed' ? <Ring value={a.score_pct} size={60} stroke={7} cls={scoreCls(a.score_pct)} label={`${Math.round(a.score_pct)}%`} />
           : a.window === 'open' || a.window === 'last_day' ? <span className="go">{I.play(18)}{inProg ? 'Continuar' : 'Iniciar'}</span>
-          : a.window === 'missed' ? <div className="meta">Ventana cerrada</div>
+          : a.window === 'missed' ? (a.kind === 'process' ? <span className="go">{I.play(18)}Hacer tarde</span> : <div className="meta">Ventana cerrada</div>)
           : <div className="meta">{fmtDate(a.date, { weekday: 'short', day: 'numeric' })}</div>}
       </div>
     </Link>

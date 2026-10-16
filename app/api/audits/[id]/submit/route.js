@@ -32,7 +32,7 @@ export const POST = route(async (req, { params }, user) => {
     }
     const today = mxToday();
     if (today < a.date) { await client.query('ROLLBACK'); return err(`Esta auditoría se habilita el ${a.date}`); }
-    if (today > closesOn(a)) {
+    if (today > closesOn(a) && !proc) { // las auditorías de proceso se pueden hacer tarde (quedan marcadas como tardías)
       await client.query('ROLLBACK');
       return err(`La auditoría ya no se puede registrar: solo se permite el mismo día programado (${closesOn(a)}).`, 403);
     }

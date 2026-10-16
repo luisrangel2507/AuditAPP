@@ -49,6 +49,7 @@ export default function Report() {
           <div className={`sc ${a.score_pct >= 90 ? 'ok' : a.score_pct >= 75 ? 'warn' : 'nok'}`}><b>{Math.round(a.score_pct)}%</b><span>Score</span></div>
         </header>
         <p className="hi">{hi}. Realicé una auditoría y estos son los resultados:</p>
+        {a.late && <div className="late">⏰ Auditoría realizada tarde · programada el {fmtDate(a.date, { day: 'numeric', month: 'short', year: 'numeric' })}, realizada el {new Date(a.completed_at).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', year: 'numeric' })}</div>}
         <div className="meta">
           <div><Ic d={I.user} /><p><i>Auditor</i><b>{a.auditor}</b></p></div>
           <div><Ic d={I.cal} /><p><i>Fecha</i><b>{fmtDate(a.date, { day: 'numeric', month: 'short', year: 'numeric' })}</b></p></div>
@@ -83,6 +84,7 @@ export default function Report() {
         .rep .sc.ok { background: #22a867; } .rep .sc.warn { background: #e3a21a; } .rep .sc.nok { background: #d92f3a; }
         .ric { width: 44px; height: 44px; border-radius: 50%; background: #eef2fb; color: #2c3a5e; display: grid; place-items: center; flex: none; }
         .rep .hi { margin: 12px 0 0; font-size: 18px; font-weight: 600; }
+        .rep .late { background: #fff4d6; border: 1px solid #f0cf7a; color: #7a5200; border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 14px; margin: 10px 0 0; }
         .rep .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; margin: 16px 0; }
         .rep .meta > div { display: flex; align-items: center; gap: 10px; min-width: 0; } .rep .meta .res { grid-column: span 2; }
         .rep .meta p { margin: 0; display: flex; flex-direction: column; min-width: 0; } .rep .meta i { font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7a9b; } .rep .meta b { font-size: 18px; overflow-wrap: anywhere; }

@@ -1205,3 +1205,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .zchip.off { opacity: .45; text-decoration: line-through; cursor: not-allowed; }
 /* Guardar cambios: barra normal (no flota sobre la tabla) */
 .asg-save { display: flex; gap: 10px; align-items: center; padding: 10px 12px; margin: 10px 0; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+.latetag { display: inline-block; margin: 6px 0 0; padding: 4px 12px; border-radius: 999px; background: rgba(242,178,0,.18); color: #8a5a00; font-size: 13px; font-weight: 800; }
+:root[data-theme="dark"] .latetag { color: #f6c577; }
