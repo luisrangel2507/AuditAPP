@@ -48,7 +48,7 @@ export const PATCH = route(async (req, { params }, user) => {
   await q(
     `DELETE FROM audits a USING users u
       WHERE a.user_id=u.id AND u.id=$1 AND a.kind='lpa' AND a.status='pending' AND a.date>=$2
-        AND NOT COALESCE(u.lpa_override, NOT (u.dept='quality' AND u.layer=1) OR COALESCE((SELECT value FROM settings WHERE key='qe_lpa_on'),'0')='1')`, [params.id, mxToday()]);
+        AND NOT COALESCE(u.lpa_override, u.access NOT IN ('admin','master') AND (NOT (u.dept='quality' AND u.layer=1) OR COALESCE((SELECT value FROM settings WHERE key='qe_lpa_on'),'0')='1'))`, [params.id, mxToday()]);
   resetEnsured();
   return json({ ok: true });
 }, { need: 'admin' });

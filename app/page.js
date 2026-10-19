@@ -87,6 +87,15 @@ function MyHome() {
 }
 
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
+// Admin que también audita (interruptor "Hace LPA" en su perfil): sus pendientes de hoy aparecen arriba
+function MyAuditsForAdmin() {
+  const [d, setD] = useState(null);
+  useEffect(() => { api('/api/my').then(setD).catch(() => {}); }, []);
+  const todo = (d?.audits || []).filter((a) => ['last_day', 'open'].includes(a.window));
+  if (!todo.length) return null;
+  return <><div className="sect">Mis auditorías por hacer</div>{todo.map((a) => <Ticket key={a.id} a={a} today={d.today} />)}</>;
+}
+
 function AdminHome() {
   const user = useUser(), master = isMaster(user);
   const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null), [qs, setQs] = useState('');
@@ -127,6 +136,7 @@ function AdminHome() {
     <div className="ah">
       <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      <MyAuditsForAdmin />
       {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
