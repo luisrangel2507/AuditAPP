@@ -105,8 +105,8 @@ function ZoneEdit({ audit, onSaved }) {
   }
   return (
     <>
-      <div className={`partno ${edited ? 'edited' : ''}`}>Zona <b>{audit.zone}</b>{edited ? <em> ✎ corregido</em> : null}
-        {audit.editable && <button type="button" className="pe-btn" onClick={() => { setZone(audit.zone); setErr(''); setOpen(true); }}>✎ Corregir</button>}</div>
+      <div className={`partno ${edited ? 'edited' : ''}`}>Zona <b>{audit.zone || 'All Areas'}</b>{edited ? <em> ✎ corregido</em> : null}
+        {audit.editable && <button type="button" className="pe-btn" onClick={() => { setZone(audit.zone || ''); setErr(''); setOpen(true); }}>✎ Corregir</button>}</div>
       {edited && audit.area_original && <div className="pe-was">Antes: <s>{audit.area_original}</s></div>}
       {open && (
         <div className="sheet-bg" onClick={() => setOpen(false)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
@@ -168,7 +168,7 @@ function PartEdit({ audit, onSaved }) {
 }
 
 function Runner({ audit, onExit, onDone, onSetup }) {
-  const needSetup = !audit.zone;
+  const needSetup = !audit.zone && !(audit.layer >= 2 && audit.kind !== 'process'); // gerentes: All Areas, sin pedir zona
   if (needSetup) return <Setup audit={audit} onSaved={onSetup} onExit={onExit} />;
   return <RunnerInner audit={audit} onExit={onExit} onDone={onDone} />;
 }
@@ -525,7 +525,7 @@ export default function AuditPage() {
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.status === 'completed' && audit.late && <div className="latetag">⏰ Realizada tarde · programada {fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</div>}
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
-      {audit.layer >= 2 && audit.kind !== 'process' && audit.zone && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
+      {audit.layer >= 2 && audit.kind !== 'process' && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
