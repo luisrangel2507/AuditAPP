@@ -16,6 +16,11 @@ export const POST = route(async (req, { params }, user) => {
   if (full && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
   let zone = a.zone, machine = a.machine, area = a.area;
+  if (b.zone !== undefined && !full) { // Layer 2-4: solo la zona
+    zone = String(b.zone || '').trim();
+    if (!ZONES.includes(zone)) return err('Escoge una zona');
+    machine = ''; area = zone;
+  }
   if (b.zone !== undefined && full) {
     zone = String(b.zone || '').trim();
     if (!ZONES.includes(zone)) return err('Escoge una zona');

@@ -94,6 +94,35 @@ function Setup({ audit, onSaved, onExit }) {
 }
 
 // Zona, máquina y N/P con opción de corregirlos (quedan marcados como corregidos)
+// Gerentes (capa 2+): corregir la zona aun después de iniciar o terminar
+function ZoneEdit({ audit, onSaved }) {
+  const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const edited = !!audit.part_edited_at;
+  async function save() {
+    setBusy(true); setErr('');
+    try { const r = await api(`/api/audits/${audit.id}/part`, { method: 'POST', body: { zone } }); onSaved(r); setOpen(false); }
+    catch (e) { setErr(e.message); } finally { setBusy(false); }
+  }
+  return (
+    <>
+      <div className={`partno ${edited ? 'edited' : ''}`}>Zona <b>{audit.zone}</b>{edited ? <em> ✎ corregido</em> : null}
+        {audit.editable && <button type="button" className="pe-btn" onClick={() => { setZone(audit.zone); setErr(''); setOpen(true); }}>✎ Corregir</button>}</div>
+      {edited && audit.area_original && <div className="pe-was">Antes: <s>{audit.area_original}</s></div>}
+      {open && (
+        <div className="sheet-bg" onClick={() => setOpen(false)}><div className="sheet" onClick={(e) => e.stopPropagation()}>
+          <h2>Corregir zona</h2>
+          <p className="sub">Quedará marcado como corregido y se conserva lo original.</p>
+          <div className="zchips">{ZONES.map((z) => <button key={z} type="button" className={`zchip ${zone === z ? 'on' : ''}`} onClick={() => setZone(z)}>{z}</button>)}</div>
+          {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+          <div className="row" style={{ marginTop: 14 }}>
+            <button className="btn alt grow" onClick={() => setOpen(false)}>Cancelar</button>
+            <button className="btn grow" disabled={busy || !zone} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+          </div>
+        </div></div>)}
+    </>
+  );
+}
+
 function PartEdit({ audit, onSaved }) {
   const full = audit.layer === 1 || audit.kind === 'process';
   const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
@@ -496,6 +525,7 @@ export default function AuditPage() {
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.status === 'completed' && audit.late && <div className="latetag">⏰ Realizada tarde · programada {fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</div>}
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
+      {audit.layer >= 2 && audit.kind !== 'process' && audit.zone && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
