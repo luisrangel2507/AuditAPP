@@ -10,7 +10,7 @@ const STICKERS = ['White', 'Green', 'Yellow', 'Orange', 'Pink'];
 const STICKER_ES = { White: 'Blanco', Green: 'Verde', Yellow: 'Amarillo', Orange: 'Naranja', Pink: 'Rosa' };
 
 export const POST = route(async (req, { params }, user) => {
-  const { responses, active_sec, area, part_number, shipper, parts } = await req.json();
+  const { responses, active_sec, area, part_number, shipper, parts, extra_ids } = await req.json();
   if (!Array.isArray(responses)) return err('responses requerido');
   const client = await pool.connect();
   try {
@@ -37,7 +37,18 @@ export const POST = route(async (req, { params }, user) => {
       return err(`La auditoría ya no se puede registrar: solo se permite el mismo día programado (${closesOn(a)}).`, 403);
     }
 
-    const { rows: qs } = await client.query('SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])', [a.question_ids]);
+    // Ítems extra que el QE decidió agregar al final (solo hallazgos): del banco de los QEs y que no estaban en la auditoría
+    let allIds = a.question_ids, extraSet = new Set();
+    if (au.layer === 1 && Array.isArray(extra_ids) && extra_ids.length) {
+      const { rows: ex } = await client.query(
+        `SELECT x.id FROM questions x JOIN templates t ON t.id=x.template_id JOIN users u ON u.id=$3
+          WHERE x.id = ANY($1::int[]) AND x.active AND NOT x.required AND u.dept='quality' AND t.name IN ('QE Process Audit','Quality Engineer')
+            AND x.category NOT IN ('Dock Audit','Auditoría gerencial') AND NOT (x.id = ANY($2::int[]))`,
+        [extra_ids.map(Number).filter(Number.isInteger).slice(0, 10), a.question_ids, a.user_id]);
+      extraSet = new Set(ex.map((r) => r.id));
+      allIds = [...a.question_ids, ...extraSet];
+    }
+    const { rows: qs } = await client.query('SELECT id,text,category,CASE WHEN item_no IS NOT NULL THEN NULLIF(item_no,-1) ELSE sort_order + 1 END AS item FROM questions WHERE id = ANY($1::int[])', [allIds]);
     const qById = Object.fromEntries(qs.map((r) => [r.id, r]));
     const byQ = new Map(responses.map((r) => [Number(r.question_id), r]));
     const hasDock = qs.some((x) => x.category === 'Dock Audit');
@@ -50,10 +61,11 @@ export const POST = route(async (req, { params }, user) => {
     if (hasDock && !ship) { await client.query('ROLLBACK'); return err('Indica el Shipper # que revisaste en el Dock Audit'); }
 
     // Validación: todas contestadas; X y Δ exigen comentario
-    for (const qid of a.question_ids) {
+    for (const qid of allIds) {
       const r = byQ.get(qid);
       if (!qById[qid]) continue; // pregunta eliminada del banco tras generar la auditoría
       if (!r || !RESULTS.has(r.result)) { await client.query('ROLLBACK'); return err('Faltan preguntas por contestar'); }
+      if (extraSet.has(qid) && r.result !== 'nok' && r.result !== 'partial') { await client.query('ROLLBACK'); return err('Los ítems agregados al final solo se usan para reportar hallazgos (X o Δ)'); }
       if ((r.result === 'nok' || r.result === 'partial') && String(r.notes || '').trim().length < 3) {
         await client.query('ROLLBACK'); return err('Los hallazgos (X / Δ) requieren un comentario');
       }
@@ -77,7 +89,7 @@ export const POST = route(async (req, { params }, user) => {
     }
 
     const c = { ok: 0, nok: 0, partial: 0, na: 0 };
-    for (const qid of a.question_ids) {
+    for (const qid of allIds) {
       const qq = qById[qid]; if (!qq) continue;
       const r = byQ.get(qid);
       c[r.result]++;

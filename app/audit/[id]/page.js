@@ -188,8 +188,9 @@ function RunnerInner({ audit, onExit, onDone }) {
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
   const [shipper, setShipper] = useState(() => draft.read().shipper || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
-  const setIdx = (n) => setIdx_(Math.max(0, Math.min(n, audit.questions.length - 1)));
-  const qs = useMemo(() => [...audit.questions].sort((x, y) => RANK[STAGE(x.category)] - RANK[STAGE(y.category)]), [audit.questions]);
+  const [extras, setExtras] = useState(() => draft.read().extras || []), [pickOpen, setPickOpen] = useState(false), [pickQ, setPickQ] = useState('');
+  const setIdx = (n) => setIdx_(Math.max(0, Math.min(n, qs.length - 1)));
+  const qs = useMemo(() => [...audit.questions, ...extras.map((x) => ({ ...x, extra: true }))].sort((x, y) => RANK[STAGE(x.category)] - RANK[STAGE(y.category)]), [audit.questions, extras]);
   const [parts, setParts] = useState(() => draft.read().parts || [{ ...EMPTY_PART }]);
   const [introDone, setIntroDone] = useState(() => draft.read().introDone || {});
   const users = useUsers();
@@ -209,17 +210,17 @@ function RunnerInner({ audit, onExit, onDone }) {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { draft.write({ answers, idx, area, part, shipper, parts, introDone, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper, parts, introDone]);
+  useEffect(() => { draft.write({ answers, idx, area, part, shipper, parts, introDone, extras, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper, parts, introDone, extras]);
 
   const q = qs[Math.min(idx, qs.length - 1)];
   const cleanParts = parts.filter((x) => x.name.trim() && x.number.trim());
   const a = answers[q?.id] || {};
   const needsNote = a.result === 'nok' || a.result === 'partial';
   // Todo hallazgo (X / Δ) lleva descripción y foto; si se corrigió en el momento, también la acción y la foto del cierre
-  const valid = (x) => x && x.result && (!(x.result === 'nok' || x.result === 'partial') || ((x.notes || '').trim().length >= 3 && !!x.evidence
+  const valid = (x) => x && x.result && (!x._extra || x.result === 'nok' || x.result === 'partial') && (!(x.result === 'nok' || x.result === 'partial') || ((x.notes || '').trim().length >= 3 && !!x.evidence
     && (!x.closed_now || ((x.corrective || '').trim().length >= 3 && !!x.close_evidence))
     && (x._cat !== 'Auditoría gerencial' || (!!x.sticker && !!(x.operator || '').trim() && !!(x.shift || '').trim() && (cleanParts.length <= 1 || !!x.part)))));
-  const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], _cat: q.category, ...patch } }));
+  const set = (patch) => setAnswers((s) => ({ ...s, [q.id]: { ...s[q.id], _cat: q.category, ...(q.extra ? { _extra: true } : {}), ...patch } }));
   const hasDock = qs.some((x) => x.category === 'Dock Audit');
   const allValid = qs.every((x) => valid(answers[x.id]));
   // Etapas: cada una se completa por separado; dentro de una etapa se puede saltar y al final regresan las pendientes
@@ -262,7 +263,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     setBusy(true); setErr('');
     try {
       const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
-      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined } });
+      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) } });
       draft.clear(); onDone(res);
     } catch (e) {
       if (e.network) {
@@ -270,7 +271,7 @@ function RunnerInner({ audit, onExit, onDone }) {
         const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
         const c = { ok: 0, nok: 0, partial: 0, na: 0 }; qs.forEach((x) => { c[answers[x.id]?.result]++; });
         const scored = c.ok + c.nok + c.partial;
-        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
+        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
         draft.clear(); onDone({ queued: true, score: scored ? Math.round((c.ok / scored) * 1000) / 10 : 100, findings: c.nok + c.partial });
         return;
       }
@@ -279,6 +280,20 @@ function RunnerInner({ audit, onExit, onDone }) {
   }
 
   const marker = marking ? <PhotoMark src={marking} onCancel={() => setMarking(null)} onDone={(d) => { set({ evidence: d }); setMarking(null); }} /> : null;
+  const pickSheet = pickOpen && (
+    <div className="sheet-bg" onClick={() => setPickOpen(false)}><div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+      <h2>Agregar hallazgo en otro ítem</h2>
+      <p className="sub">Elige el ítem donde encontraste el problema. Solo se usa para reportar hallazgos (X o Δ) con foto.</p>
+      <input className="inp" placeholder="Buscar por texto o número de ítem…" value={pickQ} onChange={(e) => setPickQ(e.target.value)} />
+      <div style={{ marginTop: 8 }}>{(audit.others || []).filter((o) => !extras.some((x) => x.id === o.id) && (`${o.item || ''} ${o.text}`).toLowerCase().includes(pickQ.trim().toLowerCase())).slice(0, 60).map((o) => (
+        <button key={o.id} type="button" className="card" style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 6 }} onClick={() => {
+          const nx = [...extras, o];
+          const list = [...audit.questions, ...nx.map((x) => ({ ...x, extra: true }))].sort((x, y) => RANK[STAGE(x.category)] - RANK[STAGE(y.category)]);
+          setExtras(nx); setAnswers((st) => ({ ...st, [o.id]: { _cat: o.category, _extra: true, result: 'nok' } }));
+          setIdx_(list.findIndex((x) => x.id === o.id)); setLooped(false); setSummary(false); setPickOpen(false);
+        }}>{o.item ? <b>#{o.item} · </b> : null}<Bi text={o.text} /></button>))}</div>
+      <button className="btn alt" style={{ width: '100%', marginTop: 6 }} onClick={() => setPickOpen(false)}>Cancelar</button>
+    </div></div>);
   if (summary) {
     const c = { ok: 0, nok: 0, partial: 0, na: 0 };
     qs.forEach((x) => c[answers[x.id].result]++);
@@ -286,6 +301,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     const score = scored ? Math.round((c.ok / scored) * 1000) / 10 : 100;
     return (
       <div className="exec">
+        {pickSheet}
         <div className="exec-top"><h2>Resumen</h2><div className="sub">{needArea && !area ? "All Areas" : (needArea ? area : audit.area)}{audit.part_number ? ` · N/P ${audit.part_number}` : ''} · {audit.template}</div></div>
         <div className="exec-body">
           <div className="card" style={{ textAlign: 'center' }}>
@@ -304,6 +320,11 @@ function RunnerInner({ audit, onExit, onDone }) {
                 <div className="sub">{(answers[x.id].owners || []).length ? 'Responsables: ' + answers[x.id].owners.map((id) => users.find((u) => u.id === id)?.name || id).join(', ') : 'Sin responsable asignado (un líder lo asignará)'}</div>
               </div>))}
           </>}
+          {(audit.others || []).length > 0 && <div style={{ marginBottom: 12 }}>
+            {extras.length > 0 && <div className="sub" style={{ margin: '0 0 6px' }}>Ítems agregados: {extras.map((x) => (
+              <span key={x.id} className="pill warn" style={{ marginRight: 6 }}>{x.item ? `#${x.item}` : 'Ítem'}<button type="button" className="linkbtn" style={{ marginLeft: 6 }} onClick={() => { setExtras((l) => l.filter((y) => y.id !== x.id)); setAnswers((s) => { const n = { ...s }; delete n[x.id]; return n; }); }}>✕</button></span>))}</div>}
+            <button type="button" className="btn alt" style={{ width: '100%' }} onClick={() => { setPickQ(''); setPickOpen(true); }}>＋ Agregar hallazgo en otro ítem</button>
+          </div>}
           {needPart && <div className="card" style={{ marginBottom: 12 }}>
             <div className="sect" style={{ marginTop: 0 }}>¿Qué número de parte revisaste?</div>
             <input className="inp" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={part} onChange={(e) => setPart(e.target.value)} />

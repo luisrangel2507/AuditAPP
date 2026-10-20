@@ -42,7 +42,18 @@ export const GET = route(async (req, { params }, user) => {
       `SELECT DISTINCT x AS z FROM users u, unnest(u.pool) x WHERE u.layer=1 AND u.active AND u.site_id IS NOT DISTINCT FROM $1 ORDER BY 1`, [a.site_id]);
     zones = z.map((r) => r.z).filter((v) => v && v !== 'All Areas');
   }
-  return json({ ...base, zones, machines, questions: a.question_ids.map((i) => byId[i]).filter(Boolean) });
+  // QEs: ítems del banco que no salieron en esta auditoría, para agregar un hallazgo al final
+  let others = [];
+  if (a.user_id === user.id && a.dept === 'quality' && a.layer === 1) {
+    const { rows: o } = await q(
+      `SELECT x.id,x.text,x.category,CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END AS item, t.name AS template
+         FROM questions x JOIN templates t ON t.id=x.template_id
+        WHERE x.active AND t.name IN ('QE Process Audit','Quality Engineer') AND NOT x.required
+          AND x.category NOT IN ('Dock Audit','Auditoría gerencial') AND NOT (x.id = ANY($1::int[]))
+        ORDER BY t.name DESC, x.sort_order`, [a.question_ids]);
+    others = o;
+  }
+  return json({ ...base, zones, machines, others, questions: a.question_ids.map((i) => byId[i]).filter(Boolean) });
 });
 
 // Reasignar auditor / zona / número de parte / fecha de una auditoría pendiente (solo admin)
