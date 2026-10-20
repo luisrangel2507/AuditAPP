@@ -458,6 +458,26 @@ const G = {
 };
 
 // El admin puede eliminar una auditoría realizada (p. ej. de prueba) para que se vuelva a hacer
+// El gerente corrige la zona que va a inspeccionar antes de iniciar
+function ZonePick({ audit, onSaved }) {
+  const [busy, setBusy] = useState(false), [err, setErr] = useState('');
+  const opts = ZONES.includes(audit.area) || !audit.area || audit.area === 'All Areas' ? ZONES : [audit.area, ...ZONES];
+  async function pick(v) {
+    setBusy(true); setErr('');
+    try { await api(`/api/audits/${audit.id}`, { method: 'PATCH', body: { area: v } }); onSaved(v); } catch (e) { setErr(e.message); } finally { setBusy(false); }
+  }
+  return (
+    <div className="card" style={{ marginTop: 14 }}>
+      <label className="lbl" style={{ marginTop: 0 }}>Zona a inspeccionar</label>
+      <select className="inp" value={audit.area === 'All Areas' ? '' : audit.area || ''} disabled={busy} onChange={(e) => pick(e.target.value)}>
+        {(!audit.area || audit.area === 'All Areas') && <option value="">Elige la zona…</option>}
+        {opts.map((z) => <option key={z} value={z}>{z}</option>)}
+      </select>
+      {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+    </div>
+  );
+}
+
 function ResetAudit({ audit, onDone }) {
   const user = useUser();
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
@@ -529,6 +549,7 @@ export default function AuditPage() {
           {canRun ? <>{lateOk && <div className="offbar" style={{ marginTop: 14 }}>⏰ Esta auditoría estaba programada para el {fmtDate(audit.date, { weekday: 'long', day: 'numeric', month: 'short' })}. Puedes hacerla ahora; quedará registrada como <b>tardía</b>.</div>}<button className="audit-go" onClick={() => setRunning(true)}><i>{G.play}</i><b>{lateOk ? 'Realizar de forma tardía' : 'Iniciar auditoría'}</b>{G.arrow}</button></>
             : !audit.editable && audit.status === 'pending' ? <div className="notyet"><i>{G.clock}</i><b>Aún no realizado</b><span>{audit.auditor} todavía no la realiza.</span></div>
             : <div className={audit.window === 'missed' ? 'err' : 'card sub'} style={{ marginTop: 14 }}>{why}</div>}
+          {canRun && audit.layer >= 2 && audit.kind !== 'process' && <ZonePick audit={audit} onSaved={(area) => setAudit({ ...audit, area })} />}
           <div className="audit-info">
             <div><i className="b">{G.doc}</i><b className="big">{audit.questions.length}</b><b>Preguntas</b><span>en esta auditoría</span></div>
             <div><i className="o">{G.clock}</i><span>{audit.date === audit.due_date ? 'Solo disponible' : 'Disponible'}</span>
