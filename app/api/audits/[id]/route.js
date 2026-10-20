@@ -52,9 +52,6 @@ export const PATCH = route(async (req, { params }, user) => {
   if (!sameSite(user, a.site_id)) return err('Sin permiso', 403);
   if (a.status === 'completed') return err('Ya fue completada');
   const b = await req.json();
-  // El gerente (capa 2 o más) puede corregir la zona a inspeccionar de su propia auditoría; lo demás es del admin
-  if (!isAdmin(user) && !(a.user_id === user.id && a.layer >= 2 && Object.keys(b).every((k) => k === 'area'))) return err('Sin permiso', 403);
-  if (b.area !== undefined && !String(b.area).trim()) return err('Elige una zona');
   const sets = [], vals = [];
   const add = (c, v) => { vals.push(v); sets.push(`${c}=$${vals.length}`); };
   if (b.user_id) {
@@ -87,4 +84,4 @@ export const PATCH = route(async (req, { params }, user) => {
     throw e;
   }
   return json({ ok: true });
-});
+}, { need: 'admin' });
