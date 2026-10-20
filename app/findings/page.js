@@ -25,7 +25,7 @@ function EvidencePick({ value, onChange, setErr }) {
       {value && <Photo src={value} />}
       <label className="btn alt sm" style={{ display: 'inline-block' }}>
         {value ? 'Cambiar foto' : '📷 Subir evidencia de cierre (obligatoria)'}
-        <input type="file" accept="image/*" capture="environment" hidden onChange={pick} />
+        <input type="file" accept="image/*" hidden onChange={pick} />
       </label>
       {value && <button type="button" className="btn-ghost" onClick={() => onChange('')}>Quitar</button>}
     </div>

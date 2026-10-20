@@ -438,7 +438,7 @@ function RunnerInner({ audit, onExit, onDone }) {
               {a.evidence && <Photo src={a.evidence} />}
               <label className="btn alt sm" style={{ display: 'inline-block' }}>
                 {a.evidence ? 'Cambiar foto' : 'Adjuntar foto de evidencia'}
-                <input type="file" accept="image/*" capture="environment" hidden onChange={pickPhoto} />
+                <input type="file" accept="image/*" hidden onChange={pickPhoto} />
               </label>
               {a.evidence && <button className="btn-ghost" onClick={() => setMarking(a.evidence)}>✎ Marcar</button>}
               {a.evidence && <button className="btn-ghost" onClick={() => set({ evidence: '' })}>Quitar</button>}
@@ -450,7 +450,7 @@ function RunnerInner({ audit, onExit, onDone }) {
                 {a.close_evidence && <Photo src={a.close_evidence} />}
                 <label className="btn alt sm" style={{ display: 'inline-block' }}>
                   {a.close_evidence ? 'Cambiar foto' : '📷 Subir evidencia de cierre'}
-                  <input type="file" accept="image/*" capture="environment" hidden onChange={pickClosePhoto} />
+                  <input type="file" accept="image/*" hidden onChange={pickClosePhoto} />
                 </label>
                 {a.close_evidence && <button className="btn-ghost" onClick={() => set({ close_evidence: '' })}>Quitar</button>}
               </div>
