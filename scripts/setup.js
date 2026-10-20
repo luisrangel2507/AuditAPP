@@ -326,6 +326,19 @@ async function main() {
     console.log('[setup] QE Process Audit: 19 preguntas por auditoría');
   }
 
+  // LPA Layer 2 del Gerente de Calidad (formato MGMT-015-C): 11 preguntas fijas, semanal
+  const l2 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qa-layer2.json'), 'utf8'));
+  const { rows: [l2t] } = await pool.query('SELECT id FROM templates WHERE name=$1', [l2.name]);
+  if (!l2t) {
+    const { rows: [nt] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [l2.name, l2.zone, l2.questions.length]);
+    for (let i = 0; i < l2.questions.length; i++) {
+      const x = l2.questions[i];
+      await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,$5,TRUE)',
+        [nt.id, `${x.es}\n${x.en}`, l2.zone, i, x.item ?? -1]);
+    }
+    console.log('[setup] plantilla QA Layer 2 Audit cargada');
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);

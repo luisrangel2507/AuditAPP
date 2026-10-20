@@ -1,0 +1,18 @@
+{
+  "name": "QA Layer 2 Audit",
+  "zone": "Calidad",
+  "form": "MGMT-015-C Rev.003",
+  "questions": [
+    { "item": 1306, "es": "¿La LPA Layer 1 QE ha sido compleada? ¿Cuenta con acciones pendientes por ejecutar?", "en": "Has the QE Layer 1 LPA been completed? Does it have pending actions to execute?" },
+    { "item": 1008, "es": "¿Están las alertas posteadas y actualizadas? Han sido firmadas por todos los miembros de producción, Logística y PE?", "en": "Are the alerts posted and up to date? Have they been signed by all members of production, Logistics and PE?" },
+    { "item": 1334, "es": "Revisión de seguimiento de Alerta (anota el número de alerta en las notas).", "en": "Alert follow-up review (write the alert number in the notes)." },
+    { "item": 1335, "es": "24 horas. Se conoce y se encuentra disponible en la estación de trabajo.", "en": "24 hours. It is known and available at the workstation." },
+    { "item": 1336, "es": "24 horas. La Alerta se encuentra disponible y firmada en Tablero 4D de la Zona afectada.", "en": "24 hours. The Alert is available and signed on the 4D Board of the affected Zone." },
+    { "item": 1337, "es": "24 horas. La alerta se encuentra disponible y firmadas por supervisor en Tablero de Alertas en pasillo principal y embarques.", "en": "24 hours. The alert is available and signed by the supervisor on the Alert Board in the main aisle and shipping." },
+    { "item": 1303, "es": "¿Se están realizando todas las auditorías internas según lo programado?", "en": "Are all internal audits being performed as scheduled?" },
+    { "item": 1316, "es": "¿Se han implementado todas las acciones correctivas antes del cierre del CAR?", "en": "Have all corrective actions been implemented before the CAR is closed?" },
+    { "item": 1313, "es": "¿Se están realizando todas las auditorías internas requeridas según lo programado?", "en": "Are all required internal audits being performed as scheduled?" },
+    { "item": 1311, "es": "¿Está limpia la cabina de color? ¿Funcionan correctamente todas las herramientas de color?", "en": "Is the color booth clean? Do all the color tools work properly?" },
+    { "item": 1309, "es": "¿Están actualizadas todas las fechas en el registro CAR?", "en": "Are all the dates in the CAR log up to date?" }
+  ]
+}
