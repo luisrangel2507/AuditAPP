@@ -50,7 +50,7 @@ function Sheet({ d, k, cols, finds, total }) {
           <p><b>6. Director of Quality:</b> Perform Layer 4 audit quarterly and document any findings and corrections on that form.</p></div>
       </div>
       <table className="qfs-t">
-        <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '27%' }} /><col style={{ width: '7.4%' }} />{days.map((x) => <col key={x} style={{ width: '6.6%' }} />)}<col style={{ width: '14%' }} /></colgroup>
+        <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{days.map((x) => <col key={x} style={{ width: '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
         <thead>
           <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">QE Layer 1 Audit</div></div></th>
             <th colSpan={8} className="sh">Layer 1 – Daily by QE <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
@@ -70,7 +70,7 @@ function Sheet({ d, k, cols, finds, total }) {
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
-        <colgroup><col style={{ width: '4.5%' }} /><col style={{ width: '5%' }} /><col style={{ width: '37%' }} /><col style={{ width: '9%' }} /><col style={{ width: '37%' }} /><col style={{ width: '7.5%' }} /></colgroup>
+        <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
         <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
         <tbody>{[...Array(Math.max(11, finds.length))].map((_, i) => { const f = finds[i]; return (
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `${f.result === 'partial' ? 'Δ ' : ''}${f.notes}` : ''}</td>
@@ -123,15 +123,15 @@ function Inner() {
         .cd { border: 1px solid #000; width: 180px; height: 14px; text-align: center; margin-bottom: 4px; font-size: 10px; line-height: 14px }
         .qfs-t { border-collapse: collapse; width: 100%; table-layout: fixed } .qfs-t th, .qfs-t td { border: 1px solid #000; padding: 1px 3px; overflow: hidden }
         .qfs-t .sh, .qfs-t .hl { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; text-align: center; font-size: 9px }
-        .qfs-t .hl { padding: 0 } .hl-in { display: grid; grid-template-columns: 38% 62%; height: 100%; min-height: 118px } .ai { padding: 6px 4px; text-align: left; font-size: 9px } .ai b { font-size: 11px; display: block; text-align: center; margin-bottom: 8px }
+        .qfs-t .hl { padding: 0 } .hl-in { display: grid; grid-template-columns: 38% 62%; height: 100%; min-height: 100px } .ai { padding: 6px 4px; text-align: left; font-size: 9px } .ai b { font-size: 11px; display: block; text-align: center; margin-bottom: 8px }
         .lg div { font-weight: 700; font-size: 9px; line-height: 1.5 } .tt { background: #fff; margin: 8px 0; display: grid; place-items: center; font-size: 17px; border-left: 1px solid #000; border-right: 1px solid #000; background-image: none }
         .qfs-t .nt { font-size: 10px; vertical-align: middle } .qfs-t .dn { font-size: 7.5px; font-weight: 700 }
         .qfs-t .lb { text-align: right; font-weight: 700; font-size: 7.5px; background: #fff; border: 1px solid #000; white-space: nowrap }
         .qfs-t .in { text-align: center; height: 13px; font-size: 9px; color: #12328f; font-weight: 700; background: #fff } .qfs-t .in.sm { font-size: 7px; line-height: 1 }
-        .qfs-t .q td { height: 21px; vertical-align: middle } .qfs-t .it { text-align: center; font-size: 8px } .qfs-t .qt { font-size: 7.5px; line-height: 1.12 }
+        .qfs-t .q td { height: 16px; vertical-align: middle } .qfs-t .it { text-align: center; font-size: 8px } .qfs-t .qt { font-size: 7.5px; line-height: 1.12 }
         .qfs-t .mk { text-align: center; color: #12328f; font-weight: 700; font-size: 13px } .qfs-t .mk.r-na { font-size: 10px } .qfs-t .mk.r-nok { color: #c00; font-size: 14px } .qfs-t .mk.r-partial { color: #b27300 }
-        .qfs-t .nn { font-size: 7px; line-height: 1.15 } .qfs-t .so td { height: 20px } .qfs-t .qs { text-align: center; font-size: 10px; border-left: 0; border-bottom: 0 } .qfs-t .so td:first-child { border: 0 }
-        .qfs-f { margin-top: 8px } .qfs-f th { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; font-size: 7.5px; height: 12px } .qfs-f td { height: 19px; font-size: 8px; color: #12328f } .qfs-f .sm { font-size: 7px; text-align: center } .qfs-f .ft { font-size: 8px }
+        .qfs-t .nn { font-size: 7px; line-height: 1.15 } .qfs-t .so td { height: 17px } .qfs-t .qs { text-align: center; font-size: 10px; border-left: 0; border-bottom: 0 } .qfs-t .so td:first-child { border: 0 }
+        .qfs-f { margin-top: 8px } .qfs-f th { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; font-size: 7.5px; height: 12px } .qfs-f td { height: 20px; font-size: 8px; color: #12328f } .qfs-f .sm { font-size: 7px; text-align: center } .qfs-f .ft { font-size: 8px }
         .qfs-ft { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; font-size: 8px } .qfs-ft div:nth-child(2) { text-align: center } .qfs-ft div:nth-child(3) { text-align: right } .qfs-ft em { font-style: normal; color: #666 }
         @media print { @page { size: letter landscape; margin: 6mm } body * { visibility: hidden } .qf, .qf * { visibility: visible } .qf { position: absolute; left: 0; top: 0; width: 100% } .qf-bar, .qf-hint { display: none } .qf-wrap { overflow: visible; margin: 0; page-break-after: always; break-after: page } .qf-wrap:last-of-type { page-break-after: auto } .qfs { width: 100%; padding: 0 } }
       `}</style>
