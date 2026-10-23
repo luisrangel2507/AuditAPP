@@ -9,6 +9,8 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const dmy = (s) => `${Number(s.slice(8))}-${MON[Number(s.slice(5, 7)) - 1]}-${s.slice(2, 4)}`;
+const mx = (t) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+const hm = (t) => new Date(t).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });
 const addD = (s, n) => { const t = new Date(s + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 
 // Texto exactamente como viene impreso en el formato (por orden y número de ítem)
@@ -82,8 +84,8 @@ function Sheet({ d, k, cols, finds, total }) {
         <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
         <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
         <tbody>{[...Array(Math.max(11, finds.length))].map((_, i) => { const f = finds[i]; return (
-          <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `${f.result === 'partial' ? 'Δ ' : ''}${f.notes}` : ''}</td>
-            <td className="sm">{f ? `${dmy(String(f.date).slice(0, 10))}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? dmy(String(f.closed_at).slice(0, 10)) : ''}</td></tr>); })}</tbody>
+          <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
+            <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? `${dmy(mx(f.closed_at))}` : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
       </table>
       <div className="qfs-ft"><div>{qe ? <>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></> : null}</div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
     </div>
