@@ -23,13 +23,13 @@ export const GET = route(async (req, ctx, user) => {
       ORDER BY ${day},a.slot,u.name`, [monday, sunday, scope, tpl]);
   const ids = au.map((r) => r.id);
   const { rows: rs } = ids.length ? await q('SELECT audit_id,question_id,question,item_no,result FROM responses WHERE audit_id = ANY($1::int[])', [ids]) : { rows: [] };
-  let rows;
-  {
-    const { rows: tq } = await q(
-      `SELECT x.id,CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END AS item,x.text,x.sort_order
-         FROM questions x WHERE x.id = ANY($1::int[]) ORDER BY x.sort_order,x.id`, [[...new Set([...rs.map((r) => r.question_id), ...au.flatMap((a) => a.question_ids || [])])]]);
-    rows = tq.map((x) => ({ id: x.id, item: x.item, text: String(x.text).split('\n')[0] }));
-  }
+  // Filas = las preguntas activas de la plantilla (para los QEs, las 19 activas del formato QE Layer 1)
+  const tname = tpls.find((t) => t.id === tpl)?.name;
+  const { rows: tq } = await q(
+    `SELECT x.id,CASE WHEN x.item_no IS NOT NULL THEN NULLIF(x.item_no,-1) ELSE x.sort_order + 1 END AS item,x.text
+       FROM questions x JOIN templates t ON t.id=x.template_id
+      WHERE x.active AND ($1::text = 'Quality Engineer' AND t.name='QE Process Audit' OR t.id=$2 AND $1::text <> 'Quality Engineer') ORDER BY x.sort_order,x.id`, [tname || '', tpl]);
+  const rows = tq.map((x) => ({ id: x.id, item: x.item, text: String(x.text).split('\n')[0] }));
   const { rows: fi } = ids.length ? await q(
     `SELECT f.id,f.audit_id,f.area,f.result,f.notes,f.created_at,f.status,f.closed_at,f.action,r.item_no,r.question,r.corrective
        FROM findings f LEFT JOIN responses r ON r.id=f.response_id WHERE f.audit_id = ANY($1::int[]) ORDER BY f.created_at`, [ids]) : { rows: [] };
