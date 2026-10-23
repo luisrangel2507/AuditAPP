@@ -28,9 +28,18 @@ const TXT = {
 };
 const NOTES = { 0: 'Control Plan Audited :', 1: '* Registre número de nómina del operador en apartado hallazgo si no se cumple', 1341: 'Moldeo', 1032: 'Verificar PLEX', 455: 'Formato MFG-071-C vigente PLEX', 449: 'Formato MFG-006-C vigente PLEX' };
 
+const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
 function Sheet({ d, k, cols, finds, total }) {
+  const qe = !d.tpl;
   const days = [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
-  const cell = (day) => cols.find((c) => c.date === day);
+  // Todas las auditorías del día se juntan en la misma columna (el peor resultado de cada pregunta)
+  const cell = (day) => {
+    const L = cols.filter((c) => c.date === day); if (!L.length) return undefined;
+    const answers = {};
+    for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
+    const u = (f) => [...new Set(L.map(f).filter(Boolean))];
+    return { initials: u((c) => c.initials).join('/'), part: u((c) => c.part).join(' / '), area: u((c) => c.status === 'completed' && c.area).join(' / '), answers, status: L.some((c) => c.status === 'completed') ? 'completed' : 'pending' };
+  };
   const wm = new Date(d.monday + 'T12:00:00Z');
   return (
     <div className="qfs">
@@ -52,8 +61,8 @@ function Sheet({ d, k, cols, finds, total }) {
       <table className="qfs-t">
         <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{days.map((x) => <col key={x} style={{ width: '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
         <thead>
-          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">QE Layer 1 Audit</div></div></th>
-            <th colSpan={8} className="sh">Layer 1 – Daily by QE <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
+            <th colSpan={8} className="sh">{qe ? 'Layer 1 – Daily by QE' : `Layer ${d.layer} – ${d.tplName}`} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={8} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
           <tr><th className="sh" />{days.map((x, i) => <th key={x} className="sh dn">{DAYS[i]}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{days.map((x) => <td key={x} className="in">{cell(x)?.initials || ''}</td>)}</tr>
@@ -63,9 +72,9 @@ function Sheet({ d, k, cols, finds, total }) {
         </thead>
         <tbody>
           {d.rows.map((r, i) => (
-            <tr key={r.id} className="q"><td className="it">{i < 2 ? '' : r.item}</td><td colSpan={2} className="qt">{i < 2 ? FIRST[i] : TXT[r.item] || r.text}</td>
+            <tr key={r.id} className="q"><td className="it">{qe && i < 2 ? '' : r.item}</td><td colSpan={2} className="qt">{qe ? (i < 2 ? FIRST[i] : TXT[r.item] || r.text) : r.text}</td>
               {days.map((x) => { const v = cell(x)?.answers[r.id]; return <td key={x} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
-              <td className="nn">{NOTES[i < 2 ? i : r.item] || ''}</td></tr>))}
+              <td className="nn">{qe ? NOTES[i < 2 ? i : r.item] || '' : ''}</td></tr>))}
           <tr className="so"><td colSpan={3} className="qs">Quality Manager Sign Off</td>{days.map((x) => <td key={x} />)}<td /></tr>
         </tbody>
       </table>
@@ -76,22 +85,18 @@ function Sheet({ d, k, cols, finds, total }) {
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `${f.result === 'partial' ? 'Δ ' : ''}${f.notes}` : ''}</td>
             <td className="sm">{f ? `${dmy(String(f.date).slice(0, 10))}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? dmy(String(f.closed_at).slice(0, 10)) : ''}</td></tr>); })}</tbody>
       </table>
-      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
+      <div className="qfs-ft"><div>{qe ? <>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></> : null}</div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
     </div>
   );
 }
 
 function Inner() {
   const [d, setD] = useState(null), [err, setErr] = useState('');
-  const [date, setDate] = useState(() => new URLSearchParams(window.location.search).get('date') || '');
-  useEffect(() => { setD(null); api(`/api/admin/reports/qeform${date ? `?date=${date}` : ''}`).then(setD).catch((e) => setErr(e.message)); }, [date]);
+  const [date, setDate] = useState(() => new URLSearchParams(window.location.search).get('date') || ''), [tpl, setTpl] = useState(() => new URLSearchParams(window.location.search).get('tpl') || '');
+  useEffect(() => { setD(null); api(`/api/admin/reports/qeform?${new URLSearchParams({ ...(date ? { date } : {}), ...(tpl ? { tpl } : {}) })}`).then(setD).catch((e) => setErr(e.message)); }, [date, tpl]);
   if (err) return <div className="err">{err}</div>;
   if (!d) return <div className="empty">Cargando…</div>;
   const shift = (n) => { setDate(addD(d.monday, n * 7)); };
-  // carriles: la 1.ª auditoría de cada día en la hoja 1, la 2.ª en la hoja 2…
-  const perDay = {}; const lanes = [];
-  for (const c of d.columns) { const n = (perDay[c.date] = (perDay[c.date] || 0) + 1); (lanes[n - 1] ||= []).push(c); }
-  if (!lanes.length) lanes.push([]);
   const csv = () => {
     const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const L = [['Ítem', 'Pregunta', ...d.columns.map((c) => `${c.date} ${c.name}`)]];
@@ -100,19 +105,22 @@ function Inner() {
     L.push([]); L.push(['Hallazgos']); L.push(['Item #', 'Area', 'Finding', 'Date', 'Immediate Action', 'Closed']);
     for (const f of d.findings) L.push([f.item, f.area, f.notes, String(f.date).slice(0, 10), f.action, f.closed_at ? String(f.closed_at).slice(0, 10) : '']);
     const blob = new Blob(['﻿' + L.map((r) => r.map(esc).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `QE-Layer1-${d.monday}.csv`; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${d.tpl ? 'LPA' : 'QE-Layer1'}-${d.monday}.csv`; a.click();
   };
   return (
     <div className="qf">
       <div className="row qf-bar">
         <button className="btn alt sm" onClick={() => shift(-1)}>‹</button>
-        <div className="grow" style={{ textAlign: 'center' }}>Semana del {fmtDate(d.monday, { day: 'numeric', month: 'long', year: 'numeric' })} · {lanes.length} hoja(s)</div>
+        <div className="grow" style={{ textAlign: 'center' }}>Semana del {fmtDate(d.monday, { day: 'numeric', month: 'long', year: 'numeric' })}</div>
         <button className="btn alt sm" onClick={() => shift(1)}>›</button>
         <button className="btn sm" onClick={() => window.print()}>Imprimir / PDF</button>
         <button className="btn alt sm" onClick={csv}>Excel (.csv)</button>
       </div>
-      <p className="sub qf-hint">Cada hoja es un formato completo. La hoja 1 lleva la primera auditoría de cada día, la hoja 2 la segunda, etc. En el celular, desliza de lado para ver toda la hoja.</p>
-      {lanes.map((cols, i) => <div className="qf-wrap" key={i}><Sheet d={d} k={i + 1} total={lanes.length} cols={cols} finds={d.findings.filter((f) => cols.some((c) => c.id === f.audit_id))} /></div>)}
+      <div className="row qf-bar"><select className="inp grow" value={tpl} onChange={(e) => setTpl(e.target.value)}>
+        <option value="">Auditoría de proceso de los QEs (todos en un formato)</option>
+        {d.templates.map((t) => <option key={t.id} value={t.id}>LPA · {t.name}</option>)}</select></div>
+      <p className="sub qf-hint">Un solo formato por semana: las auditorías de todos se juntan en la columna de su día (iniciales de cada quien; si hay varias, cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
+      <div className="qf-wrap"><Sheet d={d} k={1} total={1} cols={d.columns} finds={d.findings} /></div>
       <style>{`
         .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }
         .qf-wrap { overflow-x: auto; margin-bottom: 18px } 
@@ -127,7 +135,7 @@ function Inner() {
         .lg div { font-weight: 700; font-size: 9px; line-height: 1.5 } .tt { background: #fff; margin: 8px 0; display: grid; place-items: center; font-size: 17px; border-left: 1px solid #000; border-right: 1px solid #000; background-image: none }
         .qfs-t .nt { font-size: 10px; vertical-align: middle } .qfs-t .dn { font-size: 7.5px; font-weight: 700 }
         .qfs-t .lb { text-align: right; font-weight: 700; font-size: 7.5px; background: #fff; border: 1px solid #000; white-space: nowrap }
-        .qfs-t .in { text-align: center; height: 13px; font-size: 9px; color: #12328f; font-weight: 700; background: #fff } .qfs-t .in.sm { font-size: 7px; line-height: 1 }
+        .qfs-t .in { text-align: center; height: 13px; font-size: 9px; color: #12328f; font-weight: 700; background: #fff } .qfs-t .in.sm { font-size: 7px; line-height: 1 } .qfs-t .in { white-space: normal; word-break: break-word; line-height: 1.05; font-size: 7.5px }
         .qfs-t .q td { height: 16px; vertical-align: middle } .qfs-t .it { text-align: center; font-size: 8px } .qfs-t .qt { font-size: 7.5px; line-height: 1.12 }
         .qfs-t .mk { text-align: center; color: #12328f; font-weight: 700; font-size: 13px } .qfs-t .mk.r-na { font-size: 10px } .qfs-t .mk.r-nok { color: #c00; font-size: 14px } .qfs-t .mk.r-partial { color: #b27300 }
         .qfs-t .nn { font-size: 7px; line-height: 1.15 } .qfs-t .so td { height: 17px } .qfs-t .qs { text-align: center; font-size: 10px; border-left: 0; border-bottom: 0 } .qfs-t .so td:first-child { border: 0 }
