@@ -32,7 +32,7 @@ const NOTES = { 0: 'Control Plan Audited :', 1: '* Registre número de nómina d
 
 const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
 function Sheet({ d, k, cols, finds, total }) {
-  const qe = !d.tpl;
+  const qe = d.tplName === 'Quality Engineer';
   const days = [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
   // Todas las auditorías del día se juntan en la misma columna (el peor resultado de cada pregunta)
   const cell = (day) => {
@@ -63,7 +63,7 @@ function Sheet({ d, k, cols, finds, total }) {
       <table className="qfs-t">
         <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{days.map((x) => <col key={x} style={{ width: '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
         <thead>
-          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
+          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{qe ? 'QE Layer 1 Audit' : d.tplName}</div></div></th>
             <th colSpan={8} className="sh">{qe ? 'Layer 1 – Daily by QE' : `Layer ${d.layer} – ${d.tplName}`} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={8} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
           <tr><th className="sh" />{days.map((x, i) => <th key={x} className="sh dn">{DAYS[i]}</th>)}</tr>
@@ -74,9 +74,9 @@ function Sheet({ d, k, cols, finds, total }) {
         </thead>
         <tbody>
           {d.rows.map((r, i) => (
-            <tr key={r.id} className="q"><td className="it">{qe && i < 2 ? '' : r.item}</td><td colSpan={2} className="qt">{qe ? (i < 2 ? FIRST[i] : TXT[r.item] || r.text) : r.text}</td>
+            <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt">{(qe && TXT[r.item]) || r.text}</td>
               {days.map((x) => { const v = cell(x)?.answers[r.id]; return <td key={x} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
-              <td className="nn">{qe ? NOTES[i < 2 ? i : r.item] || '' : ''}</td></tr>))}
+              <td className="nn">{qe ? NOTES[r.item] || '' : ''}</td></tr>))}
           <tr className="so"><td colSpan={3} className="qs">Quality Manager Sign Off</td>{days.map((x) => <td key={x} />)}<td /></tr>
         </tbody>
       </table>
@@ -107,7 +107,7 @@ function Inner() {
     L.push([]); L.push(['Hallazgos']); L.push(['Item #', 'Area', 'Finding', 'Date', 'Immediate Action', 'Closed']);
     for (const f of d.findings) L.push([f.item, f.area, f.notes, String(f.date).slice(0, 10), f.action, f.closed_at ? String(f.closed_at).slice(0, 10) : '']);
     const blob = new Blob(['﻿' + L.map((r) => r.map(esc).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${d.tpl ? 'LPA' : 'QE-Layer1'}-${d.monday}.csv`; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LPA-${d.tplName.replace(/\s+/g, '')}-${d.monday}.csv`; a.click();
   };
   return (
     <div className="qf">
@@ -118,10 +118,9 @@ function Inner() {
         <button className="btn sm" onClick={() => window.print()}>Imprimir / PDF</button>
         <button className="btn alt sm" onClick={csv}>Excel (.csv)</button>
       </div>
-      <div className="row qf-bar"><select className="inp grow" value={tpl} onChange={(e) => setTpl(e.target.value)}>
-        <option value="">Auditoría de proceso de los QEs (todos en un formato)</option>
-        {d.templates.map((t) => <option key={t.id} value={t.id}>LPA · {t.name}</option>)}</select></div>
-      <p className="sub qf-hint">Un solo formato por semana: las auditorías de todos se juntan en la columna de su día (iniciales de cada quien; si hay varias, cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
+      <div className="row qf-bar"><select className="inp grow" value={tpl || d.tpl || ''} onChange={(e) => setTpl(e.target.value)}>
+        {d.templates.map((t) => <option key={t.id} value={t.id}>{t.name === 'Quality Engineer' ? 'QEs · Layer 1 (LPA)' : t.name}</option>)}</select></div>
+      <p className="sub qf-hint">Solo auditorías normales (LPA); las de proceso no llenan formato. Cada día es una columna con las iniciales de quien auditó; si dos personas coinciden en un día, comparten columna (cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
       <div className="qf-wrap"><Sheet d={d} k={1} total={1} cols={d.columns} finds={d.findings} /></div>
       <style>{`
         .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }

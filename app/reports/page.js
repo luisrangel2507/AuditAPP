@@ -25,7 +25,7 @@ function Inner() {
       {err && <div className="err">{err}</div>}
 
       <Link href="/reports/weekly" className="rep-link" style={{ marginBottom: 12 }}><b>Reporte semanal (imprimir / PDF)</b></Link>
-      <Link href="/reports/qeform" className="rep-link" style={{ marginBottom: 12 }}><b>Formato QE Layer 1 de la semana (todos los QEs · imprimir / Excel)</b></Link>
+      <Link href="/reports/qeform" className="rep-link" style={{ marginBottom: 12 }}><b>Formato QE Layer 1 de la semana (LPA normales · imprimir / Excel)</b></Link>
 
       <div className="sect">Descargas para Excel</div>
       <div className="row wrap" style={{ gap: 8 }}>{dl('compliance')}{dl('issues')}{dl('audits')}{dl('assignments')}</div>
