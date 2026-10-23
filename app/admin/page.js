@@ -138,11 +138,7 @@ function Questions({ templates, reloadTemplates }) {
       <select className="inp" value={tid} onChange={(e) => setTid(e.target.value)}>
         {templates.map((x) => <option key={x.id} value={x.id}>{x.name} ({x.active_questions})</option>)}
       </select>
-      {t && <div className="row" style={{ margin: '12px 0' }}>
-        <span className="sub grow">Preguntas por auditoría (el sistema rota el banco para cubrirlo todo)</span>
-        <input className="inp" style={{ width: 80 }} type="number" min="1" max="50" defaultValue={t.per_audit} key={t.id}
-          onBlur={(e) => run(() => api(`/api/admin/templates/${t.id}`, { method: 'PATCH', body: { per_audit: e.target.value } }))} />
-      </div>}
+      {t && <div className="sub" style={{ margin: '12px 0' }}>Cada auditoría lleva <b>todas las preguntas activas</b> ({t.active_questions}); no se rotan.</div>}
       <div className="bi-form">
         <input className="inp" placeholder="Nueva pregunta en español…" value={es} onChange={(e) => setEs(e.target.value)} />
         <input className="inp" placeholder="New question in English…" value={en} onChange={(e) => setEn(e.target.value)} />

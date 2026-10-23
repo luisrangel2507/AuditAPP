@@ -347,6 +347,16 @@ async function main() {
     console.log('[setup] formatos de calidad sin rotación de preguntas');
   }
 
+  // Ajuste único: ninguna plantilla rota preguntas; las auditorías pendientes (hoy en adelante) llevan todas las activas.
+  // Se actualizan en su lugar para conservar zona, día y demás asignaciones del admin.
+  const flagAll = await pool.query(`INSERT INTO settings(key,value) VALUES('no_rotate_all_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagAll.rowCount) {
+    const r = await pool.query(
+      `UPDATE audits a SET question_ids = COALESCE((SELECT array_agg(x.id ORDER BY x.required, x.sort_order, x.id) FROM questions x WHERE x.template_id=a.template_id AND x.active), a.question_ids)
+        WHERE a.status='pending' AND a.date >= $1 AND a.template_id IS NOT NULL AND a.started_at IS NULL`, [mxToday]);
+    console.log(`[setup] sin rotación de preguntas: ${r.rowCount} auditorías pendientes actualizadas`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
