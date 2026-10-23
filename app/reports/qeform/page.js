@@ -92,13 +92,75 @@ function Sheet({ d, k, cols, finds, total }) {
   );
 }
 
+
+// Formato "QA Layer 2 Audit" (mensual, una columna por semana). Preguntas e instrucciones como en el impreso.
+const monOf = (s) => { const t = new Date(s + 'T12:00:00Z'); const w = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - w); return t.toISOString().slice(0, 10); };
+function Sheet2({ d, finds }) {
+  const wk = d.weeks, N = wk.length, IDX = [...Array(N).keys()];
+  const cell = (w) => {
+    const L = d.columns.filter((c) => monOf(c.date) === w); if (!L.length) return undefined;
+    const answers = {};
+    for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
+    const u = (f) => [...new Set(L.map(f).filter(Boolean))];
+    return { initials: u((c) => c.initials).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
+  };
+  const mo = new Date(wk[0] + 'T12:00:00Z');
+  return (
+    <div className="qfs">
+      <div className="qfs-top">
+        <div className="ultra"><b>Ultr<i>▲</i></b><span>MANUFACTURING</span></div>
+        <h1>Layered Process Audit</h1>
+        <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
+      </div>
+      <div className="qfs-ins">
+        <div className="l"><div className="cd">Content Date:</div>
+          <p><b>1. QE:</b> Perform Layer 1 audit daily and document any findings and corrections.</p>
+          <p><b>2. Quality Manager:</b> Reviews Layer 1 Audit Daily &amp; Signs-off</p>
+          <p><b>3. Quality Manager:</b> Document any findings and corrections made below.</p></div>
+        <div className="r"><u>Instructions</u>
+          <p><b>4. Quality Manager:</b> Perform Layer 2 audit weekly and document any findings and corrections on that form.</p>
+          <p><b>5. General Manager:</b> Perform Layer 3 audit monthly and document any findings and corrections on that form.</p>
+          <p><b>6. Director of Quality:</b> Perform Layer 4 audit quarterly and document any findings and corrections on that form.</p></div>
+      </div>
+      <table className="qfs-t">
+        <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '38.4%' }} /><col style={{ width: '5.4%' }} />{IDX.map((i) => <col key={i} style={{ width: `${33 / N}%` }} />)}<col style={{ width: '13.2%' }} /></colgroup>
+        <thead>
+          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">QA Layer 2 Audit</div></div></th>
+            <th colSpan={N + 1} className="sh">Layer 2 – Weekly by Dept. Manager <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={N + 1} className="sh">Month of: &nbsp; <b>{MONTHS[mo.getUTCMonth()]}</b></th></tr>
+          <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">Week {i + 1}</th>)}</tr>
+          <tr><td className="lb">Initials →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.initials || ''}</td>)}</tr>
+          <tr><td className="lb">Area →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.area || ''}</td>)}</tr>
+          <tr><td className="lb">Week →</td>{IDX.map((i) => <td key={i} className="in sm">{`${Number(wk[i].slice(8))}-${MON[Number(wk[i].slice(5, 7)) - 1]}`}</td>)}</tr>
+          <tr><td className="lb">Date →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.date || ''}</td>)}</tr>
+        </thead>
+        <tbody>
+          {d.rows.map((r) => (
+            <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt" style={{ fontSize: '9px' }}>{r.text}</td>
+              {IDX.map((i) => { const v = cell(wk[i])?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
+              <td className="nn" /></tr>))}
+          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>General Manager Sign Off</td>{IDX.map((i) => <td key={i} />)}<td /></tr>
+        </tbody>
+      </table>
+      <table className="qfs-t qfs-f">
+        <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
+        <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
+        <tbody>{[...Array(Math.max(11, finds.length))].map((_, i) => { const f = finds[i]; return (
+          <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
+            <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? dmy(mx(f.closed_at)) : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
+      </table>
+      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div><i style={{ fontSize: 8 }}>Use the back of this sheet if more space is needed</i></div><div>Approved By:Director of Quality</div></div>
+    </div>
+  );
+}
+
 function Inner() {
   const [d, setD] = useState(null), [err, setErr] = useState('');
   const [date, setDate] = useState(() => new URLSearchParams(window.location.search).get('date') || ''), [tpl, setTpl] = useState(() => new URLSearchParams(window.location.search).get('tpl') || '');
   useEffect(() => { setD(null); api(`/api/admin/reports/qeform?${new URLSearchParams({ ...(date ? { date } : {}), ...(tpl ? { tpl } : {}) })}`).then(setD).catch((e) => setErr(e.message)); }, [date, tpl]);
   if (err) return <div className="err">{err}</div>;
   if (!d) return <div className="empty">Cargando…</div>;
-  const shift = (n) => { setDate(addD(d.monday, n * 7)); };
+  const shift = (n) => { if (d.weeks) { const t = new Date(d.weeks[0] + 'T12:00:00Z'); t.setUTCDate(1); t.setUTCMonth(t.getUTCMonth() + n); setDate(t.toISOString().slice(0, 10)); } else setDate(addD(d.monday, n * 7)); };
   const csv = () => {
     const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const L = [['Ítem', 'Pregunta', ...d.columns.map((c) => `${c.date} ${c.name}`)]];
@@ -113,15 +175,15 @@ function Inner() {
     <div className="qf">
       <div className="row qf-bar">
         <button className="btn alt sm" onClick={() => shift(-1)}>‹</button>
-        <div className="grow" style={{ textAlign: 'center' }}>Semana del {fmtDate(d.monday, { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        <div className="grow" style={{ textAlign: 'center' }}>{d.weeks ? `Mes de ${MONTHS[new Date(d.weeks[0] + 'T12:00:00Z').getUTCMonth()]} ${d.weeks[0].slice(0, 4)}` : `Semana del ${fmtDate(d.monday, { day: 'numeric', month: 'long', year: 'numeric' })}`}</div>
         <button className="btn alt sm" onClick={() => shift(1)}>›</button>
         <button className="btn sm" onClick={() => window.print()}>Imprimir / PDF</button>
         <button className="btn alt sm" onClick={csv}>Excel (.csv)</button>
       </div>
       <div className="row qf-bar"><select className="inp grow" value={tpl || d.tpl || ''} onChange={(e) => setTpl(e.target.value)}>
-        {d.templates.map((t) => <option key={t.id} value={t.id}>{t.name === 'Quality Engineer' ? 'QEs · Layer 1 (LPA)' : t.name}</option>)}</select></div>
+        {d.templates.map((t) => <option key={t.id} value={t.id}>{t.name === 'Quality Engineer' ? 'QEs · Layer 1 (LPA)' : t.name === 'QA Layer 2 Audit' ? 'Gerente de Calidad · Layer 2' : t.name}</option>)}</select></div>
       <p className="sub qf-hint">Solo auditorías normales (LPA); las de proceso no llenan formato. Cada día es una columna con las iniciales de quien auditó; si dos personas coinciden en un día, comparten columna (cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
-      <div className="qf-wrap"><Sheet d={d} k={1} total={1} cols={d.columns} finds={d.findings} /></div>
+      <div className="qf-wrap">{d.weeks ? <Sheet2 d={d} finds={d.findings} /> : <Sheet d={d} k={1} total={1} cols={d.columns} finds={d.findings} />}</div>
       <style>{`
         .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }
         .qf-wrap { overflow-x: auto; margin-bottom: 18px } 

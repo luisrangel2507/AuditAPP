@@ -339,6 +339,14 @@ async function main() {
     console.log('[setup] plantilla QA Layer 2 Audit cargada');
   }
 
+  // Ajuste único: los formatos de calidad ya no rotan preguntas; las auditorías pendientes se regeneran con todas las activas
+  const flagNR = await pool.query(`INSERT INTO settings(key,value) VALUES('no_rotate_quality_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagNR.rowCount) {
+    await pool.query(
+      `DELETE FROM audits a USING templates t WHERE a.template_id=t.id AND t.name IN ('QE Process Audit','Quality Engineer','QA Layer 2 Audit') AND a.status='pending' AND a.date >= $1`, [mxToday]);
+    console.log('[setup] formatos de calidad sin rotación de preguntas');
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
