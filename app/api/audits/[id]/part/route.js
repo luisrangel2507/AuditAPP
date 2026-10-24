@@ -12,7 +12,8 @@ export const POST = route(async (req, { params }, user) => {
   if (!a) return err('No encontrada', 404);
   if (a.user_id !== user.id) return err('Solo quien hizo la auditoría puede corregirla', 403);
   const full = a.layer === 1 || a.kind === 'process';
-  const p1 = String(b.part_number || '').trim().slice(0, 40), p2 = String(b.part_number2 || '').trim().slice(0, 40);
+  const list = (Array.isArray(b.part_numbers) ? b.part_numbers : [b.part_number, b.part_number2]).map((x) => String(x || '').trim().slice(0, 40)).filter(Boolean);
+  const p1 = [...new Set(list)].slice(0, 8).join(' / '), p2 = '';
   if (full && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
   let zone = a.zone, machine = a.machine, area = a.area;

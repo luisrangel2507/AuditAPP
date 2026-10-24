@@ -31,16 +31,16 @@ function Setup({ audit, onSaved, onExit }) {
   const full = audit.layer === 1 || audit.kind === 'process';
   const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
   const [step, setStep] = useState('zone');
-  const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [mirror, setMirror] = useState(false);
+  const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [nps, setNps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
-  const partOk = p1.trim() && (!mirror || p2.trim());
+  const partOk = nps.length > 0 && nps.every((x) => x.trim());
   const sub = step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
     : step === 'machine' ? `Zona ${zone}: selecciona la máquina` : `Zona ${zone}${machine ? ' · ' + machine : ''}: captura el número de parte`;
   async function go() {
     setBusy(true); setErr('');
-    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_number: p1, part_number2: mirror ? p2 : '' } }); onSaved(r); }
+    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
   const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(NO_MACHINE.includes(z) ? 'part' : 'machine'); };
@@ -78,13 +78,14 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {step === 'part' && <>
           <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
-          <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p1')} aria-label="Escanear código">📷 Escanear</button></label>
-          {mirror
-            ? <label className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder="Segundo N/P (RH / LH)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p2')} aria-label="Escanear código">📷</button><button type="button" className="npx" onClick={() => { setMirror(false); setP2(''); }} aria-label="Quitar segundo N/P">✕</button></label>
-            : <button className="npadd" type="button" onClick={() => setMirror(true)}><span className="npplus">+</span><i className="npsep" /><b>Segundo N/P (pieza espejo RH / LH)</b></button>}
+          {nps.map((v, i) => (
+            <label key={i} className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder={i ? 'Otro N/P' : 'No. de parte'} maxLength={40} autoCapitalize="characters" value={v} onChange={(e) => setNps((l) => l.map((x, k) => (k === i ? e.target.value : x)))} />
+              <button type="button" className="npscan" onClick={() => setScan(i)} aria-label="Escanear código">{i ? '📷' : '📷 Escanear'}</button>
+              {i > 0 && <button type="button" className="npx" onClick={() => setNps((l) => l.filter((_, k) => k !== i))} aria-label="Quitar">×</button>}</label>))}
+          {nps.length < 8 && <button className="npadd" type="button" onClick={() => setNps((l) => [...l, ''])}><span className="npplus">+</span><i className="npsep" /><b>Agregar otro N/P (RH / LH u otros)</b></button>}
         </>}
         {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
-        {scan && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { if (scan === 'p1') setP1(t); else { setP2(t); if (typeof setMirror === 'function') setMirror(true); } setScan(''); }} />}
+        {typeof scan === 'number' && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { setNps((l) => l.map((x, k) => (k === scan ? t : x))); setScan(''); }} />}
       </div>
       <div className="setup-foot">
         <button className="setup-go" disabled={busy || (full ? !(step === 'part' && partOk) : !zone)} onClick={go}><span>→</span><b>{busy ? 'Guardando…' : 'Comenzar preguntas'}</b></button>
@@ -125,14 +126,14 @@ function ZoneEdit({ audit, onSaved }) {
 
 function PartEdit({ audit, onSaved }) {
   const full = audit.layer === 1 || audit.kind === 'process';
-  const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [p1, setP1] = useState(''), [p2, setP2] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
+  const [open, setOpen] = useState(false), [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [nps, setNps] = useState(['']), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const edited = !!audit.part_edited_at;
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
-  const start = () => { const [a, b] = String(audit.part_number).split(' / '); setP1(a || ''); setP2(b || ''); setZone(audit.zone || ''); setMachine(audit.machine || ''); setErr(''); setOpen(true); };
+  const start = () => { setNps(String(audit.part_number).split(' / ').filter(Boolean).length ? String(audit.part_number).split(' / ').filter(Boolean) : ['']); setZone(audit.zone || ''); setMachine(audit.machine || ''); setErr(''); setOpen(true); };
   async function save() {
     setBusy(true); setErr('');
-    try { const r = await api(`/api/audits/${audit.id}/part`, { method: 'POST', body: { part_number: p1, part_number2: p2, ...(full ? { zone, machine: noMach ? '' : machine } : {}) } }); onSaved(r); setOpen(false); }
+    try { const r = await api(`/api/audits/${audit.id}/part`, { method: 'POST', body: { part_numbers: nps.map((x) => x.trim()).filter(Boolean), ...(full ? { zone, machine: noMach ? '' : machine } : {}) } }); onSaved(r); setOpen(false); }
     catch (e) { setErr(e.message); } finally { setBusy(false); }
   }
   return (
@@ -154,13 +155,15 @@ function PartEdit({ audit, onSaved }) {
             </>}
           </>}
           <label className="lbl">Número de parte</label>
-          <div className="row" style={{ gap: 6 }}><input className="inp grow" placeholder="No. de parte" maxLength={40} autoCapitalize="characters" value={p1} onChange={(e) => setP1(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p1')}>📷</button></div>
-          <div className="row" style={{ gap: 6, marginTop: 8 }}><input className="inp grow" placeholder="Segundo N/P (pieza espejo, opcional)" maxLength={40} autoCapitalize="characters" value={p2} onChange={(e) => setP2(e.target.value)} /><button type="button" className="npscan" onClick={() => setScan('p2')}>📷</button></div>
+          {nps.map((v, i) => (
+            <div key={i} className="row" style={{ gap: 6, marginTop: i ? 8 : 0 }}><input className="inp grow" placeholder={i ? 'Otro N/P' : 'No. de parte'} maxLength={40} autoCapitalize="characters" value={v} onChange={(e) => setNps((l) => l.map((x, k) => (k === i ? e.target.value : x)))} /><button type="button" className="npscan" onClick={() => setScan(i)}>📷</button>
+              {i > 0 && <button type="button" className="npx" onClick={() => setNps((l) => l.filter((_, k) => k !== i))} aria-label="Quitar">×</button>}</div>))}
+          {nps.length < 8 && <button type="button" className="btn alt sm" style={{ marginTop: 8 }} onClick={() => setNps((l) => [...l, ''])}>＋ Agregar otro N/P</button>}
           {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
-          {scan && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { if (scan === 'p1') setP1(t); else { setP2(t); } setScan(''); }} />}
+          {typeof scan === 'number' && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { setNps((l) => l.map((x, k) => (k === scan ? t : x))); setScan(''); }} />}
           <div className="row" style={{ marginTop: 14 }}>
             <button className="btn alt grow" onClick={() => setOpen(false)}>Cancelar</button>
-            <button className="btn grow" disabled={busy || !p1.trim() || (full && (!zone || (!noMach && !machine.trim())))} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+            <button className="btn grow" disabled={busy || !nps.some((x) => x.trim()) || (full && (!zone || (!noMach && !machine.trim())))} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
           </div>
         </div></div>)}
     </>

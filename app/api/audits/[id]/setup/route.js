@@ -15,7 +15,8 @@ export const POST = route(async (req, { params }, user) => {
   const full = a.layer === 1 || a.kind === 'process'; // Layer 1 y QEs: máquina y N/P; Layer 2-4: solo el área
   const machine = !full || NO_MACHINE.includes(zone) ? '' : String(b.machine || '').trim().slice(0, 40);
   if (full && !NO_MACHINE.includes(zone) && !machine) return err('Escoge o escribe la máquina');
-  const p1 = String(b.part_number || '').trim().slice(0, 40), p2 = String(b.part_number2 || '').trim().slice(0, 40);
+  const list = (Array.isArray(b.part_numbers) ? b.part_numbers : [b.part_number, b.part_number2]).map((x) => String(x || '').trim().slice(0, 40)).filter(Boolean);
+  const p1 = [...new Set(list)].slice(0, 8).join(' / '), p2 = '';
   if (full && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
   await q('UPDATE audits SET zone=$2, machine=$3, area=$4, part_number=$5, started_at=COALESCE(started_at,NOW()) WHERE id=$1',
