@@ -21,7 +21,7 @@ export const GET = route(async (req, ctx, user) => {
             a.nok_count,a.partial_count,t.name AS template
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id
       WHERE (a.kind='lpa' OR (NOT $4::boolean AND a.user_id=$5)) AND a.date >= $6 AND a.date BETWEEN $1 AND $2 AND ($3::int IS NULL OR u.site_id=$3) AND ($4::boolean OR a.user_id=$5) ORDER BY u.layer DESC,u.dept,u.name,a.date,a.slot`,
-    [monday, addDays(monday, 4), scope, isAdmin(user), user.id, gl]
+    [monday, addDays(monday, 6), scope, isAdmin(user), user.id, gl]
   );
   return json({ monday, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows.map((a) => ({ ...a, window: windowState(a, today) })), today });
 });

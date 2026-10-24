@@ -27,7 +27,7 @@ export const GET = route(async (req, ctx, user) => {
             COALESCE(json_agg(json_build_object('id',a.id,'date',a.date,'slot',a.slot,'status',a.status,'score',a.score_pct,'area',a.area,'due',a.due_date,'late',a.late) ORDER BY a.date,a.slot) FILTER (WHERE a.id IS NOT NULL),'[]') AS items
        FROM users u LEFT JOIN audits a ON a.user_id=u.id AND a.kind='process' AND a.date BETWEEN $1 AND $2 AND a.date >= $5::date
       WHERE u.active AND u.dept='quality' AND u.layer=1 AND u.access NOT IN ('admin','master') AND ($3::int IS NULL OR u.site_id=$3)
-      GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 4), scope, today, gl]);
+      GROUP BY u.id ORDER BY u.name`, [monday, addDays(monday, 6), scope, today, gl]);
   const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
   const perDay = Number((await q(`SELECT value FROM settings WHERE key='qe_process_per_day'`)).rows[0]?.value ?? 2);
   const lpaOn = (await q(`SELECT value FROM settings WHERE key='qe_lpa_on'`)).rows[0]?.value === '1';
