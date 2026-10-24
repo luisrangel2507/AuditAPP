@@ -357,6 +357,8 @@ async function main() {
     console.log(`[setup] sin rotación de preguntas: ${r.rowCount} auditorías pendientes actualizadas`);
   }
 
+  await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS unscheduled BOOLEAN NOT NULL DEFAULT FALSE');
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
