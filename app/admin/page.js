@@ -61,6 +61,9 @@ function UserSheet({ u, templates, onClose, onSaved }) {
         <input type="checkbox" checked={!!f.lpa_on} onChange={(e) => set('lpa_on', e.target.checked)} />
         <span><b>Hace LPA</b><small>{f.lpa_on ? 'Le aparece su auditoría LPA según su capa y días.' : 'No se le generan auditorías LPA.'}{u.dept === 'quality' && Number(u.layer) === 1 && u.lpa_override == null ? ' (los QEs hoy solo hacen auditorías de proceso; actívala aquí para este usuario)' : ''}</small></span>
       </label>}
+      {!isNew && f.dept === 'quality' && Number(f.layer) === 1 && <div style={{ margin: '10px 0' }}><label className="lbl">Auditorías de proceso al día</label>
+        <select className="inp" value={f.process_per_day ?? ''} onChange={(e) => set('process_per_day', e.target.value)}>
+          <option value="">Las generales (según Admin → QEs)</option><option value="1">1 (solo la de la mañana)</option><option value="2">2</option><option value="3">3</option></select></div>}
       <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
       <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
       {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} /> Activo</label>}

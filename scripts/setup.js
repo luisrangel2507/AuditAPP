@@ -357,6 +357,7 @@ async function main() {
     console.log(`[setup] sin rotación de preguntas: ${r.rowCount} auditorías pendientes actualizadas`);
   }
 
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS unscheduled BOOLEAN NOT NULL DEFAULT FALSE');
 
   // LPA de los QEs en Proveedores / contención (formato QE Layer 1 Audit): 17 preguntas fijas
@@ -378,9 +379,16 @@ async function main() {
     while ((await pool.query('SELECT 1 FROM users WHERE username=$1', [un])).rowCount) un = usernameFor('María Olguín') + n++;
     const hash = process.env.SEED_PASSWORD ? await bcrypt.hash(process.env.SEED_PASSWORD, 10) : await bcrypt.hash(require('crypto').randomBytes(24).toString('hex'), 10);
     await pool.query(
-      `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily,lpa_override,site_id)
-       VALUES('María Olguín',$1,$2,'quality',1,'auditor',$3,'{1,2,3,4,5}','{}',0,FALSE,FALSE,(SELECT id FROM sites WHERE code='MPQ'))`, [un, hash, tp.id]);
+      `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily,lpa_override,process_per_day,site_id)
+       VALUES('María Olguín',$1,$2,'quality',1,'auditor',$3,'{1,2,3,4,5}','{}',0,FALSE,FALSE,1,(SELECT id FROM sites WHERE code='MPQ'))`, [un, hash, tp.id]);
     console.log(`[setup] usuario María Olguín creado (${un}); asigna su contraseña en Admin → Usuarios`);
+  }
+
+  // María Olguín: una sola auditoría de proceso al día (la de la mañana)
+  const flagMo = await pool.query(`INSERT INTO settings(key,value) VALUES('maria_one_per_day','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagMo.rowCount) {
+    await pool.query(`UPDATE users SET process_per_day=1 WHERE name='María Olguín' AND dept='quality'`);
+    await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.name='María Olguín' AND a.kind='process' AND a.status='pending' AND a.slot > 1 AND a.date >= $1`, [mxToday]);
   }
 
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría

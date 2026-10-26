@@ -6,7 +6,7 @@ import { route, json, err } from '@/lib/api';
 import { isMaster, isAdmin } from '@/lib/roles';
 import { mxToday } from '@/lib/dates';
 
-const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id'];
+const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id', 'process_per_day'];
 
 export const PATCH = route(async (req, { params }, user) => {
   const b = await req.json();
