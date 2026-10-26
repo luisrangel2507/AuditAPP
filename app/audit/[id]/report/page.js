@@ -21,24 +21,50 @@ export default function Report() {
   const es = (t) => String(t || '').split('\n')[0];
   async function print() {
     setBusy(true);
-    // Espera a que carguen las imágenes antes de abrir el diálogo de impresión / PDF
+    // Espera a que carguen las fotos (ya reducidas) antes de abrir el diálogo de impresión / PDF
     const imgs = [...(ref.current?.querySelectorAll('img') || [])];
     await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((ok) => { i.onload = ok; i.onerror = ok; }))));
-    setBusy(false); window.print();
+    const undo = await inlinePhotos(ref.current);
+    setBusy(false);
+    const done = () => { undo(); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
   }
   // Imagen (PNG) del reporte: en el teléfono se comparte/guarda en Fotos; en computadora se descarga
+  // Las fotos se incrustan ya reducidas (≤1100 px) como datos antes de capturar: evita fotos en blanco por imágenes pesadas o que aún no cargan
+  async function inlinePhotos(root) {
+    const restore = [];
+    for (const im of [...root.querySelectorAll('img')]) {
+      if (!im.src || im.src.startsWith('data:')) continue;
+      try {
+        const blob = await (await fetch(im.src, { credentials: 'same-origin' })).blob();
+        const bmp = await createImageBitmap(blob);
+        const k = Math.min(1, 1100 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+        const old = im.src; im.removeAttribute('loading'); im.src = c.toDataURL('image/jpeg', 0.85);
+        await im.decode().catch(() => {});
+        restore.push(() => { im.src = old; });
+      } catch { /* si una foto no se puede leer, se deja como está */ }
+    }
+    return () => restore.forEach((f) => f());
+  }
   async function saveImage() {
     setImgBusy(true); setImgErr('');
+    let undo = () => {};
     try {
       const imgs = [...(ref.current?.querySelectorAll('img') || [])];
       await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((ok) => { i.onload = ok; i.onerror = ok; }))));
-      const url = await toPng(ref.current, { pixelRatio: 2, backgroundColor: '#ffffff', cacheBust: true });
+      undo = await inlinePhotos(ref.current);
+      const opts = { pixelRatio: 2, backgroundColor: '#ffffff', cacheBust: false };
+      await toPng(ref.current, opts).catch(() => null); // 1.ª pasada de calentamiento (Safari a veces deja imágenes en blanco la primera vez)
+      const url = await toPng(ref.current, opts);
       const blob = await (await fetch(url)).blob();
       const name = `Reporte-auditoria-${a.date}-${id}.png`, file = new File([blob], name, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e?.name === 'AbortError') return; } }
       const link = document.createElement('a'); link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
     } catch { setImgErr('No se pudo generar la imagen. Intenta de nuevo o toma una captura de pantalla.'); }
-    finally { setImgBusy(false); }
+    finally { undo(); setImgBusy(false); }
   }
   const Ic = ({ d }) => <span className="ric"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg></span>;
   const I = {
