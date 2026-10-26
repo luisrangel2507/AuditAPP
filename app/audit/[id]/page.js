@@ -21,7 +21,7 @@ const BTN = [
 
 // Inicio de toda auditoría. Layer 1 y QEs: zona → máquina (salvo PL) → N/P (con segundo N/P para piezas espejo RH / LH).
 // Layer 2, 3 y 4 (All Areas): solo escogen el área que auditan.
-const ZTONE = (z) => (z.startsWith('PL') || ['Toolroom', 'Shipping', 'Receiving'].includes(z) ? 'g' : ({ A: 'b', B: 'e', C: 'o', D: 'v', E: 't' })[z[0]] || 'b');
+const ZTONE = (z) => (z.startsWith('PL') || ['Toolroom', 'Shipping', 'Receiving', 'QIA', 'Proveedores'].includes(z) ? 'g' : ({ A: 'b', B: 'e', C: 'o', D: 'v', E: 't' })[z[0]] || 'b');
 const fac = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 20V9l5 3V9l5 3V5h3v15z" /><path d="M3 20h18M7 16h2M12 16h2" /></svg>;
 const wh = <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6v10H3z" /><path d="M8 20v-6h8v6M8 17h8" /></svg>;
 const cube = <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" /><path d="m4 7.5 8 4.5 8-4.5M12 12v9" /></svg>;
