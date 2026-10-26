@@ -359,6 +359,30 @@ async function main() {
 
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS unscheduled BOOLEAN NOT NULL DEFAULT FALSE');
 
+  // LPA de los QEs en Proveedores / contención (formato QE Layer 1 Audit): 17 preguntas fijas
+  const prov = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-proveedores.json'), 'utf8'));
+  const { rows: [pt] } = await pool.query('SELECT id FROM templates WHERE name=$1', [prov.name]);
+  if (!pt) {
+    const { rows: [nt] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [prov.name, prov.zone, prov.questions.length]);
+    for (let i = 0; i < prov.questions.length; i++) {
+      const x = prov.questions[i];
+      await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,$5,TRUE)', [nt.id, `${x.es}\n${x.en}`, prov.zone, i, x.item ?? -1]);
+    }
+    console.log('[setup] plantilla QE Proveedores (LPA) cargada');
+  }
+  // María Olguín: QE adicional, solo auditorías de proceso (su LPA queda apagada; si se enciende usa las preguntas de Proveedores)
+  const { rows: [mo] } = await pool.query(`SELECT 1 FROM users WHERE name='María Olguín' AND dept='quality'`);
+  if (!mo) {
+    const { rows: [tp] } = await pool.query('SELECT id FROM templates WHERE name=$1', [prov.name]);
+    let un = usernameFor('María Olguín'), n = 2;
+    while ((await pool.query('SELECT 1 FROM users WHERE username=$1', [un])).rowCount) un = usernameFor('María Olguín') + n++;
+    const hash = process.env.SEED_PASSWORD ? await bcrypt.hash(process.env.SEED_PASSWORD, 10) : await bcrypt.hash(require('crypto').randomBytes(24).toString('hex'), 10);
+    await pool.query(
+      `INSERT INTO users(name,username,pin_hash,dept,layer,access,template_id,days,pool,start_idx,rotate_daily,lpa_override,site_id)
+       VALUES('María Olguín',$1,$2,'quality',1,'auditor',$3,'{1,2,3,4,5}','{}',0,FALSE,FALSE,(SELECT id FROM sites WHERE code='MPQ'))`, [un, hash, tp.id]);
+    console.log(`[setup] usuario María Olguín creado (${un}); asigna su contraseña en Admin → Usuarios`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);

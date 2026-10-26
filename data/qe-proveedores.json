@@ -1,0 +1,24 @@
+{
+  "name": "QE Proveedores (LPA)",
+  "zone": "Calidad",
+  "form": "QE Layer 1 Audit · Proveedores / contención",
+  "questions": [
+    { "item": 8, "es": "Los operadores cuentan con los lentes y guantes de seguridad asignados al trabajo realizado.", "en": "Operators have the safety glasses and gloves assigned to the work performed." },
+    { "item": 1030, "es": "Se cuenta disponible la Instrucción de trabajo, GP12 y están firmadas.", "en": "The work instruction and GP12 are available and signed." },
+    { "item": 1033, "es": "Entrevista. Todos los operadores han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).", "en": "Interview. All operators have been trained in the work instructions and know the process deviations (quality alerts)." },
+    { "item": 2290, "es": "Está el operador colocando las partes en el empaque adecuado de PT, así como las etiquetas.", "en": "Is the operator placing the parts in the proper finished-goods packaging, as well as the labels?" },
+    { "item": 102, "es": "Estan los operadores entrenados y se cuenta con el registro en la matriz de versatilidad.", "en": "Are the operators trained and is there a record in the versatility matrix?" },
+    { "item": 1134, "es": "¿Conoce los criterios de Aceptación para defectos de Apariencia de la pieza? Entrevista al operador/inspector.", "en": "Does the operator/inspector know the acceptance criteria for part appearance defects? Interview." },
+    { "item": 922, "es": "¿Todos los artículos en el área de proveedores tienen etiquetas DMR?", "en": "Do all items in the suppliers area have DMR tags?" },
+    { "item": 925, "es": "¿Coincide la actividad de contención con las instrucciones de contención?", "en": "Does the containment activity match the containment instructions?" },
+    { "item": 933, "es": "¿Está limpia el área de proveedores? ¿Tienen los DMR menos de 24 horas de antigüedad? ¿Están certificados los operadores de clasificación?", "en": "Is the suppliers area clean? Are the DMRs less than 24 hours old? Are the sorting operators certified?" },
+    { "item": 2288, "es": "La matriz de Versatilidad está actualizada con base a la información del Sistema de Contención; evidencia de capacitación.", "en": "The versatility matrix is updated based on the Containment System information; training evidence." },
+    { "item": 975, "es": "Cajas parciales estan identificadas correctamente de acuerdo al número de parte y lado.", "en": "Partial boxes are correctly identified according to part number and side." },
+    { "item": 715, "es": "¿Están correctamente identificadas las ubicaciones del área de proveedores?", "en": "Are the locations in the suppliers area correctly identified?" },
+    { "item": 1035, "es": "¿La distribución del proceso y el flujo de material funcionan de acuerdo al Lay out definido para QIA / área de proveedores?", "en": "Do the process layout and material flow work according to the defined layout for QIA / suppliers area?" },
+    { "item": 1032, "es": "Se tiene lista de defectos con nivel ok/nok; boundary samples, boundary books.", "en": "A defect list with ok/nok level; boundary samples, boundary books is available." },
+    { "item": 1037, "es": "Se encuentran contenedores parciales ¿Los contenedores parciales de producto terminado se revisan al 100%, siguiendo la ayuda visual correspondiente a cada producto?", "en": "Partial containers found: are partial finished-product containers checked 100%, following the visual aid for each product?" },
+    { "item": 457, "es": "FIFO. Confirmar que se respete la rotación de materiales y no existan materiales obsoletos o rezagados con días de atraso en su inspección.", "en": "FIFO. Confirm material rotation is respected and there are no obsolete or delayed materials past their inspection days." },
+    { "item": 458, "es": "5S. Validar condiciones de orden, limpieza, señalización en el área de trabajo.", "en": "5S. Validate order, cleanliness and signage conditions in the work area." }
+  ]
+}
