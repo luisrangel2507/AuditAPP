@@ -1267,3 +1267,18 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .login2 .fx-orb.happy .e { height: 5px; top: 29px; border-radius: 6px 6px 0 0 } .login2 .fx-orb.happy .m { height: 12px; width: 22px; left: 22px }
 }
 @media (prefers-reduced-motion: reduce) { .login2 .fx-card, .login2 .fx-orb, .login2 form > * { animation: none } }
+/* Login en computadora: panel izquierdo (visual animado) + panel derecho con la caja de acceso, como la referencia, con los colores de la app */
+@media (min-width: 900px) {
+  .login2 { background: #f2f5fc; }
+  .login2-card { grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 0 28px; padding: 20px 28px 20px 20px; min-height: 100vh; align-items: stretch; }
+  .login2-card .hero { position: relative; inset: auto; grid-column: 1; border-radius: 30px; padding: 44px 40px 36px; justify-content: space-between; min-height: calc(100vh - 40px); box-shadow: 0 30px 60px -34px rgba(7,21,54,.7); }
+  .login2 .hero-in { max-width: none; } .login2 .hero-in h1 { font-size: clamp(54px, 5.6vw, 84px); margin-top: 20px; }
+  .login2 .hero-in p.sub1 { font-size: clamp(20px, 1.7vw, 26px); } .login2 .hero-in p.dim { font-size: clamp(16px, 1.4vw, 21px); }
+  .login2 .hero .hero-wedge { left: auto; right: 0; width: 30%; height: 26%; border-radius: 0 0 30px 0; }
+  .hero-feats { margin: 0; flex-wrap: wrap; } .hero-feats li { width: 104px }
+  .login2 .hero .lang { right: 22px; top: 18px; }
+  .login2 form { grid-column: 2; align-self: center; justify-self: center; width: 100%; max-width: 470px; box-shadow: 0 28px 70px -36px rgba(11,31,77,.45); border: 1px solid var(--line); }
+  .login2 .lg-fx { left: 50%; right: 5%; width: auto; min-width: 0; top: 22%; height: 400px; }
+  .login2 .fx-a { left: 0; top: 0; } .login2 .fx-b { right: 0; top: 120px; } .login2 .fx-c { left: 8px; top: 236px; } .login2 .fx-orb { left: 55%; top: 318px; margin-left: 0; }
+}
+@media (min-width: 900px) and (max-height: 760px) { .login2-card .hero { min-height: 640px; } }
