@@ -3,12 +3,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, fmtDate } from '@/lib/client';
 import Photo from '@/components/Photo';
+import { toPng } from 'html-to-image';
 
 // Reporte de media hoja (carta/2) de una auditoría de proceso: resumen y hallazgos con ítem, acción y foto
 export default function Report() {
   const { id } = useParams();
   const router = useRouter();
-  const [a, setA] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const [a, setA] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [imgBusy, setImgBusy] = useState(false), [imgErr, setImgErr] = useState('');
   const ref = useRef(null);
   useEffect(() => { api(`/api/audits/${id}`).then(setA).catch((e) => setErr(e.message)); }, [id]);
   if (err) return <div style={{ padding: 24 }}>{err}</div>;
@@ -24,6 +25,20 @@ export default function Report() {
     const imgs = [...(ref.current?.querySelectorAll('img') || [])];
     await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((ok) => { i.onload = ok; i.onerror = ok; }))));
     setBusy(false); window.print();
+  }
+  // Imagen (PNG) del reporte: en el teléfono se comparte/guarda en Fotos; en computadora se descarga
+  async function saveImage() {
+    setImgBusy(true); setImgErr('');
+    try {
+      const imgs = [...(ref.current?.querySelectorAll('img') || [])];
+      await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((ok) => { i.onload = ok; i.onerror = ok; }))));
+      const url = await toPng(ref.current, { pixelRatio: 2, backgroundColor: '#ffffff', cacheBust: true });
+      const blob = await (await fetch(url)).blob();
+      const name = `Reporte-auditoria-${a.date}-${id}.png`, file = new File([blob], name, { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e?.name === 'AbortError') return; } }
+      const link = document.createElement('a'); link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
+    } catch { setImgErr('No se pudo generar la imagen. Intenta de nuevo o toma una captura de pantalla.'); }
+    finally { setImgBusy(false); }
   }
   const Ic = ({ d }) => <span className="ric"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg></span>;
   const I = {
@@ -41,7 +56,9 @@ export default function Report() {
       <div className="rep-bar">
         <button onClick={() => router.back()}>‹ Volver</button>
         <button className="go" onClick={print} disabled={busy}><span className="ric w">{I.doc && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{I.doc}</svg>}</span>{busy ? 'Preparando…' : 'Descargar reporte (PDF)'}</button>
+        <button onClick={saveImage} disabled={imgBusy} style={{ flexBasis: '100%', justifyContent: 'center' }}>{imgBusy ? 'Generando imagen…' : '🖼 Guardar como imagen (PNG)'}</button>
       </div>
+      {imgErr && <div style={{ maxWidth: 760, margin: '0 auto 10px', color: '#c00', fontSize: 14 }}>{imgErr}</div>}
       <div className="rep" ref={ref}>
         <header>
           <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
@@ -73,7 +90,7 @@ export default function Report() {
       </div>
       <style>{`
         .rep-wrap { background: #eef2fb; min-height: 100vh; padding: 14px; font-family: system-ui, -apple-system, sans-serif; color: #0b1f4d; }
-        .rep-bar { max-width: 760px; margin: 0 auto 12px; display: flex; gap: 10px; justify-content: space-between; }
+        .rep-bar { max-width: 760px; margin: 0 auto 12px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
         .rep-bar button { display: inline-flex; align-items: center; gap: 10px; border: 1px solid #dfe6f4; background: #fff; border-radius: 999px; padding: 12px 22px; font-weight: 700; font-size: 17px; color: #0b1f4d; box-shadow: 0 8px 18px -12px rgba(11,31,77,.5); }
         .rep-bar .go { background: linear-gradient(90deg, #0a49b8, #1f6bf0); color: #fff; border: 0; padding: 10px 20px 10px 12px; }
         .rep-bar .ric.w { background: rgba(255,255,255,.2); color: #fff; width: 34px; height: 34px; }
