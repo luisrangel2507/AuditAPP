@@ -26,7 +26,9 @@ export const POST = route(async (req, { params }, user) => {
       // Layer 2/3/4: el área se escoge al iniciar
       await client.query('ROLLBACK'); return err('Indica el área que auditas (se escoge al iniciar)');
     }
-    if ((au.layer === 1 || proc) && (!a.zone || !a.part_number)) {
+    const { rows: [tn] } = await client.query('SELECT name FROM templates WHERE id=$1', [a.template_id]);
+    const noPart = tn?.name === 'QE Proveedores (LPA)';
+    if ((au.layer === 1 || proc) && (!a.zone || (!a.part_number && !noPart))) {
       // Layer 1 y QEs: zona, máquina y N/P se capturan al iniciar
       await client.query('ROLLBACK'); return err('Faltan la zona, la máquina y el número de parte (se capturan al iniciar)');
     }

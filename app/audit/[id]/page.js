@@ -35,7 +35,8 @@ function Setup({ audit, onSaved, onExit }) {
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
-  const partOk = nps.length > 0 && nps.every((x) => x.trim());
+  const noPart = audit.template === 'QE Proveedores (LPA)'; // auditoría especial: solo zona
+  const partOk = noPart || (nps.length > 0 && nps.every((x) => x.trim()));
   const sub = step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
     : step === 'machine' ? `Zona ${zone}: selecciona la máquina` : `Zona ${zone}${machine ? ' · ' + machine : ''}: captura el número de parte`;
   async function go() {
@@ -43,7 +44,7 @@ function Setup({ audit, onSaved, onExit }) {
     try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
-  const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(NO_MACHINE.includes(z) ? 'part' : 'machine'); };
+  const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(noPart || NO_MACHINE.includes(z) ? 'part' : 'machine'); };
   const back = () => { if (step === 'part') setStep(noMach ? 'zone' : 'machine'); else if (step === 'machine') setStep('zone'); };
   return (
     <div className="exec setup">
@@ -78,11 +79,12 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {step === 'part' && <>
           <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
-          {nps.map((v, i) => (
+          {noPart && <div className="setup-note">Esta auditoría especial no lleva número de parte ni máquina. Solo confirma la zona y comienza.</div>}
+          {!noPart && nps.map((v, i) => (
             <label key={i} className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder={i ? 'Otro N/P' : 'No. de parte'} maxLength={40} autoCapitalize="characters" value={v} onChange={(e) => setNps((l) => l.map((x, k) => (k === i ? e.target.value : x)))} />
               <button type="button" className="npscan" onClick={() => setScan(i)} aria-label="Escanear código">{i ? '📷' : '📷 Escanear'}</button>
               {i > 0 && <button type="button" className="npx" onClick={() => setNps((l) => l.filter((_, k) => k !== i))} aria-label="Quitar">×</button>}</label>))}
-          {nps.length < 8 && <button className="npadd" type="button" onClick={() => setNps((l) => [...l, ''])}><span className="npplus">+</span><i className="npsep" /><b>Agregar otro N/P (RH / LH u otros)</b></button>}
+          {!noPart && nps.length < 8 && <button className="npadd" type="button" onClick={() => setNps((l) => [...l, ''])}><span className="npplus">+</span><i className="npsep" /><b>Agregar otro N/P (RH / LH u otros)</b></button>}
         </>}
         {err && <div className="err" style={{ marginTop: 10 }}>{err}</div>}
         {typeof scan === 'number' && <BarcodeScan onClose={() => setScan('')} onResult={(t) => { setNps((l) => l.map((x, k) => (k === scan ? t : x))); setScan(''); }} />}
@@ -549,7 +551,7 @@ export default function AuditPage() {
       <h1 className="title">{audit.status === 'completed' ? 'Auditoría realizada' : (audit.layer === 1 || audit.kind === 'process') && !audit.zone && (!audit.area || audit.area === 'All Areas') ? (audit.kind === 'process' ? 'Auditoría de proceso' : audit.template) : audit.area}</h1>
       {audit.status === 'completed' && audit.late && <div className="latetag">⏰ Realizada tarde · programada {fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' })}</div>}
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
-      {audit.layer >= 2 && audit.kind !== 'process' && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
+      {((audit.layer >= 2 && audit.kind !== 'process') || audit.template === 'QE Proveedores (LPA)') && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
       <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);

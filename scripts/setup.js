@@ -358,6 +358,7 @@ async function main() {
   }
 
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_template_id INT REFERENCES templates(id) ON DELETE SET NULL');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS unscheduled BOOLEAN NOT NULL DEFAULT FALSE');
 
   // LPA de los QEs en Proveedores / contención (formato QE Layer 1 Audit): 17 preguntas fijas
@@ -390,6 +391,26 @@ async function main() {
     await pool.query(`UPDATE users SET process_per_day=1 WHERE name='María Olguín' AND dept='quality'`);
     await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.name='María Olguín' AND a.kind='process' AND a.status='pending' AND a.slot > 1 AND a.date >= $1`, [mxToday]);
   }
+
+  // María Olguín (iniciales GOG): su auditoría diaria es la especial de Proveedores (17 preguntas propias), no la de proceso de los QEs
+  const flagSp = await pool.query(`INSERT INTO settings(key,value) VALUES('maria_special_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagSp.rowCount) {
+    const { rows: [sp] } = await pool.query(`SELECT id FROM templates WHERE name='QE Proveedores (LPA)'`);
+    const { rows: [mu] } = await pool.query(`SELECT id FROM users WHERE name='María Olguín' AND dept='quality'`);
+    if (sp && mu) {
+      await pool.query('UPDATE users SET process_template_id=$1 WHERE id=$2', [sp.id, mu.id]);
+      await pool.query(
+        `UPDATE audits SET template_id=$1, question_ids=(SELECT array_agg(id ORDER BY sort_order,id) FROM questions WHERE template_id=$1 AND active)
+          WHERE user_id=$2 AND kind='process' AND status='pending' AND started_at IS NULL AND date >= $3`, [sp.id, mu.id, mxToday]);
+      console.log('[setup] María Olguín: auditoría diaria especial de Proveedores');
+    }
+  }
+
+  // Reparación: auditorías pendientes que quedaron sin preguntas (plantillas con todas las preguntas fijas)
+  await pool.query(
+    `UPDATE audits a SET question_ids=(SELECT array_agg(x.id ORDER BY x.sort_order,x.id) FROM questions x WHERE x.template_id=a.template_id AND x.active)
+      WHERE a.status='pending' AND a.template_id IS NOT NULL AND COALESCE(cardinality(a.question_ids),0)=0
+        AND EXISTS (SELECT 1 FROM questions x WHERE x.template_id=a.template_id AND x.active)`);
 
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));

@@ -7,14 +7,15 @@ import { ZONES, NO_MACHINE, areaLabel } from '@/lib/zones';
 export const POST = route(async (req, { params }, user) => {
   const b = await req.json();
   const { rows: [a] } = await q(
-    `SELECT a.user_id,a.part_number,a.part_original,a.area,a.area_original,a.zone,a.machine,a.kind,u.layer
-       FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1`, [params.id]);
+    `SELECT a.user_id,a.part_number,a.part_original,a.area,a.area_original,a.zone,a.machine,a.kind,u.layer,t.name AS tname
+       FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id WHERE a.id=$1`, [params.id]);
   if (!a) return err('No encontrada', 404);
   if (a.user_id !== user.id) return err('Solo quien hizo la auditoría puede corregirla', 403);
   const full = a.layer === 1 || a.kind === 'process';
   const list = (Array.isArray(b.part_numbers) ? b.part_numbers : [b.part_number, b.part_number2]).map((x) => String(x || '').trim().slice(0, 40)).filter(Boolean);
   const p1 = [...new Set(list)].slice(0, 8).join(' / '), p2 = '';
-  if (full && !p1) return err('Captura el número de parte');
+  const noPart = a.tname === 'QE Proveedores (LPA)';
+  if (full && !noPart && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
   let zone = a.zone, machine = a.machine, area = a.area;
   if (b.zone !== undefined && !full) { // Layer 2-4: solo la zona
@@ -25,8 +26,8 @@ export const POST = route(async (req, { params }, user) => {
   if (b.zone !== undefined && full) {
     zone = String(b.zone || '').trim();
     if (!ZONES.includes(zone)) return err('Escoge una zona');
-    machine = NO_MACHINE.includes(zone) ? '' : String(b.machine || '').trim().slice(0, 40);
-    if (!NO_MACHINE.includes(zone) && !machine) return err('Escoge o escribe la máquina');
+    machine = noPart || NO_MACHINE.includes(zone) ? '' : String(b.machine || '').trim().slice(0, 40);
+    if (!noPart && !NO_MACHINE.includes(zone) && !machine) return err('Escoge o escribe la máquina');
     area = areaLabel(zone, machine);
   }
   if (part === a.part_number && area === a.area) return json({ ok: true, part_number: part, area, zone, machine, unchanged: true });
