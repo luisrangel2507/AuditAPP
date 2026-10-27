@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Shell, { useUser } from '@/components/Shell';
 import { isAdmin } from '@/lib/roles';
+import { isTeamLead } from '@/lib/team';
 import { api, fmtDate, DEPT, LAYER, DAYS_SHORT, peek, useUrlState, useWeekUrl } from '@/lib/client';
 
 const shift = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
@@ -12,7 +13,7 @@ export default function Week() {
 }
 
 function WeekInner() {
-  const user = useUser();
+  const user = useUser(), wide = isAdmin(user) || isTeamLead(user);
   const [date, setDate] = useState(null), [data, setData] = useState(null), [err, setErr] = useState('');
   const [dept, setDept] = useUrlState('dept', 'all'), [layer, setLayer] = useUrlState('layer', 'all');
   const [mine, setMine] = useState(false);
@@ -46,13 +47,13 @@ function WeekInner() {
   const glabel = (u) => (u.layer === 3 ? 'Layer 3 · GM' : u.layer === 2 ? 'Layer 2 · Gerentes' : u.layer === 4 ? 'Layer 4' : `Layer 1 · ${DEPT[u.dept]}`);
   return (
     <>
-      <h1 className="title">{isAdmin(user) ? 'Programa semanal' : 'Mi semana'}</h1>
+      <h1 className="title">{isAdmin(user) ? 'Programa semanal' : isTeamLead(user) ? 'Semana de mi equipo' : 'Mi semana'}</h1>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => go(1)} disabled={!data}>›</button>
       </div>
-      {isAdmin(user) && (
+      {wide && (
       <div className="row wrap" style={{ marginBottom: 12 }}>
         <select className="inp" style={{ width: 'auto' }} value={layer} onChange={(e) => setLayer(e.target.value)}>
           <option value="all">Todas las capas</option><option value="1">Layer 1</option><option value="2">Layer 2</option><option value="3">Layer 3</option><option value="4">Layer 4</option>
@@ -64,7 +65,7 @@ function WeekInner() {
         <label className="row" style={{ fontSize: 14 }}><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Solo yo</label>
       </div>
       )}
-      {data && !isAdmin(user) ? (
+      {data && !wide ? (
         data.audits.length ? (
           <div className="mydays">
             {[...data.audits].sort((a, b) => a.date.localeCompare(b.date) || (a.slot || 0) - (b.slot || 0)).map((a) => {
@@ -136,7 +137,7 @@ function WeekInner() {
         </div>
         </>
       )}
-      {isAdmin(user) && <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
+      {wide && <div className="row wrap" style={{ marginTop: 12, fontSize: 12, color: 'var(--sub)' }}>
         <span><span className="dot completed" />Completada</span><span><span className="dot open" />Programada</span><span><span className="dot last_day" />Último día</span><span><span className="dot missed" />No realizada</span><span><span className="dot" />Próxima</span>
       </div>}
     </>

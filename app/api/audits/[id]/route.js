@@ -2,6 +2,7 @@ import { q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
 import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
+import { canSeeTeamUser } from '@/lib/team';
 import { SEED_MACHINES } from '@/lib/zones';
 import { mxToday, windowState, closesOn, mondayOf, isoWeekday } from '@/lib/dates';
 import { resetEnsured } from '@/lib/schedule';
@@ -16,7 +17,7 @@ async function load(id) {
 export const GET = route(async (req, { params }, user) => {
   const a = await load(params.id);
   if (!a) return err('No encontrada', 404);
-  if (a.user_id !== user.id && !(isLead(user) && sameSite(user, a.site_id))) return err('Sin permiso', 403);
+  if (a.user_id !== user.id && !(isLead(user) && sameSite(user, a.site_id)) && !canSeeTeamUser(user, a)) return err('Sin permiso', 403);
   const today = mxToday();
   if (!isAdmin(user)) { delete a.started_at; delete a.active_sec; }
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };

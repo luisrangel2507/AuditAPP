@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { q } from '@/lib/db';
 import { route, json, isLead } from '@/lib/api';
+import { isTeamLead } from '@/lib/team';
 import { siteScope } from '@/lib/site';
 import { mxToday } from '@/lib/dates';
 
@@ -19,7 +20,14 @@ export const GET = route(async (req, ctx, user) => {
   // Auditores sin rol de líder ven solo los issues que levantaron o en los que son responsables
   if (!isLead(user)) {
     vals.push(user.id);
-    cond.push(`(a.user_id=$${vals.length} OR EXISTS (SELECT 1 FROM finding_owners o2 WHERE o2.finding_id=f.id AND o2.user_id=$${vals.length}))`);
+    const me = vals.length;
+    let team = '';
+    if (isTeamLead(user) && user.site_id != null) {
+      vals.push(Number(user.layer), user.dept || '', user.site_id);
+      const L = `$${vals.length - 2}::int`, D = `$${vals.length - 1}`, S = `$${vals.length}::int`;
+      team = ` OR (u.layer < ${L} AND (${L} >= 3 OR u.dept = ${D}) AND u.site_id = ${S}) OR EXISTS (SELECT 1 FROM finding_owners o3 JOIN users ou3 ON ou3.id=o3.user_id WHERE o3.finding_id=f.id AND ou3.layer < ${L} AND (${L} >= 3 OR ou3.dept = ${D}) AND ou3.site_id = ${S})`;
+    }
+    cond.push(`(a.user_id=$${me} OR EXISTS (SELECT 1 FROM finding_owners o2 WHERE o2.finding_id=f.id AND o2.user_id=$${me})${team})`);
   }
   const { rows } = await q(
     `SELECT f.id,f.area,a.part_number,f.question,f.result,f.notes,f.status,f.action,f.due_date,f.created_at,f.closed_at,
