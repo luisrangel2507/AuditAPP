@@ -43,7 +43,7 @@ export default function Login() {
 
   async function go(e) {
     e.preventDefault(); setErr(''); setBusy(true);
-    try { await api('/api/auth/login', { method: 'POST', body: { username, password: pin, remember } }); try { sessionStorage.clear(); } catch {} setOkAnim(true); setTimeout(() => router.replace('/'), 750); }
+    try { await api('/api/auth/login', { method: 'POST', body: { username, password: pin, remember } }); try { sessionStorage.clear(); } catch {} router.replace("/"); }
     catch (e2) { setErr(e2.message); setBusy(false); }
   }
   return (

@@ -1292,3 +1292,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .login2 .fx-a { left: 0; top: 0; width: 170px; } .login2 .fx-b { right: 0; top: 120px; } .login2 .fx-c { left: 8px; top: 236px; } .login2 .fx-orb { left: 55%; top: 318px; margin-left: 0; }
 }
 @media (min-width: 900px) and (max-height: 760px) { .login2-card .hero { min-height: 640px; } }
+/* Login sin animaciones */
+.login2 *, .login2 *::before, .login2 *::after { animation: none !important; transition: none !important; }
+.login2 .fx-line, .login2 .fx-ring { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+.login2 form > * { opacity: 1 !important; transform: none !important; }
+.login2 form.leaving { opacity: 1; transform: none; }
