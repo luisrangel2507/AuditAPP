@@ -1297,3 +1297,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .login2 .fx-line, .login2 .fx-ring { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 .login2 form > * { opacity: 1 !important; transform: none !important; }
 .login2 form.leaving { opacity: 1; transform: none; }
+
+/* Marca de agua (nombre, usuario y hora) sobre toda la app */
+.wm { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; user-select: none; background-repeat: repeat; }
+@media print { .wm { display: none; } }
