@@ -51,8 +51,8 @@ function Ticket({ a, today }) {
 function MyHome() {
   const user = useUser(), router = useRouter(), [newBusy, setNewBusy] = useState(false);
   async function newProcess() { setNewBusy(true); try { const r = await api('/api/audits/extra', { method: 'POST' }); router.push(`/audit/${r.id}`); } catch (e) { setErr(e.message); setNewBusy(false); } }
-  const [data, setData] = useState(null), [err, setErr] = useState(''), [iss, setIss] = useState([]);
-  useEffect(() => { const c = peek('/api/my'); if (c) setData(c); api('/api/my').then(setData).catch((e) => setErr(e.message)); api('/api/findings?status=mine').then((d) => setIss(d.findings.slice(0, 3).map((f) => ({ ...f, overdue: f.due_date && f.due_date < d.today })))).catch(() => {}); }, []);
+  const [data, setData] = useState(null), [err, setErr] = useState('');
+  useEffect(() => { const c = peek('/api/my'); if (c) setData(c); api('/api/my').then(setData).catch((e) => setErr(e.message)); }, []);
   if (err) return <Shell><div className="err">{err}</div></Shell>;
   const list = data?.audits || [];
   const by = (w) => list.filter((a) => w.includes(a.window));
@@ -64,19 +64,6 @@ function MyHome() {
       {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={newProcess}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
       {!data ? <div className="empty">Cargando…</div> : (
         <>
-          {iss.length > 0 && <>
-            <div className="sect">Open issues a tu cargo</div>
-            {iss.map((f) => (
-              <Link key={f.id} href={`/findings?oi=${f.id}`} className={`ticket s-${f.overdue ? 'missed' : 'open'}`}>
-                <div className="main">
-                  <div className="day"><span className="oi-no">OI-{String(f.id).padStart(4, '0')}</span><span className={`pill ${f.overdue ? 'nok' : 'gold'}`}>{f.overdue ? 'Vencido' : 'Pendiente'}</span></div>
-                  <div className="area" style={{ fontSize: 17 }}><Bi text={f.question} /></div>
-                  <div className="meta">{f.area} · compromiso {fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</div>
-                </div>
-                <div className="stub"><span className="chev">{I.chevron(18)}</span></div>
-              </Link>))}
-            <Link href="/findings" className="btn-ghost" style={{ display: 'inline-block', margin: '2px 0 4px' }}>Ver todos mis issues ›</Link>
-          </>}
           <div className="sect">Por realizar</div>
           {todo.length ? todo.map((a) => <Ticket key={a.id} a={a} today={data.today} />)
             : <div className="card empty">No tienes auditorías pendientes.</div>}
