@@ -125,7 +125,7 @@ export default function TV() {
             <div className={`tvx-kpi ${pctCls(k.day_pct)}`}><Ring value={k.day_pct || 0} size={wall ? 70 : 92} stroke={10} label={k.day_pct == null ? '—' : `${k.day_pct}%`} />
               <div><h3>Cumplimiento diario</h3><b>{k.today_done} / {k.today_total}</b></div></div>
             <div className={`tvx-kpi ${pctCls(k.week_pct)}`}><Ring value={k.week_pct || 0} size={wall ? 70 : 92} stroke={10} label={k.week_pct == null ? '—' : `${k.week_pct}%`} />
-              <div><h3>Cumplimiento semana</h3><b>{k.week_done} / {k.week_counted}</b><Delta now={k.week_pct} before={data.prev.week_pct} /></div></div>
+              <div><h3>Cumplimiento semana</h3><b>{k.week_done} / {k.week_counted}</b></div></div>
             <div className={`tvx-kpi ${pctCls(k.avg_score)}`}><Ring value={k.avg_score || 0} size={wall ? 70 : 92} stroke={10} label={k.avg_score == null ? '—' : `${k.avg_score}%`} />
               <div><h3>Score promedio semana</h3><Delta now={k.avg_score} before={data.prev.avg_score} /></div></div>
             <div className={`tvx-kpi big ${data.missed.length ? 'nok' : 'ok'}`}><div><b>{data.missed.length}</b><h3>No realizadas esta semana</h3></div><span className="tvx-ic">▤</span></div>

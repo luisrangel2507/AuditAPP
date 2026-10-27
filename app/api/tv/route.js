@@ -55,7 +55,8 @@ export async function GET(req) {
       .sort((x, y) => new Date(y.completed_at) - new Date(x.completed_at));
 
     // Cumplimiento semanal: solo cuenta lo completado o lo que ya no se puede hacer
-    const counted = wk.filter((a) => a.status === 'completed' || a.window === 'missed');
+    // Acumulado: lo programado de lunes a hoy (incluye lo de hoy aún pendiente) crece conforme pasan los días; las semanales (L2-4) cuentan al completarse o vencer
+    const counted = wk.filter((a) => a.status === 'completed' || a.window === 'missed' || (a.date === a.due_date && a.date <= today));
     const done = counted.filter((a) => a.status === 'completed');
     const byLayer = [1, 2, 3, 4].map((l) => {
       const c = counted.filter((a) => a.layer === l);
