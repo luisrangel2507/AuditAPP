@@ -1440,3 +1440,12 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 
 .oi2-it { display: inline-block; margin-right: 10px; padding: 2px 10px; border-radius: 8px; background: #e5d6fb; border: 1px solid #bda0ea; color: #512a9e; font-size: 13px; font-weight: 800; vertical-align: 1px; }
 [data-theme="dark"] .oi2-it { background: rgba(139,92,246,.3); color: #d6c4ff; border-color: rgba(139,92,246,.6); }
+
+/* TV: tres pantallas completas que rotan (hoy · no realizadas · open issues) */
+.tvx.wall .tvx-slides { position: relative; flex: 1; min-height: 0; display: flex; margin-top: 8px; }
+.tvx.wall .tvx-slide { position: absolute; inset: 0; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity .4s; } .tvx.wall .tvx-slide.on { visibility: visible; opacity: 1; }
+.tvx.wall .tvx-slide .tvx-panel.full { flex: 1; min-height: 0; }
+.tvx.wall .tvx-slide .tvx-iss { flex: 1; margin-top: 0; }
+.tvx:not(.wall) .tvx-slide { margin-top: 12px; }
+.tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple { grid-template-columns: 52px minmax(0, 1.3fr) minmax(0, 1fr) 60px; grid-template-areas: "av name area st"; gap: 0 18px; }
+.tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-area { grid-area: area; font-size: 20px; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-name { grid-area: name; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-av { grid-area: av; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-st { grid-area: st; }
