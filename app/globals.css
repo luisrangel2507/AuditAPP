@@ -1437,3 +1437,6 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .rp-sec { margin-top: 22px; } .rp-sec h2 { font-size: 18px; margin: 0 0 10px; color: var(--ink); padding-bottom: 6px; border-bottom: 2px solid #1f6bf0; display: inline-block; }
 .rp-links { display: grid; gap: 10px; } .rp-links .rep-link { margin: 0; }
 .rp-ch { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: none; padding: 0; text-align: left; font-size: 15px; color: var(--ink); cursor: pointer; } .rp-ch small { color: var(--sub); font-size: 12.5px; } .rp-ch i { font-style: normal; font-size: 26px; transition: transform .2s; } .rp-ch i.on { transform: rotate(90deg); }
+
+.oi2-it { display: inline-block; margin-right: 10px; padding: 2px 10px; border-radius: 8px; background: #e5d6fb; border: 1px solid #bda0ea; color: #512a9e; font-size: 13px; font-weight: 800; vertical-align: 1px; }
+[data-theme="dark"] .oi2-it { background: rgba(139,92,246,.3); color: #d6c4ff; border-color: rgba(139,92,246,.6); }
