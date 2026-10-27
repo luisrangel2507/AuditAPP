@@ -1415,3 +1415,19 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .oi2-r { display: flex; align-items: center; gap: 14px; } .oi2-due { display: flex; align-items: center; gap: 10px; background: rgba(120,135,170,.1); border-radius: 12px; padding: 10px 14px; color: var(--sub); } .oi2-due small { display: block; font-size: 11.5px; color: var(--sub); } .oi2-due b { font-size: 15px; color: var(--ink); } .oi2-due.over b { color: #d11d2a; } .oi2-due.soon b { color: #c47a00; }
 .oi2-cm { display: inline-flex; align-items: center; gap: 6px; background: rgba(120,135,170,.1); border-radius: 12px; padding: 12px 14px; font-weight: 700; color: var(--ink); } .oi2-ch { font-style: normal; font-size: 26px; color: var(--ink); transition: transform .2s; } .oi2-ch.on { transform: rotate(90deg); }
 @media (max-width: 800px) { .oi2 { grid-template-columns: 1fr; gap: 8px; } .oi2-l { flex-direction: row; align-items: center; } .oi2-r { justify-content: space-between; } }
+/* Open Issues: pastillas con colores y bordes marcados para distinguirlas del fondo blanco */
+.oi2-tabs button { background: #e3ebfb; border: 1px solid #b9cdf3; color: #153a8a; } .oi2-tabs button.on { background: #1f6bf0; border-color: #1a56c4; color: #fff; } .oi2-tabs em { background: #c7d8f7; color: #153a8a; } .oi2-tabs .on em { background: rgba(255,255,255,.3); color: #fff; }
+.oi2-search, .oi2-filt > button { border: 1.5px solid #9fb4dd; background: #f4f7fe; }
+.card.issue { border: 1px solid #c9d3e8; background: #fbfcff; box-shadow: 0 4px 14px -8px rgba(20,45,100,.35); }
+.oi2-st { background: #ffd9b0; color: #9a4200; border: 1px solid #f0a560; } .oi2-st.ok { background: #c4ecd6; color: #0c6a39; border-color: #7fcfa0; }
+.oi2-pr.hi { background: #ffc9cd; color: #a3101c; border: 1px solid #f08a92; } .oi2-pr.mid { background: #ffe58a; color: #7a4d00; border: 1px solid #e8c24a; } .oi2-pr.lo { background: #c8dcff; color: #123f9e; border: 1px solid #8db3f5; }
+.oi2-chips span { border: 1px solid transparent; font-weight: 700; }
+
+.oi2-chips .k-z { background: #d3e3ff; border-color: #9fbdf5; color: #123f9e; } .oi2-chips .k-m { background: #cdf0ee; border-color: #8fd3cf; color: #0b5f5a; } .oi2-chips .k-i { background: #e5d6fb; border-color: #bda0ea; color: #512a9e; }
+.oi2-chips .k-n { background: #ffe3b0; border-color: #efbe68; color: #7e4300; } .oi2-chips .k-f { background: #e3e8f2; border-color: #bcc6da; color: #2c3a5e; } .oi2-chips .k-a { background: #fbd3ea; border-color: #eba3cf; color: #8a1d5c; } .oi2-chips .k-r { background: #c4ecd6; border-color: #7fcfa0; color: #0c6a39; }
+.oi2-chips i { color: inherit; opacity: .7; font-weight: 500; }
+.oi2-chips .no { background: #ffc9cd !important; border-color: #f08a92 !important; color: #a3101c !important; }
+.oi2-due { background: #eef2fb; border: 1px solid #c3cfe8; } .oi2-cm { background: #eef2fb; border: 1px solid #c3cfe8; }
+[data-theme="dark"] .card.issue { background: var(--panel); border-color: rgba(255,255,255,.14); }
+[data-theme="dark"] .oi2-chips span { background: rgba(255,255,255,.1) !important; color: #e6ecff !important; border-color: rgba(255,255,255,.25) !important; }
+[data-theme="dark"] .oi2-tabs button { background: rgba(79,147,255,.16); border-color: rgba(79,147,255,.4); color: #cfe0ff; } [data-theme="dark"] .oi2-tabs button.on { background: #1f6bf0; color: #fff; }

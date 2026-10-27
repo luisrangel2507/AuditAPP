@@ -60,13 +60,13 @@ function Item({ f, today, lead, user, reload, startOpen }) {
           <div className="oi2-top"><span className={`oi2-st ${closed ? 'ok' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span></div>
           <div className="oi-q"><Bi text={f.question} /></div>
           <div className="oi2-chips">
-            <span><i>Zona</i>{String(f.area || '—').split(' · ')[0]}</span>
-            {String(f.area || '').includes(' · ') && <span><i>Máquina</i>{String(f.area).split(' · ').slice(1).join(' · ')}</span>}
-            {f.item ? <span><i>Item</i>{f.item}</span> : null}
-            {f.part_number && <span><i>N/P</i>{f.part_number}</span>}
-            <span><i>Fecha</i>{fmtDate(f.audit_date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-            <span><i>Auditor</i>{f.auditor}</span>
-            {f.owners.length === 0 && !closed ? <span className="no"><i>Responsable</i>Sin responsable</span> : f.owners.map((o) => <span key={o.user_id}><i>Responsable</i>{o.name}{o.status === 'done' ? ' ✓' : ''}</span>)}
+            <span className="k-z"><i>Zona</i>{String(f.area || '—').split(' · ')[0]}</span>
+            {String(f.area || '').includes(' · ') && <span className="k-m"><i>Máquina</i>{String(f.area).split(' · ').slice(1).join(' · ')}</span>}
+            {f.item ? <span className="k-i"><i>Item</i>{f.item}</span> : null}
+            {f.part_number && <span className="k-n"><i>N/P</i>{f.part_number}</span>}
+            <span className="k-f"><i>Fecha</i>{fmtDate(f.audit_date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <span className="k-a"><i>Auditor</i>{f.auditor}</span>
+            {f.owners.length === 0 && !closed ? <span className="no"><i>Responsable</i>Sin responsable</span> : f.owners.map((o) => <span key={o.user_id} className="k-r"><i>Responsable</i>{o.name}{o.status === 'done' ? ' ✓' : ''}</span>)}
           </div>
         </div>
         <div className="oi2-r">
