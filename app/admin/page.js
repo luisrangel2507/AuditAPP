@@ -63,7 +63,11 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       </label>}
       {!isNew && f.dept === 'quality' && Number(f.layer) === 1 && <div style={{ margin: '10px 0' }}><label className="lbl">Auditorías de proceso al día</label>
         <select className="inp" value={f.process_per_day ?? ''} onChange={(e) => set('process_per_day', e.target.value)}>
-          <option value="">Las generales (según Admin → QEs)</option><option value="1">1 · Auditoría 1 (por la mañana)</option><option value="2">2 · Auditoría 1 y 2</option><option value="3">3 · Auditoría 1, 2 y 3</option></select></div>}
+          <option value="">Las generales (según Admin → QEs)</option><option value="1">1 · Auditoría 1 (por la mañana)</option><option value="2">2 · Auditoría 1 y 2</option><option value="3">3 · Auditoría 1, 2 y 3</option></select>
+        <label className="lbl">Preguntas de su auditoría de proceso</label>
+        <select className="inp" value={f.process_template_id ?? ''} onChange={(e) => set('process_template_id', e.target.value)}>
+          <option value="">Las de los QEs (QE Process Audit)</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
+      </div>}
       <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
       <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
       {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} /> Activo</label>}
