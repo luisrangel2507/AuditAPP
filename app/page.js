@@ -87,9 +87,11 @@ function MyAuditsForAdmin() {
   return <><div className="sect">Mis auditorías por hacer</div>{todo.map((a) => <Ticket key={a.id} a={a} today={d.today} />)}</>;
 }
 
+const cap = (t) => String(t).charAt(0).toUpperCase() + String(t).slice(1);
+
 function AdminHome() {
   const user = useUser(), master = isMaster(user);
-  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null), [qs, setQs] = useState('');
+  const [w, setW] = useState(null), [iss, setIss] = useState(null), [err, setErr] = useState(''), [plants, setPlants] = useState(null), [qs, setQs] = useState(''), [zq, setZq] = useState(''), [sq, setSq] = useState(''), [pq, setPq] = useState('');
   useEffect(() => {
     if (master && user.multi_site) api('/api/admin/sites').then(setPlants).catch(() => {});
     { const c = peek('/api/week'); if (c) setW(c); }
@@ -123,46 +125,64 @@ function AdminHome() {
     doc: ic(<><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></>),
     dots: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>,
   };
+  const ini = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+  const zones = [...new Set(pend.map((a) => a.area).filter(Boolean))].sort((x, y) => zoneRank(x) - zoneRank(y));
+  const plantsIn = [...new Set(l1.map((a) => a.site).filter(Boolean))];
+  const list = rows.filter((a) => (!zq || a.area === zq) && (!sq || (sq === 'last_day' ? a.window === 'last_day' : a.window !== 'last_day')) && (!pq || a.site === pq));
+  const half = Math.ceil(list.length / 2), cols = list.length > 8 ? [list.slice(0, half), list.slice(half)] : [list];
+  const lay = (a) => `Layer ${a.layer}${a.kind === 'process' ? ` · Proceso ${a.slot}` : ''}`;
+  const Row = ({ a }) => (
+    <Link href={`/audit/${a.id}`} className="ahn-tr">
+      <span className="ahn-who"><span className={`uc-av d-${a.dept}`}>{ini(a.name)}</span><span><b>{a.name}</b><small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></span></span>
+      <span className="ahn-lay">{lay(a)}</span>
+      <span className="ahn-z">{a.kind === 'process' && !a.area ? <em className="gray">zona al iniciar</em> : (a.area || <em>Sin zona</em>)}</span>
+      <span className={`ahn-st ${a.window === 'last_day' ? 'warn' : ''}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
+      <i className="ahn-ch" aria-hidden="true">›</i>
+    </Link>);
+  const Bar = ({ v, cls }) => <div className="ahn-bar"><i className={cls} style={{ width: `${Math.min(100, v)}%` }} /><em>{v}%</em></div>;
   return (
-    <div className="ah">
-      <div className="row"><h1 className="title grow">Resumen de hoy</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
-      <div className="sub">{fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+    <div className="ah ahn">
+      <div className="ahn-top"><div><h1 className="title">Resumen de hoy</h1>
+        <div className="sub" style={{ margin: 0 }}>{cap(fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</div></div>
+        <Link href="/week" className="ahn-date">{I.calendar(20)}<b>{`${cap(fmtDate(today, { weekday: 'short' }).replace('.', ''))} ${Number(today.slice(8))} ${fmtDate(today, { month: 'short' }).replace('.', '')} ${today.slice(0, 4)}`}</b><i>›</i></Link></div>
       <MyAuditsForAdmin />
       {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
           <div className="ps-chips">{plants.map((p) => <span key={p.id} className={`ps-chip ${p.active ? 'on' : ''}`}>{p.code}<i>{p.active ? 'activa' : `${p.users} usuarios`}</i></span>)}</div>
         </Link>)}
-      <div className="ah-kpis">
-        <div className="ah-kpi"><i className="b">{P.cal}</i><div><b>{l1.length}</b><span>Programadas</span></div></div>
-        <div className="ah-kpi"><i className="g">{P.ok}</i><div><b>{done.length}</b><span>Completadas</span></div></div>
-        <div className="ah-kpi"><i className="o">{P.clock}</i><div><b>{pend.length}</b><span>Pendientes</span></div></div>
-        <div className="ah-kpi ah-ring"><Ring value={dayPct} size={64} stroke={8} cls="good" label={`${dayPct}%`} /><div><b>Progreso</b><span>{done.length} de {l1.length} del día</span></div></div>
+      <div className="ahn-kpis">
+        <div className="ahn-kpi"><i className="b">{P.doc}</i><div><b>{l1.length}</b><span>Programadas</span><Bar v={l1.length ? 100 : 0} cls="fb" /></div></div>
+        <div className="ahn-kpi"><i className="g">{P.ok}</i><div><b>{done.length}</b><span>Completadas</span><Bar v={dayPct} cls="fg" /></div></div>
+        <div className="ahn-kpi"><i className="o">{P.clock}</i><div><b>{pend.length}</b><span>Pendientes</span><Bar v={l1.length ? 100 - dayPct : 0} cls="fo" /></div></div>
+        <div className="ahn-kpi"><i className="v">{P.bars}</i><div><b>{dayPct}%</b><span>Progreso del día</span><Bar v={dayPct} cls="fv" /></div></div>
       </div>
-      {unassigned > 0 && <Link href="/admin" className="ah-alert"><i>{P.warn}</i><b>{unassigned} sin zona o máquina asignada</b><span className="btn sm">Asignar ›</span></Link>}
-      {missed.length > 0 && <Link href="/dashboard" className="ah-alert red"><i>{P.warn}</i><b>{missed.length} no realizada(s) esta semana</b><span className="btn sm">Ver Panel ›</span></Link>}
-      {overdue.length > 0 && <Link href="/findings" className="ah-alert red"><i>{P.warn}</i><b>{overdue.length} issue(s) vencido(s)</b><span className="btn sm">Ver Issues ›</span></Link>}
-      <section className="ah-card ah-main">
-        <div className="ah-head"><h2>Pendientes <small>({pend.length})</small></h2>
-          <input className="inp ah-search" placeholder="Buscar auditor o zona…" value={qs} onChange={(e) => setQs(e.target.value)} /></div>
-        {rows.length ? (
-          <div className="ah-table ah-simple">
-            {rows.map((a) => (
-              <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr">
-                <b className="ahwho">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
-                <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.kind === 'process' ? <em className="gray">zona al iniciar</em> : (a.area || <em>Sin zona</em>)}</span>
-                <span className={`pill ${a.window === 'last_day' ? 'warn' : 'gold'}`}>{a.window === 'last_day' ? 'Último día' : 'Programada'}</span>
-              </Link>))}
-          </div>
+      {unassigned > 0 && <Link href="/admin" className="ahn-alert org"><i>{P.warn}</i><b>{unassigned} sin zona o máquina asignada</b><span>Asignar →</span></Link>}
+      {missed.length > 0 && <Link href="/dashboard" className="ahn-alert"><i>{P.warn}</i><b>{missed.length} no realizada(s) esta semana</b><span>Ver Panel →</span></Link>}
+      {overdue.length > 0 && <Link href="/findings" className="ahn-alert"><i>{P.warn}</i><b>{overdue.length} issue(s) vencido(s)</b><span>Ver Issues →</span></Link>}
+      <section className="ahn-sec">
+        <div className="ahn-head"><h2>Pendientes <small>({pend.length})</small></h2>
+          <label className="ahn-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input placeholder="Buscar auditor o zona…" value={qs} onChange={(e) => setQs(e.target.value)} /></label>
+          {plantsIn.length > 1 && <select className="ahn-sel" value={pq} onChange={(e) => setPq(e.target.value)} aria-label="Planta"><option value="">Todas las plantas</option>{plantsIn.map((x) => <option key={x} value={x}>{x}</option>)}</select>}
+          <select className="ahn-sel" value={zq} onChange={(e) => setZq(e.target.value)} aria-label="Zona"><option value="">Todas las zonas</option>{zones.map((z) => <option key={z} value={z}>{z}</option>)}</select>
+          <select className="ahn-sel" value={sq} onChange={(e) => setSq(e.target.value)} aria-label="Estado"><option value="">Todos los estados</option><option value="open">Programada</option><option value="last_day">Último día</option></select></div>
+        {list.length ? (
+          <div className={`ahn-cols ${cols.length > 1 ? 'two' : ''}`}>{cols.map((c, k) => (
+            <div key={k} className="ahn-tbl">
+              <div className="ahn-th"><span>Auditor</span><span>Layer</span><span>Zona</span><span>Estado</span><span /></div>
+              {c.map((a) => <Row key={a.id} a={a} />)}
+            </div>))}</div>
         ) : <div className="empty">{pend.length ? 'Sin resultados.' : l1.length ? 'Todas las auditorías de hoy están completadas. 🎉' : 'Hoy no hay auditorías programadas.'}</div>}
         {done.length > 0 && <>
-          <h3 className="ah-sub">Completadas ({done.length})</h3>
-          <div className="ah-table ah-simple">{done.map((a) => (
-            <Link key={a.id} href={`/audit/${a.id}`} className="ah-tr done">
-              <b className="ahwho">{a.name}<small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></b>
-              <span className="z"><span className={`ktag inl ${a.kind === 'process' ? 'proc' : 'lpa'}`}>{a.kind === 'process' ? `Proceso ${a.slot}` : 'LPA'}</span>{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
+          <h3 className="ahn-sub">Completadas ({done.length})</h3>
+          <div className="ahn-cols"><div className="ahn-tbl">{done.map((a) => (
+            <Link key={a.id} href={`/audit/${a.id}`} className="ahn-tr done">
+              <span className="ahn-who"><span className={`uc-av d-${a.dept}`}>{ini(a.name)}</span><span><b>{a.name}</b><small>{DEPT[a.dept] || a.dept} · L{a.layer}</small></span></span>
+              <span className="ahn-lay">{lay(a)}</span>
+              <span className="ahn-z">{a.area}{a.part_number ? <small> · N/P {a.part_number}</small> : null}</span>
               <b className={`score ${scoreCls(a.score_pct)}`}>{Math.round(a.score_pct)}%</b>
-            </Link>))}</div></>}
+              <i className="ahn-ch" aria-hidden="true">›</i>
+            </Link>))}</div></div></>}
       </section>
     </div>
   );
