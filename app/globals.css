@@ -1243,7 +1243,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .qx-h.late { background: #ece3fb; color: #7c3aed; } [data-theme="dark"] .qx-h.late { background: rgba(139,92,246,.22); color: #a78bfa; }
 
 /* Login animado: tarjetas flotantes y mascota (solo en pantallas anchas) */
-.login2 .lg-fx { display: block; position: absolute; right: 12px; top: 96px; width: 150px; height: 230px; pointer-events: none; z-index: 2 }
+.login2 .lg-fx { display: block; position: absolute; right: 10px; top: 70px; width: 150px; height: 230px; pointer-events: none; z-index: 2 }
 .login2 .fx-card { position: absolute; background: rgba(255,255,255,.95); color: #0b1f4d; border-radius: 14px; padding: 7px 10px; box-shadow: 0 14px 28px -14px rgba(0,0,0,.6); animation: fxFloat 5s ease-in-out infinite }
 .login2 .fx-card small { display: block; font-size: 9px; color: #5a6a8c } .login2 .fx-card b { font-size: 16px; letter-spacing: -.02em }
 .login2 .fx-a { right: 0; top: 0; width: 140px } .login2 .fx-a .fx-line { stroke-dasharray: 260; animation: fxDraw 2.4s ease-out .3s both } .login2 .fx-a svg { height: 30px }
@@ -1288,7 +1288,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   .hero-feats { margin: 0; flex-wrap: wrap; } .hero-feats li { width: 104px }
   .login2 .hero .lang { right: 22px; top: 18px; }
   .login2 form { grid-column: 2; align-self: center; justify-self: center; width: 100%; max-width: 470px; box-shadow: 0 28px 70px -36px rgba(11,31,77,.45); border: 1px solid var(--line); }
-  .login2 .lg-fx { left: 50%; right: 5%; width: auto; min-width: 0; top: 22%; height: 400px; }
-  .login2 .fx-a { left: 0; top: 0; } .login2 .fx-b { right: 0; top: 120px; } .login2 .fx-c { left: 8px; top: 236px; } .login2 .fx-orb { left: 55%; top: 318px; margin-left: 0; }
+  .login2 .lg-fx { left: 52%; right: 12%; width: auto; min-width: 0; top: 24%; height: 330px; }
+  .login2 .fx-a { left: 0; top: 0; width: 170px; } .login2 .fx-b { right: 0; top: 120px; } .login2 .fx-c { left: 8px; top: 236px; } .login2 .fx-orb { left: 55%; top: 318px; margin-left: 0; }
 }
 @media (min-width: 900px) and (max-height: 760px) { .login2-card .hero { min-height: 640px; } }

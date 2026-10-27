@@ -34,7 +34,7 @@ export default function Login() {
   const [expired, setExpired] = useState(false);
   useEffect(() => { try { setExpired(new URLSearchParams(window.location.search).get('expired') === '1'); } catch {} }, []);
   const [username, setU] = useState(''), [pin, setP] = useState(''), [show, setShow] = useState(false);
-  const [okAnim, setOkAnim] = useState(false), [typing, setTyping] = useState(false), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [remember, setRemember] = useState(true), [forgot, setForgot] = useState(false);
+  const [okAnim, setOkAnim] = useState(false), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [remember, setRemember] = useState(true), [forgot, setForgot] = useState(false);
   const router = useRouter();
   const t = T[lang];
 
@@ -63,7 +63,6 @@ export default function Login() {
             <svg viewBox="0 0 160 46" width="100%" height="46"><path className="fx-line" d="M2 38 C22 36 30 18 50 24 S84 40 100 22 S134 6 158 10" fill="none" stroke="#2f7bff" strokeWidth="3" strokeLinecap="round" /></svg></div>
           <div className="fx-card fx-b"><svg width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="none" stroke="rgba(120,140,180,.3)" strokeWidth="5" /><circle className="fx-ring" cx="23" cy="23" r="18" fill="none" stroke="#22b36a" strokeWidth="5" strokeLinecap="round" transform="rotate(-90 23 23)" /></svg><div><b>98%</b><small>Score de hoy</small></div></div>
           <div className="fx-card fx-c"><i /> <span>Open issue cerrado</span></div>
-          <div className={`fx-orb ${typing ? 'shy' : ''} ${okAnim ? 'happy' : ''}`}><span className="e e1" /><span className="e e2" /><span className="m" /></div>
         </div>
         <ul className="hero-feats">{[Icon.layers, Icon.shieldOk, Icon.bars, Icon.team].map((ic, i) => <li key={i}>{ic}<b>{t.feats[i][0]}</b><span>{t.feats[i][1]}</span></li>)}</ul>
       </div>
@@ -73,7 +72,7 @@ export default function Login() {
         <div className="field">{Icon.user}<div className="f-in"><label htmlFor="u">{t.user}</label>
           <input id="u" autoCapitalize="none" autoCorrect="off" autoComplete="username" placeholder={t.userPh} value={username} onChange={(e) => setU(e.target.value)} /></div></div>
         <div className="field">{Icon.lock}<div className="f-in"><label htmlFor="p">{t.pin}</label>
-          <input id="p" onFocus={() => setTyping(true)} onBlur={() => setTyping(false)} type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
+          <input id="p" type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••" value={pin} onChange={(e) => setP(e.target.value)} /></div>
           <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar contraseña">{show ? Icon.eyeOff : Icon.eye}</button></div>
         {expired && !err && <div className="err">{lang === 'en' ? 'Your session was closed after a period of inactivity. Please sign in again.' : 'Tu sesión se cerró por inactividad. Vuelve a entrar.'}</div>}
         {err && <div className="err">{err}</div>}
