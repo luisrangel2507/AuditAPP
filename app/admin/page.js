@@ -445,7 +445,7 @@ const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[
 function Assign() {
   const me = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
-  const [qs, setQs] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [mvErr, setMvErr] = useState(''), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
+  const [qs, setQs] = useState(''), [dq, setDq] = useState(''), [lq, setLq] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [mvErr, setMvErr] = useState(''), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
   const dirty = Object.keys(edits).length;
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
@@ -485,6 +485,8 @@ function Assign() {
   const people = [];
   (data?.audits || []).forEach((a) => {
     if (qs && !a.name.toLowerCase().includes(qs.toLowerCase())) return;
+    if (dq && a.dept !== dq) return;
+    if (lq && String(a.layer) !== lq) return;
     let p = people[people.length - 1];
     if (!p || p.id !== a.user_id) { p = { id: a.user_id, a, list: [] }; people.push(p); }
     p.list.push(a);
@@ -499,13 +501,15 @@ function Assign() {
   );
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría. El <b>número de parte</b> lo captura el auditor al realizar su auditoría. Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría.  Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
         <button className="btn alt sm" onClick={() => go(1)} disabled={!data}>›</button>
       </div>
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="asg-filters">
+        <select className="inp" value={dq} onChange={(e) => setDq(e.target.value)} aria-label="Departamento"><option value="">Todos los departamentos</option>{[...new Set((data?.audits || []).map((a) => a.dept))].map((d) => <option key={d} value={d}>{DEPT[d] || d}</option>)}</select>
+        <select className="inp" value={lq} onChange={(e) => setLq(e.target.value)} aria-label="Capa"><option value="">Todas las capas (Layer)</option>{[...new Set((data?.audits || []).map((a) => String(a.layer)))].sort().map((l) => <option key={l} value={l}>Layer {l}</option>)}</select>
         <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
         <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>⬇ Importar desde Excel</button>
       </div>
@@ -515,7 +519,7 @@ function Assign() {
       {!data ? <div className="empty">Cargando…</div> : !people.length ? <div className="empty">Sin auditorías esta semana{qs ? ' con ese filtro' : ''}. Revisa que la planta esté en marcha.</div> : (
         <>
           <div className="asg-mx-wrap"><table className="asg-mx asg2">
-            <thead><tr><th>Persona</th><th className="dcol">Departamento</th>{data.days.map((d, k) => <th key={d} className={d === data.today ? 'today' : ''}>{DAYS_SHORT[k]} {Number(d.slice(8))}</th>)}</tr></thead>
+            <thead><tr><th>Persona</th><th className="dcol">Departamento</th>{data.days.map((d, k) => <th key={d} className={`dayh ${d === data.today ? 'today' : ''}`}><b>{DAYS_SHORT[k]}</b><span>{Number(d.slice(8))} {fmtDate(d, { month: 'short' }).replace('.', '')}</span></th>)}<th className="mcol" /></tr></thead>
             <tbody>{people.map(({ id, a, list }) => (
               <tr key={id}>
                 <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></div></th>
@@ -528,10 +532,11 @@ function Assign() {
                   return (
                     <td key={d}>
                       <button type="button" className={`acell t-${toneOf(v.area) || 'none'} ${edits[x.id] ? 'edited' : ''}`} onClick={() => { setOtro(''); setPick({ x, list, step: 'zone', zone: zoneOf(v.area) }); }}>
-                        <span>{v.area || '—'}</span><i aria-hidden="true">▾</i>
+                        <span>{v.area || '—'}</span><small>Layer {x.layer}</small>
                       </button>
                     </td>);
                 })}
+                <td className="mcol"><button type="button" className="dots" aria-label="Más opciones" title="Copiar la primera zona pendiente a toda la semana" onClick={() => { if (list.filter((y) => y.status === 'pending').length < 2) return setMsg('Esta persona no tiene más días pendientes'); if (confirm(`¿Copiar la primera zona pendiente de ${a.name} a todos sus días pendientes de la semana?`)) fillWeek(list); }}>•••</button></td>
               </tr>))}</tbody>
           </table></div>
           <div className="asg-legend">
