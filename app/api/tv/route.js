@@ -68,6 +68,15 @@ export async function GET(req) {
         WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`,
       [today, scope]);
 
+    // Open issues abiertos (la TV los muestra 30 s cada 2 min)
+    const { rows: iss } = await q(
+      `SELECT f.id,f.area,f.result,f.due_date,f.question,f.notes,a.part_number,
+              COALESCE((SELECT json_agg(json_build_object('name',ou.name,'plan',o.plan_action,'plan_date',o.plan_date,'status',o.status) ORDER BY o.added_at)
+                          FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
+         FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
+        WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)
+        ORDER BY (f.due_date < $2) DESC NULLS LAST, f.due_date NULLS LAST, f.id LIMIT 60`, [scope, today]);
+
     // Semana anterior (para el cambio vs. semana pasada): todo lo que ya cerró su ventana
     const pm = addDays(monday, -7);
     const { rows: pr } = await q(
@@ -108,6 +117,7 @@ export async function GET(req) {
         findings_open: f[0].open, findings_overdue: f[0].overdue,
       },
       byLayer, prev, layerCounts,
+      issues: iss.map((f) => ({ id: f.id, area: f.area, np: f.part_number, result: f.result, due: f.due_date, over: !!(f.due_date && f.due_date < today), q: String(f.question || '').split('\n')[0], notes: f.notes, owners: f.owners })),
       scheduled: scheduled.map(slim), doneToday: doneTodayList.map(slim), mgmt: mgmt.map(slim), missed: missed.map(slim),
     });
   } catch (e) {

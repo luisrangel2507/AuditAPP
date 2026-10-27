@@ -100,6 +100,12 @@ export default function TV() {
     </div>
   );
 
+  // Cada 2 minutos, durante 30 s (los últimos 30 de cada ciclo), se muestran los open issues abiertos
+  const ISS_PER = wall ? 7 : 8, issues = (data?.issues || []).slice(0, ISS_PER * 4), issAll = data?.issues || [], issPages = Math.max(1, Math.ceil(issues.length / ISS_PER));
+  const cycSec = now ? Math.floor(now.getTime() / 1000) % 120 : 0;
+  const qIss = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('issues') : null; // ?issues=1 / ?issues=0: vista previa de los open issues
+  const showIssues = !!data && issues.length > 0 && qIss !== '0' && (qIss === '1' || cycSec >= 90);
+  const issPage = Math.min(issPages - 1, Math.floor(((cycSec - 90) / 30) * issPages));
   return (
     <div className={`tvx ${wall ? 'wall' : ''}`}>
       <header className="tvx-head">
@@ -126,6 +132,20 @@ export default function TV() {
             <div className={`tvx-kpi wide ${k.findings_overdue ? 'nok' : ''}`}><div><b className="sm">{k.findings_open}</b><h3>Hallazgos abiertos · {k.findings_overdue} vencidos</h3></div></div>
           </section>
 
+          {showIssues ? (
+            <section className="tvx-iss">
+              <h2><span className="tvx-h-ic">⚠</span>Open issues abiertos<em>{issAll.length} abiertos · {issAll.filter((f) => f.over).length} vencidos · página {issPage + 1} de {issPages}</em></h2>
+              <div className="tvx-ith"><span>OI</span><span>Ubicación</span><span>Hallazgo</span><span>Responsable y acción</span><span>Compromiso</span></div>
+              {issues.slice(issPage * ISS_PER, issPage * ISS_PER + ISS_PER).map((f) => (
+                <div key={f.id} className={`tvx-irow ${f.over ? 'over' : ''}`}>
+                  <b>OI-{String(f.id).padStart(4, '0')}</b>
+                  <span>{f.area}{f.np ? <small>N/P {f.np}</small> : null}</span>
+                  <span><i className={f.result === 'nok' ? 'x' : 'd'}>{f.result === 'nok' ? 'X' : 'Δ'}</i>{f.q}{f.notes ? <small>“{f.notes}”</small> : null}</span>
+                  <span>{f.owners.length ? f.owners.map((o) => <span key={o.name} className="own"><b>{o.name}</b>{o.plan ? <small>{o.plan}</small> : <small className="no">Sin acción registrada</small>}</span>) : <small className="no">Sin responsable</small>}</span>
+                  <span className="due">{f.due ? fmt(String(f.due).slice(0, 10), { day: 'numeric', month: 'short' }) : '—'}{f.over ? <small>vencido</small> : null}</span>
+                </div>))}
+            </section>
+          ) : <>
           <nav className="tvx-tabs" aria-label="Capas">
             {tabs.map((t) => <button key={t.l} className={tab === t.l ? 'on' : ''} onClick={() => setTab(t.l)}>{t.label}<em className={`n${t.l}`}>{t.n}</em></button>)}
           </nav>
@@ -137,10 +157,6 @@ export default function TV() {
               <List {...listProps} id="hoy" rows={todayRows} per={9} render={row} empty="Sin auditorías programadas." />
             </div>
             <div className="tvx-col">
-              <div className="tvx-panel">
-                <h2>Completadas hoy<em>{data.doneToday.length} registradas</em></h2>
-                <List {...listProps} id="done" rows={data.doneToday} per={5} render={row} empty="Aún no hay auditorías registradas hoy." />
-              </div>
               <div className="tvx-panel alert">
                 <h2>No realizadas esta semana<em>{missedBy.length} auditores</em></h2>
                 <List {...listProps} id="miss" rows={missedBy} per={5} empty="Ninguna. Programa al corriente."
@@ -152,17 +168,9 @@ export default function TV() {
                       <span className="tvx-st nok">{a.days.length}</span>
                     </div>)} />
               </div>
-              <div className="tvx-panel">
-                <h2>Cumplimiento por capa<em>diario</em></h2>
-                {data.byLayer.map((l) => {
-                  const p = l.counted ? Math.round((l.done / l.counted) * 100) : null;
-                  const d = l.layer === 1 ? k.day_pct : null;
-                  return (<div className="tvx-bar" key={l.layer}><span>Layer {l.layer}</span><div><i className={pctCls(d ?? p)} style={{ width: `${d ?? p ?? 0}%` }} /></div><em>{l.layer === 1 ? `hoy ${d == null ? '—' : d + '%'}` : p == null ? '—' : `${p}%`}</em></div>);
-                })}
-                <div className="tvx-note">Layer 1: cumplimiento de hoy · Layer 2, 3 y 4: auditoría semanal</div>
-              </div>
             </div>
           </section>
+          </>}
           <footer className="tvx-foot">La auditoría solo se registra el mismo día programado · Actualizado {updated?.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} · se refresca cada minuto</footer>
         </>
       )}

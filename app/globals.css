@@ -1342,3 +1342,15 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ulg-ch { font-style: normal; font-size: 26px; color: var(--ink); transition: transform .2s; } .ulg.on .ulg-ch { transform: rotate(90deg); }
 .lgrp { margin-bottom: 14px; }
 @media (max-width: 700px) { .lgrp-h.ulg { grid-template-columns: 48px 1fr 20px; } .ulg-ic { width: 46px; height: 46px; } .ulg-n { grid-column: 2; font-size: 13px; } .ulg-t b { font-size: 18px; } .ulg-t small { font-size: 13px; } }
+
+/* TV: solo "Le toca hoy" y "No realizadas"; los open issues salen 30 s cada 2 min */
+.tvx.wall .tvx-col { grid-template-rows: minmax(0, 1fr); }
+.tvx-iss { margin-top: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 20px; padding: 14px 18px; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.tvx-iss h2 { margin: 0 0 10px; font-size: 22px; display: flex; align-items: center; gap: 10px; } .tvx-iss h2 em { margin-left: auto; font-style: normal; font-size: 15px; opacity: .75; font-weight: 500; }
+.tvx-ith, .tvx-irow { display: grid; grid-template-columns: 90px 1fr 2.2fr 2fr 110px; gap: 14px; align-items: start; }
+.tvx-ith { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; opacity: .65; padding: 0 6px 8px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.tvx-irow { padding: 11px 6px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 17px; } .tvx-irow > b { color: #7fb0ff; font-family: ui-monospace, monospace; } .tvx-irow small { display: block; opacity: .75; font-size: 13.5px; margin-top: 2px; }
+.tvx-irow i { font-style: normal; font-weight: 800; margin-right: 8px; padding: 1px 8px; border-radius: 6px; background: #d92f3a; color: #fff; } .tvx-irow i.d { background: #e0a100; }
+.tvx-irow .own { display: block; margin-bottom: 4px; } .tvx-irow .own b { font-size: 16px; } .tvx-irow small.no { color: #ff9aa2; }
+.tvx-irow .due { font-weight: 700; } .tvx-irow.over .due, .tvx-irow.over .due small { color: #ff7a85; opacity: 1; }
+:root[data-theme="light"] .tvx-iss { background: #fff; border-color: #dfe6f4; } :root[data-theme="light"] .tvx-irow > b { color: #1f5bd6; } :root[data-theme="light"] .tvx-irow small.no { color: #c02030; }
