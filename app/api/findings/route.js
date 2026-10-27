@@ -23,6 +23,7 @@ export const GET = route(async (req, ctx, user) => {
   }
   const { rows } = await q(
     `SELECT f.id,f.area,a.part_number,f.question,f.result,f.notes,f.status,f.action,f.due_date,f.created_at,f.closed_at,
+            (SELECT COUNT(*)::int FROM finding_updates fu WHERE fu.finding_id=f.id AND fu.kind IN ('comment','progress','done')) AS n_updates,
             a.id AS audit_id, a.date AS audit_date, a.user_id AS auditor_id, u.name AS auditor, u.dept,
             (SELECT r.id FROM responses r WHERE r.id=f.response_id AND r.evidence <> '') AS evidence_id,
             (SELECT COALESCE(r2.item_no, CASE WHEN qq.item_no IS NOT NULL THEN NULLIF(qq.item_no,-1) ELSE qq.sort_order + 1 END)

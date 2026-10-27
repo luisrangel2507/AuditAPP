@@ -52,22 +52,28 @@ function Item({ f, today, lead, user, reload, startOpen }) {
   }
   const pend = f.owners.filter((o) => o.status !== 'done').length;
   return (
-    <div id={`oi-${f.id}`} className="card issue" style={{ marginBottom: 10, borderColor: overdue ? 'rgba(200,60,50,.5)' : undefined }}>
-      <div style={{ cursor: 'pointer' }} onClick={() => setOpen(!open)}>
-        <div className="row oi-top"><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span><span className="oi-no">{no(f.id)}</span>{f.item ? <span className="oi-item">Ítem {f.item}</span> : null}</div>
-        <div className="oi-q"><Bi text={f.question} /></div>
-      </div>
-      <div className="oi-meta">
-        <span><i>Zona / Máquina</i><b>{f.area || '—'}</b></span>
-        {f.part_number && <span><i>N/P</i><b>{f.part_number}</b></span>}
-        <span><i>Fecha</i><b>{fmtDate(f.audit_date, { day: 'numeric', month: 'short' })}</b></span>
-        <span><i>Auditor</i><b>{f.auditor}</b></span>
-      </div>
-      <div className="row wrap" style={{ marginTop: 8 }}>
-        <span className={`pill ${stCls}`}>{stTxt}</span>
-        {f.owners.length === 0 && !closed && <span className="pill nok">Sin responsable</span>}
-        {f.owners.map((o) => <span key={o.user_id} className={`pill ${o.status === 'done' ? 'ok' : ''}`}>{o.name}{o.status === 'done' ? ' ✓' : ''}</span>)}
-        {f.due_date && <span className={`pill ${overdue ? 'nok' : soon ? 'warn' : ''}`}>{'Compromiso '}{fmtDate(f.due_date, { day: 'numeric', month: 'short' })}</span>}
+    <div id={`oi-${f.id}`} className={`card issue ${closed ? 'cl' : overdue ? 'pri-hi' : soon ? 'pri-mid' : 'pri-lo'}`} style={{ marginBottom: 10 }}>
+      <div className="oi2" onClick={() => setOpen(!open)}>
+        <div className="oi2-l"><b className="oi-no">{no(f.id)}</b>
+          {!closed && <span className={`oi2-pr ${overdue ? 'hi' : soon ? 'mid' : 'lo'}`}>{overdue ? '◆ Alta' : soon ? '● Media' : '⬢ Baja'}</span>}</div>
+        <div className="oi2-m">
+          <div className="oi2-top"><span className={`oi2-st ${closed ? 'ok' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span></div>
+          <div className="oi-q"><Bi text={f.question} /></div>
+          <div className="oi2-chips">
+            <span><i>Zona</i>{String(f.area || '—').split(' · ')[0]}</span>
+            {String(f.area || '').includes(' · ') && <span><i>Máquina</i>{String(f.area).split(' · ').slice(1).join(' · ')}</span>}
+            {f.item ? <span><i>Item</i>{f.item}</span> : null}
+            {f.part_number && <span><i>N/P</i>{f.part_number}</span>}
+            <span><i>Fecha</i>{fmtDate(f.audit_date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <span><i>Auditor</i>{f.auditor}</span>
+            {f.owners.length === 0 && !closed ? <span className="no"><i>Responsable</i>Sin responsable</span> : f.owners.map((o) => <span key={o.user_id}><i>Responsable</i>{o.name}{o.status === 'done' ? ' ✓' : ''}</span>)}
+          </div>
+        </div>
+        <div className="oi2-r">
+          <div className={`oi2-due ${overdue ? 'over' : soon ? 'soon' : ''}`}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></svg><span><small>{closed ? 'Cerrado' : 'Vencimiento'}</small><b>{closed ? (f.closed_at ? fmtDate(String(f.closed_at).slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }) : '—') : f.due_date ? fmtDate(f.due_date, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</b></span></div>
+          <span className="oi2-cm" title="Comentarios y avances"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /></svg>{f.n_updates || 0}</span>
+          <i className={`oi2-ch ${open ? 'on' : ''}`} aria-hidden="true">›</i>
+        </div>
       </div>
       {open && (
         <div style={{ marginTop: 12 }}>
@@ -167,16 +173,32 @@ function Inner() {
   const load = () => status && api(`/api/findings?status=${status}`).then(setData).catch((e) => setErr(e.message));
   useEffect(() => { setData(status ? peek(`/api/findings?status=${status}`) : null); load(); /* eslint-disable-next-line */ }, [status]);
   const tabs = [['mine', 'A mi cargo'], ['open', 'Abiertos'], ...(lead ? [['unassigned', 'Sin responsable']] : []), ['closed', 'Cerrados']];
+  const [cnt, setCnt] = useState({}), [sq, setSq] = useState(''), [fq, setFq] = useState(''), [fOpen, setFOpen] = useState(false);
+  useEffect(() => {
+    ['all', 'open', 'closed', 'unassigned', 'mine'].forEach((k) => api(`/api/findings?status=${k}`).then((d) => setCnt((c) => ({ ...c, [k]: d.findings.length }))).catch(() => {}));
+    // eslint-disable-next-line
+  }, [data]);
+  const allTabs = [['all', 'Todos'], ...tabs];
+  const shown = (data?.findings || []).filter((f) => {
+    const over = f.status !== 'closed' && f.due_date && f.due_date < data.today;
+    if (fq === 'over' && !over) return false;
+    if (fq === 'soon' && (over || !f.due_date || f.due_date > addDays(data.today, 2) || f.status === 'closed')) return false;
+    const t = sq.trim().toLowerCase();
+    return !t || `${no(f.id)} ${f.id} ${f.question} ${f.notes || ''} ${f.area || ''} ${f.auditor} ${f.owners.map((o) => o.name).join(' ')}`.toLowerCase().includes(t);
+  });
   return (
     <>
-      <h1 className="title">Open issues</h1>
-      <div className="sub">Cada hallazgo abre un issue; todos sus responsables deben darle seguimiento hasta cerrarlo.</div>
-      <div className="seg" style={{ margin: '12px 0' }}>
-        {tabs.map(([k, l]) => <button key={k} className={status === k ? 'on' : ''} onClick={() => setStatus(k)}>{l}</button>)}
+      <h1 className="title">Open Issues</h1>
+      <div className="sub">Cada hallazgo abre un issue. Todos sus responsables deben darle seguimiento hasta cerrarlo.</div>
+      <div className="oi2-bar">
+        <div className="oi2-tabs">{allTabs.map(([k, l]) => <button key={k} className={status === k ? 'on' : ''} onClick={() => setStatus(k)}>{l}<em>{cnt[k] ?? '·'}</em></button>)}</div>
+        <label className="oi2-search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input placeholder="Buscar por número, descripción o responsable…" value={sq} onChange={(e) => setSq(e.target.value)} /></label>
+        <div className="oi2-filt"><button type="button" className={fq ? 'on' : ''} onClick={() => setFOpen(!fOpen)}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16l-6 7v5l-4 2v-7z" /></svg>Filtros</button>
+          {fOpen && <div className="qq-menu">{[['', 'Todos'], ['over', 'Solo vencidos'], ['soon', 'Por vencer (2 días)']].map(([k, l]) => <button key={k} type="button" className={fq === k ? 'on' : ''} onClick={() => { setFq(k); setFOpen(false); }}>{l}</button>)}</div>}</div>
       </div>
       {err && <div className="err">{err}</div>}
-      {!data ? <div className="empty">Cargando…</div> : data.findings.length === 0 ? <div className="card empty">Sin issues en esta vista.</div>
-        : data.findings.map((f) => <Item key={f.id} f={f} today={data.today} lead={lead} user={user} reload={load} startOpen={f.id === focus} />)}
+      {!data ? <div className="empty">Cargando…</div> : shown.length === 0 ? <div className="card empty">Sin issues en esta vista.</div>
+        : shown.map((f) => <Item key={f.id} f={f} today={data.today} lead={lead} user={user} reload={load} startOpen={f.id === focus} />)}
     </>
   );
 }
