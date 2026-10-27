@@ -29,7 +29,7 @@ export const GET = route(async (req, ctx, user) => {
                FROM responses r2 JOIN questions qq ON qq.id=r2.question_id WHERE r2.id=f.response_id) AS item,
             COALESCE((SELECT json_agg(json_build_object('id',e.id,'user_id',e.user_id,'name',eu.name,'at',e.created_at) ORDER BY e.id)
                         FROM finding_evidence e LEFT JOIN users eu ON eu.id=e.user_id WHERE e.finding_id=f.id),'[]') AS closure,
-            COALESCE((SELECT json_agg(json_build_object('user_id',o.user_id,'name',ou.name,'status',o.status,'action',o.action,'done_at',o.done_at) ORDER BY o.added_at)
+            COALESCE((SELECT json_agg(json_build_object('user_id',o.user_id,'name',ou.name,'status',o.status,'action',o.action,'plan_action',o.plan_action,'plan_date',o.plan_date,'done_at',o.done_at) ORDER BY o.added_at)
                         FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
        FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
       ${cond.length ? 'WHERE ' + cond.join(' AND ') : ''}

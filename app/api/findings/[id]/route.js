@@ -1,6 +1,7 @@
 import { pool, q } from '@/lib/db';
 import { route, json, err, isLead } from '@/lib/api';
 import { sameSite } from '@/lib/site';
+import { mxToday } from '@/lib/dates';
 import { addOwner, logUpdate, syncFinding } from '@/lib/issues';
 
 // Línea de tiempo del issue
@@ -54,8 +55,21 @@ export const PATCH = route(async (req, { params }, user) => {
     }
     if (typeof b.comment === 'string' && b.comment.trim()) await logUpdate(client, f.id, user.id, 'comment', b.comment.trim());
 
+    // Plan del responsable: acción que va a realizar y fecha de cierre (obligatorio antes de dar seguimiento)
+    if (b.my_plan) {
+      if (!mine) { await client.query('ROLLBACK'); return err('No eres responsable de este issue', 403); }
+      const pa = String(b.my_plan.action || '').trim().slice(0, 600), pd = String(b.my_plan.date || '');
+      if (pa.length < 3) { await client.query('ROLLBACK'); return err('Escribe la acción que vas a realizar'); }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(pd)) { await client.query('ROLLBACK'); return err('Elige la fecha de cierre'); }
+      if (pd < mxToday()) { await client.query('ROLLBACK'); return err('La fecha de cierre no puede ser anterior a hoy'); }
+      await client.query('UPDATE finding_owners SET plan_action=$3, plan_date=$4 WHERE finding_id=$1 AND user_id=$2', [f.id, user.id, pa, pd]);
+      await client.query('UPDATE findings SET due_date=(SELECT MAX(plan_date) FROM finding_owners WHERE finding_id=$1) WHERE id=$1', [f.id]);
+      await logUpdate(client, f.id, user.id, 'comment', `Plan: ${pa} · cierre ${pd}`);
+    }
+
     // Seguimiento propio del responsable
     if (b.my_status) {
+      if (mine && b.my_status !== 'open' && !(mine.plan_action || '').trim() && !b.my_plan) { await client.query('ROLLBACK'); return err('Primero escribe la acción que vas a realizar y tu fecha de cierre'); }
       if (!mine) { await client.query('ROLLBACK'); return err('No eres responsable de este issue', 403); }
       if (!['in_progress', 'done', 'open'].includes(b.my_status)) { await client.query('ROLLBACK'); return err('Estatus inválido'); }
       const action = typeof b.action === 'string' ? b.action.trim() : mine.action;

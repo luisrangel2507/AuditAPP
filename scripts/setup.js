@@ -358,6 +358,8 @@ async function main() {
   }
 
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
+  await pool.query("ALTER TABLE finding_owners ADD COLUMN IF NOT EXISTS plan_action TEXT DEFAULT ''");
+  await pool.query('ALTER TABLE finding_owners ADD COLUMN IF NOT EXISTS plan_date DATE');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_template_id INT REFERENCES templates(id) ON DELETE SET NULL');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS unscheduled BOOLEAN NOT NULL DEFAULT FALSE');
 

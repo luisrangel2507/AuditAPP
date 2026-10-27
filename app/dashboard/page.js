@@ -74,7 +74,6 @@ function OpenIssues({ issues, today }) {
       <div className="oi-head"><span>OI / Fecha</span><span>Ubicación</span><span>Hallazgo (Plan)</span><span>Responsables y acción (Do)</span><span>Compromiso</span><span>PDCA</span></div>
       {issues.map((f) => {
         const over = f.due_date && f.due_date < today;
-        const acted = (f.owners || []).filter((o) => (o.action || '').trim());
         return (
           <div key={f.id} className={`oi-row ${over ? 'over' : ''}`}>
             <div data-l="OI / Fecha"><b className="oi-no">{oiNo(f.id)}</b><div className="sub">{fmtDate(f.audit_date, { day: 'numeric', month: 'short' })}</div></div>
@@ -82,9 +81,9 @@ function OpenIssues({ issues, today }) {
             <div data-l="Hallazgo (Plan)"><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span> <Bi text={f.question} />
               {f.notes && <div className="sub" style={{ marginTop: 4 }}>“{f.notes}”</div>}</div>
             <div data-l="Responsables y acción (Do)">{(f.owners || []).length ? f.owners.map((o, i) => (
-              <div key={i} className="oi-owner"><b>{o.name}</b> <span className={`pill ${o.status === 'done' ? 'ok' : o.status === 'in_progress' ? 'warn' : ''}`}>{o.status === 'done' ? 'Terminó' : o.status === 'in_progress' ? 'En proceso' : 'Pendiente'}</span>
-                {(o.action || '').trim() && <div className="sub">{o.action}</div>}</div>)) : <span className="sub">Sin responsable asignado</span>}
-              {!acted.length && (f.owners || []).length > 0 && <div className="sub">Sin acción registrada</div>}</div>
+              <div key={i} className="oi-owner"><span className="sub">Responsable:</span> <b>{o.name}</b> <span className={`pill ${o.status === 'done' ? 'ok' : o.status === 'in_progress' ? 'warn' : ''}`}>{o.status === 'done' ? 'Terminó' : o.status === 'in_progress' ? 'En proceso' : 'Pendiente'}</span>
+                <div className="sub"><b>Acción:</b> {(o.plan_action || '').trim() || <i>sin registrar</i>}{o.plan_date ? ` · cierre ${fmtDate(String(o.plan_date).slice(0, 10), { day: 'numeric', month: 'short' })}` : ''}</div>
+                {(o.action || '').trim() && <div className="sub">Avance: {o.action}</div>}</div>)) : <span className="sub">Sin responsable asignado</span>}</div>
             <div data-l="Compromiso" className={over ? 'oi-over' : ''}>{f.due_date ? fmtDate(f.due_date, { day: 'numeric', month: 'short' }) : '—'}{over && <div className="sub" style={{ color: 'inherit' }}>vencido</div>}</div>
             <div data-l="PDCA"><Pdca f={f} /></div>
           </div>);

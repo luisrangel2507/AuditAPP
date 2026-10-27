@@ -46,7 +46,7 @@ export const GET = route(async (req, ctx, user) => {
         WHERE a.status='completed' AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1`, [from, scope]),
     // Open issues (lista tipo PDCA): todos los abiertos de la planta, los vencidos primero
     q(`SELECT f.id,f.area,a.part_number,f.question,f.notes,f.result,f.status,f.due_date,f.created_at,a.date AS audit_date,u.name AS auditor,
-              COALESCE((SELECT json_agg(json_build_object('name',ou.name,'status',o.status,'action',o.action) ORDER BY o.added_at)
+              COALESCE((SELECT json_agg(json_build_object('name',ou.name,'status',o.status,'action',o.action,'plan_action',o.plan_action,'plan_date',o.plan_date) ORDER BY o.added_at)
                           FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
          FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
         WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)

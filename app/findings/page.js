@@ -35,7 +35,7 @@ function EvidencePick({ value, onChange, setErr }) {
 function Item({ f, today, lead, user, reload, startOpen }) {
   const [open, setOpen] = useState(!!startOpen), [err, setErr] = useState(''), [tl, setTl] = useState(null);
   const mine = f.owners.find((o) => o.user_id === user.id);
-  const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState(''), [evid, setEvid] = useState(''), [closeAct, setCloseAct] = useState('');
+  const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState(''), [evid, setEvid] = useState(''), [closeAct, setCloseAct] = useState(''), [planA, setPlanA] = useState(mine?.plan_action || ''), [planD, setPlanD] = useState(mine?.plan_date ? String(mine.plan_date).slice(0, 10) : ''), [editPlan, setEditPlan] = useState(false);
   const canClose = lead || f.auditor_id === user.id;
   const closed = f.status === 'closed';
   const overdue = !closed && f.due_date && f.due_date < today;
@@ -86,13 +86,26 @@ function Item({ f, today, lead, user, reload, startOpen }) {
           {f.owners.map((o) => (
             <div key={o.user_id} className="owner-row">
               <div className="grow"><b>{o.name}</b>{o.user_id === user.id ? ' (tú)' : ''}
-                {o.action && <div className="sub" style={{ margin: 0 }}>{o.action}</div>}</div>
+                <div className="sub" style={{ margin: 0 }}><b>Acción:</b> {o.plan_action || <i>sin registrar</i>}{o.plan_date ? ` · cierre ${fmtDate(String(o.plan_date).slice(0, 10), { day: 'numeric', month: 'short' })}` : ''}</div>
+                {o.action && <div className="sub" style={{ margin: 0 }}>Avance: {o.action}</div>}</div>
               <span className={`pill ${OWN[o.status][1]}`}>{OWN[o.status][0]}</span>
               {lead && !closed && <button className="btn-ghost" aria-label="Quitar" onClick={() => patch({ remove_owner: o.user_id })}>✕</button>}
             </div>))}
           {canAdd && <div style={{ marginTop: 6 }}><OwnerPicker label="" value={[]} onChange={(v) => v[0] && patch({ add_owner: v[0] })} exclude={f.owners.map((o) => o.user_id)} /></div>}
 
-          {mine && mine.status !== 'done' && !closed && <>
+          {mine && mine.status !== 'done' && !closed && (!(mine.plan_action || '').trim() || editPlan) && <div className="card" style={{ marginTop: 14, borderColor: 'rgba(242,106,10,.5)' }}>
+            <div className="sect" style={{ marginTop: 0 }}>Responsable: {mine.name}</div>
+            <label className="lbl">Acción que vas a realizar</label>
+            <textarea className="inp" rows={3} value={planA} onChange={(e) => setPlanA(e.target.value)} placeholder="Describe la acción / contramedida…" />
+            <label className="lbl">Fecha de cierre</label>
+            <input className="inp" type="date" min={today} value={planD} onChange={(e) => setPlanD(e.target.value)} />
+            <div className="row" style={{ marginTop: 10 }}>
+              {editPlan && <button className="btn alt sm grow" onClick={() => setEditPlan(false)}>Cancelar</button>}
+              <button className="btn sm grow" disabled={planA.trim().length < 3 || !planD} onClick={async () => { await patch({ my_plan: { action: planA, date: planD } }); setEditPlan(false); }}>Guardar mi plan</button>
+            </div>
+          </div>}
+          {mine && mine.status !== 'done' && !closed && (mine.plan_action || '').trim() && !editPlan && <div className="sub" style={{ marginTop: 12 }}><b>Tu plan:</b> {mine.plan_action} · cierre {fmtDate(String(mine.plan_date).slice(0, 10), { day: 'numeric', month: 'short' })} <button className="linkbtn" onClick={() => setEditPlan(true)}>Cambiar</button></div>}
+          {mine && mine.status !== 'done' && !closed && (mine.plan_action || '').trim() && <>
             <div className="sect" style={{ marginTop: 14 }}>Tu seguimiento</div>
             <textarea className="inp" rows={2} value={action} onChange={(e) => setAction(e.target.value)} placeholder="Acción / contramedida que tomaste o tomarás…" />
             <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />
