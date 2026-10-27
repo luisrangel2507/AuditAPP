@@ -10,7 +10,7 @@ const csv = (name, body) => new Response(body, { headers: { 'Content-Type': 'tex
 // Descargas para Excel (CSV): cumplimiento, issues, auditorías y la asignación semanal
 export const GET = route(async (req, ctx, user) => {
   const sp = new URL(req.url).searchParams, type = sp.get('type');
-  const scope = await siteScope(user), r = await range(sp.get('days'));
+  const scope = await siteScope(user), r = await range(sp.get('days'), sp.get('from'), sp.get('to'));
   if (type === 'compliance') {
     const rows = await compliance({ ...r, scope });
     return csv(`cumplimiento_${r.from}_${r.to}.csv`, toCSV(['Persona', 'Departamento', 'Layer', 'Programadas', 'Realizadas', 'Fuera de fecha', 'Pendientes', 'Cumplimiento %', 'Score promedio %', 'Hallazgos'],

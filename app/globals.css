@@ -1431,3 +1431,9 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 [data-theme="dark"] .card.issue { background: var(--panel); border-color: rgba(255,255,255,.14); }
 [data-theme="dark"] .oi2-chips span { background: rgba(255,255,255,.1) !important; color: #e6ecff !important; border-color: rgba(255,255,255,.25) !important; }
 [data-theme="dark"] .oi2-tabs button { background: rgba(79,147,255,.16); border-color: rgba(79,147,255,.4); color: #cfe0ff; } [data-theme="dark"] .oi2-tabs button.on { background: #1f6bf0; color: #fff; }
+/* Reportes */
+.rp-period { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: 12px 0 6px; padding: 12px 14px; border: 1px solid var(--line2); border-radius: 16px; background: var(--panel); } .rp-period .seg { flex-wrap: wrap; }
+.rp-dates { display: flex; gap: 10px; flex-wrap: wrap; } .rp-dates label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); } .rp-dates .inp { width: auto; }
+.rp-sec { margin-top: 22px; } .rp-sec h2 { font-size: 18px; margin: 0 0 10px; color: var(--ink); padding-bottom: 6px; border-bottom: 2px solid #1f6bf0; display: inline-block; }
+.rp-links { display: grid; gap: 10px; } .rp-links .rep-link { margin: 0; }
+.rp-ch { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: none; padding: 0; text-align: left; font-size: 15px; color: var(--ink); cursor: pointer; } .rp-ch small { color: var(--sub); font-size: 12.5px; } .rp-ch i { font-style: normal; font-size: 26px; transition: transform .2s; } .rp-ch i.on { transform: rotate(90deg); }
