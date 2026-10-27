@@ -174,9 +174,7 @@ function Inner() {
               <div className="track"><i style={{ width: `${pct(d.users.completed, d.users.total)}%` }} /></div>
               <div className="sub">Completaron al menos una auditoría en el periodo y no tienen ninguna vencida sin hacer.{d.users.with_missed > 0 && ` ${d.users.with_missed} usuario(s) con auditorías no realizadas.`}</div></div></div>
   
-            <div className="sect">Open issues · PDCA ({d.issues.length}{d.issues.length >= 100 ? '+' : ''}) · {d.openFindings.overdue} vencido(s)</div>
-            <OpenIssues issues={d.issues} today={d.today} />
-          </div>
+</div>
         </>
       )}
     </>
