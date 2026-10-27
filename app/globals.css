@@ -1354,3 +1354,19 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .tvx-irow .own { display: block; margin-bottom: 4px; } .tvx-irow .own b { font-size: 16px; } .tvx-irow small.no { color: #ff9aa2; }
 .tvx-irow .due { font-weight: 700; } .tvx-irow.over .due, .tvx-irow.over .due small { color: #ff7a85; opacity: 1; }
 :root[data-theme="light"] .tvx-iss { background: #fff; border-color: #dfe6f4; } :root[data-theme="light"] .tvx-irow > b { color: #1f5bd6; } :root[data-theme="light"] .tvx-irow small.no { color: #c02030; }
+/* Semana (compu): chips más grandes y con colores marcados; encabezado de días que se queda fijo */
+.matrix .chip { font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 34px; border: 1px solid transparent; }
+.matrix .chip.completed { background: #c4ecd6; color: #0c6a39; border-color: #7fcfa0; }
+.matrix .chip.open { background: #d3e3ff; color: #123f9e; border-color: #8db3f5; }
+.matrix .chip.last_day { background: #ffe3b0; color: #7e4300; border-color: #f2b24d; }
+.matrix .chip.missed, .matrix .chip.missing { background: #ffcdd1; color: #9c0e1b; border-color: #f08a92; }
+.matrix .chip.late { background: #e5d6fb; color: #572aa8; border-color: #b99ae8; }
+.matrix .chip.upcoming { background: #e6e9f1; color: #4d5870; border-color: #c9cfdd; }
+.matrix tbody tr:nth-child(even) td:not([colspan="6"]) { background-color: rgba(120,135,170,.06); }
+.matrix td.name { font-size: 14px; } .matrix td.name span { font-size: 12px; }
+:root[data-theme="dark"] .matrix .chip.completed { background: rgba(34,179,106,.28); color: #8ff0bd; border-color: rgba(34,179,106,.6); }
+:root[data-theme="dark"] .matrix .chip.open { background: rgba(79,147,255,.28); color: #b4d0ff; border-color: rgba(79,147,255,.6); }
+:root[data-theme="dark"] .matrix .chip.last_day { background: rgba(255,170,40,.26); color: #ffd28a; border-color: rgba(255,170,40,.6); }
+:root[data-theme="dark"] .matrix .chip.missed, :root[data-theme="dark"] .matrix .chip.missing { background: rgba(217,47,58,.3); color: #ffb0b6; border-color: rgba(217,47,58,.65); }
+:root[data-theme="dark"] .matrix .chip.late { background: rgba(139,92,246,.3); color: #cdb7ff; border-color: rgba(139,92,246,.6); }
+@media (min-width: 900px) { .matrix-wrap { overflow: visible; } .matrix th { top: 72px; z-index: 4; background: var(--panel); box-shadow: 0 1px 0 var(--line2); font-size: 13px; } .matrix th.today { color: #d11d2a; } .matrix td.cell.today { background: rgba(209,29,42,.05); } }
