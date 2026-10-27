@@ -41,19 +41,6 @@ function PasswordGate({ onDone }) {
   );
 }
 
-// Marca de agua con el nombre, el usuario y la hora: si una captura circula, se sabe de quién es
-function Watermark({ user }) {
-  const [now, setNow] = useState('');
-  useEffect(() => {
-    const f = () => setNow(new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }));
-    f(); const iv = setInterval(f, 30000); return () => clearInterval(iv);
-  }, []);
-  const esc = (t) => String(t).replace(/[<>&"']/g, '');
-  const txt = esc(`${user.name} · ${user.username || ''} · ${now}`);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="190"><text x="180" y="95" text-anchor="middle" transform="rotate(-24 180 95)" font-family="Arial,sans-serif" font-size="13" fill="rgb(110,120,150)" fill-opacity="0.2">${txt}</text></svg>`;
-  return <div className="wm" aria-hidden="true" style={{ backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(svg)}")` }} />;
-}
-
 export default function Shell({ children, need }) {
   const [user, setUser] = useState(null), [issues, setIssues] = useState(0);
   const [notif, setNotif] = useState(null), [bell, setBell] = useState(false), [guide, setGuide] = useState(false), [sites, setSites] = useState([]), [siteSel, setSiteSel] = useState('ALL');
@@ -127,7 +114,6 @@ export default function Shell({ children, need }) {
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   return (
     <UserCtx.Provider value={user}>
-      <Watermark user={user} />
       <header className="apphero">
         <img className="apphero-img" src="/app-hero.webp" alt="" fetchPriority="high" decoding="async" />
         <div className="apphero-in">
