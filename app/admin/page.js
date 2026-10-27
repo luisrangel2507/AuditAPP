@@ -85,13 +85,15 @@ function Users({ templates }) {
   const openImport = async () => { const s = await api('/api/sites'); setImp(s.find((x) => x.id === me.site_id) || s.find((x) => x.code === 'MPQ') || s[0]); };
   const load = () => api('/api/admin/users').then(setRows);
   useEffect(() => { load(); }, []);
-  const list = (rows || []).filter((r) => (r.name + r.username).toLowerCase().includes(qs.toLowerCase()));
+  const list = (rows || []).filter((r) => `${r.name} ${r.username} ${r.id} ${DEPT[r.dept] || r.dept}`.toLowerCase().includes(qs.toLowerCase()));
+  const LMETA = { 4: ['Layer 4', 'Auditorías de dirección / Nivel corporativo'], 3: ['Layer 3 · GM', 'Auditorías de Planta / General Manager'], 2: ['Layer 2 · Gerentes', 'Auditorías por área / Gerentes de departamento'], 1: ['Layer 1', 'Auditorías operativas / Supervisores y Líderes de línea'] };
+  const stack = <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5z" /><path d="m3 12.5 9 5 9-5M3 17l9 5 9-5" /></svg>;
   return (
     <>
-      <div className="row" style={{ margin: '12px 0' }}>
-        <input className="inp" placeholder="Buscar…" value={qs} onChange={(e) => setQs(e.target.value)} />
-        <button className="btn alt sm" onClick={openImport}>Importar</button>
-        <button className="btn sm" onClick={() => setEdit({})}>+ Usuario</button>
+      <div className="ulg-bar">
+        <label className="ulg-search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input placeholder="Buscar usuario, ID o departamento…" value={qs} onChange={(e) => setQs(e.target.value)} /></label>
+        <button className="ulg-imp" onClick={openImport}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4.5 20h15" /></svg>Importar desde Excel</button>
+        <button className="ulg-new" onClick={() => setEdit({})}>＋ Usuario</button>
       </div>
       {!rows ? <div className="empty">Cargando…</div> : [4, 3, 2, 1].map((L) => {
         const g = list.filter((u) => u.layer === L);
@@ -99,8 +101,11 @@ function Users({ templates }) {
         const open = !!qs || openL[L];
         return (
           <div key={L} className="lgrp">
-            <button className={`lgrp-h ${open ? 'on' : ''}`} onClick={() => setOpenL({ ...openL, [L]: !openL[L] })} aria-expanded={open}>
-              <b>{LAYER[L]}{L === 3 ? ' · GM' : L === 2 ? ' · Gerentes' : ''}</b><span className="pill">{g.length}</span><i aria-hidden="true">›</i>
+            <button className={`lgrp-h ulg l${L} ${open ? 'on' : ''}`} onClick={() => setOpenL({ ...openL, [L]: !openL[L] })} aria-expanded={open}>
+              <span className="ulg-ic">{stack}</span>
+              <span className="ulg-t"><b>{LMETA[L][0]}</b><small>{LMETA[L][1]}</small></span>
+              <span className="ulg-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="8" r="3.3" /><path d="M2.5 20c.5-3.6 3.2-5.6 6.5-5.6s6 2 6.5 5.6z" /><circle cx="17" cy="9" r="2.6" opacity=".7" /><path d="M17 14.2c2.4.2 4.2 1.8 4.6 5.3h-4.2c-.1-2-.7-3.8-1.8-4.9.4-.2.9-.3 1.4-.4z" opacity=".7" /></svg>{g.length} {g.length === 1 ? "usuario" : "usuarios"}</span>
+              <i className="ulg-ch" aria-hidden="true">›</i>
             </button>
             {open && DEPT_ORDER.filter((d) => g.some((u) => u.dept === d)).concat([...new Set(g.map((u) => u.dept))].filter((d) => !DEPT_ORDER.includes(d))).map((d) => {
               const gd = g.filter((u) => u.dept === d), key = `${L}-${d}`, dopen = !!qs || !!openD[key];
