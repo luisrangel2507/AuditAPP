@@ -134,22 +134,27 @@ function Users({ templates }) {
 }
 
 function Questions({ templates, reloadTemplates }) {
-  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [es, setEs] = useState(''), [en, setEn] = useState(''), [edit, setEdit] = useState(null), [err, setErr] = useState(''), [hist, setHist] = useState(null);
+  const [tid, setTid] = useState(templates[0]?.id), [qs, setQs] = useState([]), [es, setEs] = useState(''), [en, setEn] = useState(''), [edit, setEdit] = useState(null), [err, setErr] = useState(''), [hist, setHist] = useState(null), [sq, setSq] = useState(''), [fq, setFq] = useState('all'), [fOpen, setFOpen] = useState(false);
   const t = templates.find((x) => x.id === Number(tid));
   const load = () => tid && api(`/api/admin/templates/${tid}/questions`).then(setQs);
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tid]);
   const run = async (fn) => { setErr(''); try { await fn(); await load(); reloadTemplates(); } catch (e) { setErr(e.message); } };
   return (
     <>
-      <label className="lbl">Plantilla</label>
-      <select className="inp" value={tid} onChange={(e) => setTid(e.target.value)}>
-        {templates.map((x) => <option key={x.id} value={x.id}>{x.name} ({x.active_questions})</option>)}
-      </select>
-      {t && <div className="sub" style={{ margin: '12px 0' }}>Cada auditoría lleva <b>todas las preguntas activas</b> ({t.active_questions}); no se rotan.</div>}
+      <div className="qq-bar">
+        <div className="qq-tpl"><span>Plantilla</span>
+          <select className="inp" value={tid} onChange={(e) => setTid(e.target.value)}>
+            {templates.map((x) => <option key={x.id} value={x.id}>{x.name} ({x.active_questions})</option>)}
+          </select></div>
+        <label className="qq-search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input placeholder="Buscar pregunta…" value={sq} onChange={(e) => setSq(e.target.value)} /></label>
+        <div className="qq-filt"><button type="button" className={`qq-fb ${fq !== 'all' ? 'on' : ''}`} onClick={() => setFOpen(!fOpen)} aria-label="Filtrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4" /></svg></button>
+          {fOpen && <div className="qq-menu">{[['all', 'Todas'], ['active', 'Activas'], ['inactive', 'Inactivas'], ['fixed', 'Fijas']].map(([k, l]) => <button key={k} type="button" className={fq === k ? 'on' : ''} onClick={() => { setFq(k); setFOpen(false); }}>{l}</button>)}</div>}</div>
+      </div>
+      {t && <div className="qq-info"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8v.1" /></svg><span>Cada auditoría lleva <b>todas las preguntas activas</b> ({t.active_questions}); no se rotan.</span></div>}
       <div className="bi-form">
         <input className="inp" placeholder="Nueva pregunta en español…" value={es} onChange={(e) => setEs(e.target.value)} />
         <input className="inp" placeholder="New question in English…" value={en} onChange={(e) => setEn(e.target.value)} />
-        <button className="btn sm" disabled={!es.trim() || !en.trim()} onClick={() => run(async () => { await api(`/api/admin/templates/${tid}/questions`, { method: 'POST', body: { text_es: es, text_en: en } }); setEs(''); setEn(''); })}>Agregar (español + inglés)</button>
+        <button className="qq-add" disabled={!es.trim() || !en.trim()} onClick={() => run(async () => { await api(`/api/admin/templates/${tid}/questions`, { method: 'POST', body: { text_es: es, text_en: en } }); setEs(''); setEn(''); })}>＋ Agregar (español + inglés)</button>
       </div>
       {err && <div className="err">{err}</div>}
       {edit && (
@@ -181,16 +186,20 @@ function Questions({ templates, reloadTemplates }) {
           <button className="btn alt block" style={{ marginTop: 10 }} onClick={() => setHist(null)}>Cerrar</button>
         </div></div>
       )}
-      {qs.map((q) => (
-        <div key={q.id} className="card" style={{ marginBottom: 8, opacity: q.active ? 1 : .5 }}>
-          {q.category && (q.required || q.category === 'Dock Audit' || q.category === 'Auditoría gerencial') && <span className="pill gold" style={{ marginBottom: 4 }}>{q.category}{q.required ? ' · fija' : ''}</span>}
-          <div style={{ fontSize: 14 }}><Bi text={q.text} /></div>
-          <div className="row" style={{ marginTop: 8 }}>
-            <button className="btn-ghost" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))}>{q.active ? 'Desactivar' : 'Activar'}</button>
-            <button className="btn-ghost" title="Una pregunta fija va en todas las auditorías de esta plantilla, además de las que rotan" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { required: !q.required } }))}>{q.required ? '📌 Fija' : 'Hacer fija'}</button>
-            <button className="btn-ghost" onClick={() => setEdit({ id: q.id, es: q.text_es, en: q.text_en })}>Editar</button>
-            <button className="btn-ghost" onClick={async () => { setHist({ loading: true }); try { setHist(await api(`/api/admin/questions/${q.id}/history`)); } catch { setHist(null); } }}>Historial</button>
-            <button className="btn-ghost" style={{ color: 'var(--nok)' }} onClick={() => { if (confirm('¿Eliminar pregunta? Es mejor desactivarla.')) run(() => api(`/api/admin/questions/${q.id}`, { method: 'DELETE' })); }}>Eliminar</button>
+      {qs.filter((q) => (fq === 'all' || (fq === 'active' ? q.active : fq === 'inactive' ? !q.active : q.required)) && (!sq.trim() || String(q.text).toLowerCase().includes(sq.trim().toLowerCase()))).map((q, n) => (
+        <div key={q.id} className={`qq-q ${q.active ? '' : 'off'}`}>
+          <span className="qq-n">{n + 1}</span>
+          <div className="qq-body">
+            {q.category && (q.required || q.category === 'Dock Audit' || q.category === 'Auditoría gerencial') && <span className="pill gold" style={{ marginBottom: 4 }}>{q.category}{q.required ? ' · fija' : ''}</span>}
+            <div className="qq-t"><Bi text={q.text} /></div>
+          </div>
+          <label className="qq-sw" title={q.active ? 'Activa' : 'Inactiva'}><input type="checkbox" checked={!!q.active} onChange={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))} /><i /><span>{q.active ? 'Activa' : 'Inactiva'}</span></label>
+          <div className="qq-acts">
+            <button type="button" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { active: !q.active } }))}>🚫 {q.active ? 'Desactivar' : 'Activar'}</button>
+            <button type="button" title="Una pregunta fija va siempre en la auditoría" onClick={() => run(() => api(`/api/admin/questions/${q.id}`, { method: 'PATCH', body: { required: !q.required } }))}>📌 {q.required ? 'Quitar fija' : 'Hacer fija'}</button>
+            <button type="button" onClick={() => setEdit({ id: q.id, es: q.text_es, en: q.text_en })}>✎ Editar</button>
+            <button type="button" onClick={async () => { setHist({ loading: true }); try { setHist(await api(`/api/admin/questions/${q.id}/history`)); } catch { setHist(null); } }}>🕘 Historial</button>
+            <button type="button" className="del" onClick={() => { if (confirm('¿Eliminar pregunta? Es mejor desactivarla.')) run(() => api(`/api/admin/questions/${q.id}`, { method: 'DELETE' })); }}>🗑 Eliminar</button>
           </div>
         </div>))}
     </>
@@ -674,13 +683,13 @@ function Inner() {
   return (
     <>
       <h1 className="title">Administración</h1>
-      <div className="seg" style={{ margin: '12px 0' }}>
-        <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
-        <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Usuarios y rotación</button>
-        {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}>Preguntas</button>}
-        <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}>QEs</button>
-        <a className="seg-link" href="/reports">Reportes</a>
-        <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>Registro</button>
+      <div className="seg uline" style={{ margin: '12px 0' }}>
+        <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></svg>Asignaciones</button>
+        <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 5.2a3.4 3.4 0 0 1 0 6.6M18 14.8c1.9.7 3.2 2.4 3.5 5.2" /></svg>Usuarios y rotación</button>
+        {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.7.4-1.1.9-1.1 1.7M12 17v.1" /></svg>Preguntas</button>}
+        <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg>QEs</button>
+        <a className="seg-link" href="/reports"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></svg>Reportes</a>
+        <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4.5" y="4" width="15" height="16.5" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>Registro</button>
         {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
       {!templates ? <div className="empty">Cargando…</div> : tab === 'qes' ? <QEs /> : tab === 'log' ? <LogTab /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
