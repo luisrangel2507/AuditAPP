@@ -412,6 +412,21 @@ async function main() {
       WHERE a.status='pending' AND a.template_id IS NOT NULL AND COALESCE(cardinality(a.question_ids),0)=0
         AND EXISTS (SELECT 1 FROM questions x WHERE x.template_id=a.template_id AND x.active)`);
 
+  // Refuerzo: María Olguín (Gladys) siempre con su auditoría especial en las pendientes que aún no empieza
+  const { rows: [spv] } = await pool.query(`SELECT id FROM templates WHERE name='QE Proveedores (LPA)'`);
+  const { rows: [mu2] } = await pool.query(`SELECT id,process_template_id FROM users WHERE name='María Olguín' AND dept='quality'`);
+  if (spv && mu2) {
+    const flag2 = await pool.query(`INSERT INTO settings(key,value) VALUES('maria_special_v2','1') ON CONFLICT DO NOTHING RETURNING key`);
+    if (flag2.rowCount && !mu2.process_template_id) await pool.query('UPDATE users SET process_template_id=$1 WHERE id=$2', [spv.id, mu2.id]);
+    const { rows: [cur] } = await pool.query('SELECT process_template_id AS t FROM users WHERE id=$1', [mu2.id]);
+    if (cur.t) {
+      const r = await pool.query(
+        `UPDATE audits SET template_id=$1, question_ids=(SELECT array_agg(id ORDER BY sort_order,id) FROM questions WHERE template_id=$1 AND active)
+          WHERE user_id=$2 AND kind='process' AND status='pending' AND started_at IS NULL AND date >= $3 AND template_id IS DISTINCT FROM $1`, [cur.t, mu2.id, mxToday]);
+      if (r.rowCount) console.log(`[setup] María Olguín: ${r.rowCount} auditorías pendientes con sus preguntas especiales`);
+    }
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
