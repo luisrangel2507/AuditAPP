@@ -33,7 +33,7 @@ function Setup({ audit, onSaved, onExit }) {
   // Si el admin asignó zona y máquina ("B1 · B1-5"), ya vienen elegidas; el auditor puede cambiarlas con "Atrás"
   const pre = (() => { const [z, ...m] = String(hint).split(' · '); return ZONES.includes(z) && m.length && (audit.layer === 1 || audit.kind === 'process') ? { z, m: m.join(' · ') } : null; })();
   const [step, setStep] = useState(pre ? 'part' : 'zone');
-  const [zone, setZone] = useState(pre?.z || ''), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
+  const [zone, setZone] = useState(pre?.z || (!full && ZONES.includes(hint) ? hint : '')), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
@@ -175,7 +175,7 @@ function PartEdit({ audit, onSaved }) {
 }
 
 function Runner({ audit, onExit, onDone, onSetup }) {
-  const needSetup = !audit.zone && !(audit.layer >= 2 && audit.kind !== 'process'); // gerentes: All Areas, sin pedir zona
+  const needSetup = !audit.zone && !(audit.layer >= 3 && audit.kind !== 'process'); // Layer 2 elige la zona que auditará antes de iniciar; Layer 3-4: All Areas
   if (needSetup) return <Setup audit={audit} onSaved={onSetup} onExit={onExit} />;
   return <RunnerInner audit={audit} onExit={onExit} onDone={onDone} />;
 }
