@@ -32,8 +32,17 @@ function Setup({ audit, onSaved, onExit }) {
   const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
   // Si el admin asignó zona y máquina ("B1 · B1-5"), ya vienen elegidas; el auditor puede cambiarlas con "Atrás"
   const pre = (() => { const [z, ...m] = String(hint).split(' · '); return ZONES.includes(z) && m.length && (audit.layer === 1 || audit.kind === 'process') ? { z, m: m.join(' · ') } : null; })();
-  const [step, setStep] = useState(pre ? 'part' : 'zone');
-  const [zone, setZone] = useState(pre?.z || (!full && ZONES.includes(hint) ? hint : '')), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
+  // Zonas que el admin le asignó: una específica ("B1") o una zona completa ("ZONA B", "ZONA D-E" → B1, B2 / D1, D2, E2). Solo aparecen esas; "Otra zona" muestra todas
+  const assigned = (() => {
+    if (!full || !hint || pre) return [];
+    if (ZONES.includes(hint)) return [hint];
+    const m = /^ZONA ([A-E](?:-[A-E])?)$/i.exec(hint.trim());
+    return m ? ZONES.filter((z) => m[1].toUpperCase().replace('-', '').includes(z[0]) && !NO_MACHINE.includes(z)) : [];
+  })();
+  const [showAll, setShowAll] = useState(false);
+  const start1 = pre ? 'part' : assigned.length === 1 ? (NO_MACHINE.includes(assigned[0]) ? 'part' : 'machine') : 'zone';
+  const [step, setStep] = useState(start1);
+  const [zone, setZone] = useState(pre?.z || (assigned.length === 1 ? assigned[0] : (!full && ZONES.includes(hint) ? hint : ''))), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
@@ -62,10 +71,11 @@ function Setup({ audit, onSaved, onExit }) {
         {hint && step === 'zone' && <div className="sub" style={{ margin: '0 0 6px' }}>Zona asignada por el administrador: <b>{hint}</b></div>}
         {step === 'zone' && <>
           <div className="setup-h"><i />1. Zona</div>
-          <div className="ztiles">{ZONES.map((z) => (
+          <div className="ztiles">{(assigned.length && !showAll ? assigned : ZONES).map((z) => (
             <button key={z} type="button" className={`ztile t-${ZTONE(z)} ${zone === z ? 'on' : ''}`} onClick={() => pickZone(z)}>
               <span className="zi">{z.startsWith('PL') || z === 'Shipping' || z === 'Receiving' ? wh : fac}</span><b className={z.length > 4 ? 'zlong' : ''}>{z}</b><span className="zc">{chev}</span>
             </button>))}</div>
+          {assigned.length > 0 && !showAll && <button type="button" className="linkbtn" style={{ marginTop: 10 }} onClick={() => setShowAll(true)}>Otra zona…</button>}
           {!full && zone && <div className="setup-note">Área elegida: <b>{zone}</b></div>}
         </>}
         {step === 'machine' && <>
