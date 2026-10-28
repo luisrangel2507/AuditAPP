@@ -1,0 +1,20 @@
+{
+  "name": "Paint Line Layer 1 Audit",
+  "zone": "Pintura",
+  "form": "Paint Line Layer 1 Audit (Ultra)",
+  "questions": [
+    { "item": 2, "es": "¿Está el área limpia y ordenada?", "en": "Is the area clean and organized?" },
+    { "item": 158, "es": "¿Cuándo fue la última vez que se limpiaron las boquillas?", "en": "When were the nozzles last cleaned?" },
+    { "item": 168, "es": "Se encuentran los contenedores de alcohol y RP aterrizados.", "en": "Are the alcohol and RP containers grounded?" },
+    { "item": 169, "es": "Se encuentra(n) el/los documento(s) de seguimiento a proceso \"SET UP PROCESS\" correctamente lleno(s).", "en": "The \"SET UP PROCESS\" tracking document(s) are correctly filled out." },
+    { "item": 162, "es": "El área de mezclas se encuentra limpia y ordenada.", "en": "The mixing area is clean and organized." },
+    { "item": 163, "es": "El plan de mantenimiento preventivo está correctamente lleno y actualizado.", "en": "The preventive maintenance plan is correctly filled out and up to date." },
+    { "item": 171, "es": "La cascada de agua tiene un flujo constante y uniforme.", "en": "The water curtain has a constant and uniform flow." },
+    { "item": 172, "es": "Se encuentran los operadores usando el Mylar para la revisión de defectos como: grumos, cráter, fibras.", "en": "Operators are using the Mylar to check for defects such as: lumps, craters, fibers." },
+    { "item": 175, "es": "Revisar que coincida el material registrado contra el físico en el área de cuarentena de pintura.", "en": "Check that the registered material matches the physical material in the paint quarantine area." },
+    { "item": 1044, "es": "Los contenedores WIP para material de líneas de pintura están limpios e identificados con el formato MFGE-010-I-MPQ (Programa de Limpieza de Carros/Contenedores).", "en": "The WIP containers for paint line material are clean and identified with form MFGE-010-I-MPQ (Cart/Container Cleaning Program)." },
+    { "item": 85, "es": "Revisar uso correcto del EPP en Líneas de Producción Pintura (cofia, guantes limpios, sin uso de joyería).", "en": "Check correct use of PPE in Paint Production Lines (hair net, clean gloves, no jewelry)." },
+    { "item": 2305, "es": "¿La Instrucción de trabajo está actualizada en Ripple?", "en": "Is the work instruction up to date in Ripple?" },
+    { "item": 86, "es": "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables (no se permite almacenamiento de cartón, EPP, bolsas, trapos, etc.).", "en": "The yellow cabinets in the area do not store materials other than flammable substances (no storage of cardboard, PPE, bags, rags, etc.)." }
+  ]
+}
