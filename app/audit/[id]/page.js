@@ -30,8 +30,10 @@ const chev = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
 function Setup({ audit, onSaved, onExit }) {
   const full = audit.layer === 1 || audit.kind === 'process';
   const hint = audit.area && audit.area !== 'All Areas' ? audit.area : '';
-  const [step, setStep] = useState('zone');
-  const [zone, setZone] = useState(''), [machine, setMachine] = useState(''), [nps, setNps] = useState(['']);
+  // Si el admin asignó zona y máquina ("B1 · B1-5"), ya vienen elegidas; el auditor puede cambiarlas con "Atrás"
+  const pre = (() => { const [z, ...m] = String(hint).split(' · '); return ZONES.includes(z) && m.length && (audit.layer === 1 || audit.kind === 'process') ? { z, m: m.join(' · ') } : null; })();
+  const [step, setStep] = useState(pre ? 'part' : 'zone');
+  const [zone, setZone] = useState(pre?.z || ''), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];

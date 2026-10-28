@@ -578,7 +578,21 @@ function Assign() {
                   <div className="apick-sub">O una zona específica</div>
                   <div className="apick-z">{ZONES.map((zz) => (
                     <button key={zz} type="button" className={`apz ${['Toolroom', 'Shipping', 'Receiving', 'QIA', 'Proveedores'].includes(zz) ? 'long' : ''} t-${zz.startsWith('PL') || ['Toolroom', 'Shipping', 'Receiving', 'QIA', 'Proveedores'].includes(zz) ? 'pl' : zz[0].toLowerCase()} ${zz === cur || cur.startsWith(`${zz} · `) ? 'on' : ''}`}
-                      onClick={() => apply(zz)}>{zz}</button>))}</div>
+                      onClick={() => (NO_MACHINE.includes(zz) ? apply(zz) : setPick({ ...pick, zone: pick.zone === zz ? '' : zz }))}>{zz}</button>))}</div>
+                  {pick.zone && !NO_MACHINE.includes(pick.zone) && (() => {
+                    const ms = (data.machines && data.machines[pick.zone]) || [];
+                    return <>
+                      <div className="apick-sub">Máquina de {pick.zone} (opcional)</div>
+                      <div className="apick-z">
+                        <button type="button" className={`apz long t-${pick.zone[0].toLowerCase()} ${cur === pick.zone ? 'on' : ''}`} onClick={() => apply(pick.zone)}>Solo la zona</button>
+                        {ms.map((m) => <button key={m} type="button" className={`apz t-${pick.zone[0].toLowerCase()} ${cur === `${pick.zone} · ${m}` ? 'on' : ''}`} onClick={() => apply(`${pick.zone} · ${m}`)}>{m}</button>)}
+                      </div>
+                      <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                        <input className="inp grow" placeholder="Otra máquina…" maxLength={40} value={otro} onChange={(e) => setOtro(e.target.value)} />
+                        <button type="button" className="btn sm" disabled={!otro.trim()} onClick={() => apply(`${pick.zone} · ${otro.trim()}`)}>Usar</button>
+                      </div>
+                    </>;
+                  })()}
                 </>
                 <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
                   <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMvErr(''); setMv({ x, list }); }}>📅 Cambiar de día</button>
