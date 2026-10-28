@@ -433,6 +433,26 @@ async function main() {
   await pool.query(
     `DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.layer=3 AND a.kind='lpa' AND a.status='pending' AND a.date >= $1 AND EXTRACT(DAY FROM a.date) > 7`, [mxToday]);
 
+  // Production Layer 2 Audit (formato Ultra): 15 preguntas fijas para los gerentes de Producción (Layer 2)
+  const pl2 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'prod-layer2.json'), 'utf8'));
+  let { rows: [pt2] } = await pool.query('SELECT id FROM templates WHERE name=$1', [pl2.name]);
+  if (!pt2) {
+    ({ rows: [pt2] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [pl2.name, pl2.zone, pl2.questions.length]));
+    for (let i = 0; i < pl2.questions.length; i++) {
+      const x = pl2.questions[i];
+      await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,$5,TRUE)', [pt2.id, `${x.es}\n${x.en}`, pl2.zone, i, x.item]);
+    }
+    console.log('[setup] plantilla Production Layer 2 Audit cargada');
+  }
+  const flagPl2 = await pool.query(`INSERT INTO settings(key,value) VALUES('prod_layer2_assign_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagPl2.rowCount) {
+    const u2 = await pool.query(`UPDATE users SET template_id=$1 WHERE dept='production' AND layer=2 AND access NOT IN ('admin','master')`, [pt2.id]);
+    await pool.query(
+      `UPDATE audits a SET template_id=$1, question_ids=(SELECT array_agg(x.id ORDER BY x.sort_order,x.id) FROM questions x WHERE x.template_id=$1 AND x.active)
+        FROM users u WHERE a.user_id=u.id AND u.dept='production' AND u.layer=2 AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date >= $2`, [pt2.id, mxToday]);
+    console.log(`[setup] Production Layer 2 Audit asignada a ${u2.rowCount} usuario(s) de Producción Layer 2`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);

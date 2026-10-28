@@ -1,0 +1,22 @@
+{
+  "name": "Production Layer 2 Audit",
+  "zone": "Producción",
+  "form": "Production Layer 2 Audit (Ultra)",
+  "questions": [
+    { "item": 1100, "es": "¿Se usa el EPP correcto? Lentes, protectores de anillos y zapato cerrado.", "en": "Is proper PPE in use? Glasses, ring protectors, closed toe shoes." },
+    { "item": 1105, "es": "¿Se inspeccionaron los sopladores Motan por fugas de material?", "en": "Has the Motan blowers been inspected for material leakages?" },
+    { "item": 1101, "es": "¿Se mantienen las expectativas de 5S / orden y limpieza? Sin material sobre o detrás de la máquina.", "en": "Are 5s / housekeeping expectations being maintained? No material on or behind the machine?" },
+    { "item": 1108, "es": "¿Se usa molido (regrind) en todas las máquinas?", "en": "Is regrind in use on all machines?" },
+    { "item": 1109, "es": "¿El registro DMR está firmado por todos los supervisores?", "en": "Has the DMR log been signed off by all supervisors?" },
+    { "item": 1110, "es": "¿Se revisó y firmó el reporte de excepciones?", "en": "Has the exception report been reviewed and signed off?" },
+    { "item": 1111, "es": "¿Está limpia el área de retención? ¿Los DMR tienen menos de 24 horas? ¿Los operadores de selección están certificados?", "en": "Is the hold area clean? Are the DMRs less the 24 hours old? Are sort operators certified?" },
+    { "item": 1114, "es": "¿Se completó el inventario de molido (regrind)?", "en": "Has the regrind inventory been completed?" },
+    { "item": 1116, "es": "¿Están completas las auditorías LPA de Producción Layer 1? Acciones tomadas.", "en": "Are the Production Layer 1 (LPA) audits complete? Actions Taken?" },
+    { "item": 1117, "es": "¿Todos los parciales de producción en el área de retención tienen la etiqueta naranja correspondiente?", "en": "Do all production partials in the Hold area have the proper orange tag applied" },
+    { "item": 1613, "es": "¿Está actualizado el plan de CI?", "en": "Is the CI plan up to date ?" },
+    { "item": 1614, "es": "¿El plan de capacidad coincide con los volúmenes actuales del cliente?", "en": "Does the Capacity Plan match customer current volumes ?" },
+    { "item": 1615, "es": "¿Los PE revisan los QIR diariamente y se investigan las condiciones fuera de especificación?", "en": "Are the QIRs being reviewed by PEs daily and are out of spec conditions being investigated ?" },
+    { "item": 1437, "es": "El supervisor/líder conoce las políticas de calidad, seguridad y medio ambiente.", "en": "The supervisor/leader is familiar with the quality, safety, and environmental policies." },
+    { "item": 1616, "es": "¿Los tableros 4D cumplen con el formato estándar y todos los CL revisan las comunicaciones T1?", "en": "Are the 4D boards in compliance with the standard format and are T1 Communications being reviewed by all CL's ?" }
+  ]
+}
