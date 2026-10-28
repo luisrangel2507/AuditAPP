@@ -42,7 +42,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       <div className="row wrap">
         <div className="grow"><label className="lbl">Acceso</label>
           <select className="inp" value={f.access} onChange={(e) => set('access', e.target.value)}>
-            <option value="auditor">Auditor</option><option value="lead">Encargado (ve a su equipo, Layer 2-4)</option><option value="admin">{me.multi_site ? 'Administrador de planta' : 'Administrador'}</option>{master && me.multi_site && <option value="master">Máster (todas las plantas)</option>}</select></div>
+            <option value="auditor">Auditor</option><option value="lead">Auditor y encargado (hace su auditoría y ve a su equipo)</option><option value="admin">{me.multi_site ? 'Administrador de planta' : 'Administrador'}</option>{master && me.multi_site && <option value="master">Máster (todas las plantas)</option>}</select></div>
         <div className="grow"><label className="lbl">Plantilla de preguntas</label>
           <select className="inp" value={f.template_id || ''} onChange={(e) => set('template_id', e.target.value)}>
             <option value="">—</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
