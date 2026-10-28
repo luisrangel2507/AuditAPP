@@ -97,6 +97,7 @@ export default function Report() {
           <div><Ic d={I.user} /><p><i>Auditor</i><b>{a.auditor}</b></p></div>
           <div><Ic d={I.cal} /><p><i>Fecha</i><b>{fmtDate(a.date, { day: 'numeric', month: 'short', year: 'numeric' })}</b></p></div>
           <div><Ic d={I.mach} /><p><i>Zona / máquina</i><b>{a.area}</b></p></div>
+          {a.shift ? <div><Ic d={I.clock} /><p><i>Turno</i><b>{a.shift}</b></p></div> : null}
           <div><Ic d={I.doc} /><p><i>N/P</i><b className={a.part_edited_at ? 'pe' : ''}>{a.part_number || '—'}{a.part_edited_at ? <small> ✎ corregido</small> : null}</b></p></div>
           <div className="res"><Ic d={I.list} /><p><i>Resultado</i><b><u className="g">{a.ok_count} OK</u> · <u className="r">{a.nok_count} X</u> · <u className="y">{a.partial_count} Δ</u> · <u className="n">{a.na_count} N/A</u></b></p></div>
         </div>

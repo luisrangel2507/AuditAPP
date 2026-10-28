@@ -1,0 +1,24 @@
+{
+  "name": "PE Layer 1 LPA",
+  "zone": "Procesos",
+  "form": "PE Layer 1 LPA (Ultra)",
+  "questions": [
+    { "item": 2291, "es": "¿Todas las llamadas de proceso y de fixture de tu zona se registraron y se les dio seguimiento en las últimas 24 hrs?", "en": "Are all process and fixture calls logged and tracked for your zone for the last 24hrs?" },
+    { "item": 2292, "es": "¿Las acciones de 24 hrs para nuevos CAR o DMR de tu zona están completas?", "en": "Are 24hr Actions for New CARs or DMRs for you zone complete?" },
+    { "item": 2293, "es": "¿Hay problemas de seguridad o estatus de Open issues reportados para tu zona (4D)?", "en": "Are there any safety issues or Open issues status reported for your zone (4D)?" },
+    { "item": 2294, "es": "Realizar un 60CA, OWA y CI Open issues de un proceso de tu elección (cualquier día, 1.ª semana del mes).", "en": "Conduct a 60CA, OWA, & CI Open issues of a process of your choosing (any day, 1st week of the month)." },
+    { "item": 2295, "es": "¿Los paquetes de Operación-60 y de Instrucciones de Trabajo están completos y disponibles en el proceso?", "en": "Are Operation-60 and WI packages complete & available at the process?" },
+    { "item": 2296, "es": "¿El área del proceso cumple con el requisito de layout de 5S/Seguridad (Operación-60)?", "en": "Does the process area meet the 5S/Safety layout requirement (Operation-60)?" },
+    { "item": 2297, "es": "¿El CT de la prensa coincide con el SWC? (riesgo de sobrecarga)", "en": "Does the CT of the press match the SWC, (risk of over burden)?" },
+    { "item": 2298, "es": "¿El operador firmó el SWC? (aplica la etiqueta en esta hoja o escribe el # de OP)", "en": "Has the OP signed the SWC? (apply label to this sheet of write OP#)" },
+    { "item": 2299, "es": "¿El operador sigue el orden de trabajo? Si no, ¿este método es mejor que el indicado en el SWC?", "en": "Is the OP following the order of work? If not, is this method better than what is called out on the SWC?" },
+    { "item": 2300, "es": "¿El operador respeta el tiempo de inspección indicado en el SWC?", "en": "Is the amount of time for inspection on the SWC being honored by the OP?" },
+    { "item": 2301, "es": "¿Se completó el QIR y se anotaron las condiciones anormales?", "en": "Was QIR completed and any abnormal conditions noted?" },
+    { "item": 2302, "es": "Si hay fixture, monitorea cualquier problema funcional o interrupción durante su uso (10 ciclos).", "en": "If there is a fixture, monitor any functional issues or interruptions during its use (10 cycles)." },
+    { "item": 2303, "es": "Si hay fixture, ¿los Red Rabbits están disponibles, etiquetados y en buenas condiciones?", "en": "If there is a fixture, are red rabbits available, labeled, & in good condition?" },
+    { "item": 1044, "es": "Los contenedores WIP de los materiales de la línea de pintura están limpios e identificados con el formato MFGE-010-I-MPQ (Programa de limpieza de carros/contenedores).", "en": "The WIP containers for painting line materials are clean and identified using form MFGE-010-I-MPQ (Cart/Container Cleaning Program)." },
+    { "item": 2304, "es": "Audita una tarima FG/WIP o una fila WIP de un carro por defectos, componentes o identificación faltantes y empaque correcto.", "en": "Audit one FG/WIP tote or WIP row of a cart for defect, missing component/missing identification & proper packaging" },
+    { "item": 2305, "es": "¿Hay alertas activas y están firmadas por el operador y el CL (celda y 4D)?", "en": "Are active alerts present & signed by the OP and CL (cell and 4D)?" },
+    { "item": 2306, "es": "¿El proceso de inyección está configurado según la hoja de condiciones?", "en": "Is the Injection process set-up as per the condition sheet?" }
+  ]
+}

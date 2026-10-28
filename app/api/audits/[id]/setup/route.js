@@ -1,5 +1,6 @@
 import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
+import { shiftOf } from '@/lib/dates';
 import { ZONES, NO_MACHINE, areaLabel } from '@/lib/zones';
 
 // Datos que el auditor captura al iniciar (Layer 1 y QEs): zona, máquina y número(s) de parte
@@ -20,7 +21,7 @@ export const POST = route(async (req, { params }, user) => {
   const p1 = [...new Set(list)].slice(0, 8).join(' / '), p2 = '';
   if (full && !noPart && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
-  await q('UPDATE audits SET zone=$2, machine=$3, area=$4, part_number=$5, started_at=COALESCE(started_at,NOW()) WHERE id=$1',
-    [params.id, zone, machine, areaLabel(zone, machine), part]);
+  await q('UPDATE audits SET zone=$2, machine=$3, area=$4, part_number=$5, started_at=COALESCE(started_at,NOW()), shift=COALESCE(shift,$6) WHERE id=$1',
+    [params.id, zone, machine, areaLabel(zone, machine), part, shiftOf()]);
   return json({ ok: true, zone, machine, area: areaLabel(zone, machine), part_number: part });
 });
