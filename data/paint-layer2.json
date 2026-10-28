@@ -1,0 +1,14 @@
+{
+  "name": "Paint Layer 2 Audit",
+  "zone": "Pintura",
+  "form": "Paint Layer 2 Audit (Ultra)",
+  "questions": [
+    { "item": 150, "es": "¿El material de pintura está almacenado correctamente?", "en": "Is paint material stored properly?" },
+    { "item": 151, "es": "¿El extractor (ventilador de extracción) funciona?", "en": "Is exhaust fan functioning?" },
+    { "item": 154, "es": "¿Los materiales de prueba están etiquetados?", "en": "Test materials labeled?" },
+    { "item": 162, "es": "¿Las cocinas de pintura están limpias y organizadas?", "en": "Are the paint kitchens clean and organized?" },
+    { "item": 163, "es": "¿Los PM de las líneas de pintura están completos y al corriente con el programa?", "en": "Are the paint line PMs complete and up to schedule?" },
+    { "item": 165, "es": "¿El cuarto de pintura de robots y el área de ensamble están limpios y ordenados?", "en": "Is the Robot Paint Room and assembly area clean and tidy?" },
+    { "item": 166, "es": "¿El almacén de pintura está limpio y ordenado?", "en": "Is the Paint Storage Room clean and tidy?" }
+  ]
+}

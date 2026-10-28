@@ -474,6 +474,26 @@ async function main() {
     console.log(`[setup] PE Layer 1 LPA asignada a ${u1.rowCount} Process Engineer(s) de Layer 1`);
   }
 
+  // Paint Layer 2 Audit (formato Ultra): 7 preguntas fijas; la hace Armando Martínez (gerente de pintura)
+  const pn = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'paint-layer2.json'), 'utf8'));
+  let { rows: [pnt] } = await pool.query('SELECT id FROM templates WHERE name=$1', [pn.name]);
+  if (!pnt) {
+    ({ rows: [pnt] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [pn.name, pn.zone, pn.questions.length]));
+    for (let i = 0; i < pn.questions.length; i++) {
+      const x = pn.questions[i];
+      await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,$5,TRUE)', [pnt.id, `${x.es}\n${x.en}`, pn.zone, i, x.item]);
+    }
+    console.log('[setup] plantilla Paint Layer 2 Audit cargada');
+  }
+  const flagPn = await pool.query(`INSERT INTO settings(key,value) VALUES('paint_layer2_assign_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagPn.rowCount) {
+    const un = await pool.query(`UPDATE users SET template_id=$1 WHERE layer=2 AND dept='production' AND translate(lower(name),'áéíóú','aeiou') LIKE 'armando mart%'`, [pnt.id]);
+    await pool.query(
+      `UPDATE audits a SET template_id=$1, question_ids=(SELECT array_agg(x.id ORDER BY x.sort_order,x.id) FROM questions x WHERE x.template_id=$1 AND x.active)
+        FROM users u WHERE a.user_id=u.id AND u.template_id=$1 AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date >= $2`, [pnt.id, mxToday]);
+    console.log(`[setup] Paint Layer 2 Audit asignada a ${un.rowCount} usuario(s) (Armando Martínez)`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
