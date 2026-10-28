@@ -4,7 +4,7 @@ import { route, json, err } from '@/lib/api';
 import { siteScope, sameSite } from '@/lib/site';
 import { ensureWeek } from '@/lib/schedule';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
-import { SEED_MACHINES } from '@/lib/zones';
+import { SEED_MACHINES, ZONES } from '@/lib/zones';
 
 // Semana de asignaciones: por auditor y día, la zona y el número de parte a inspeccionar.
 export const GET = route(async (req, ctx, user) => {
@@ -44,10 +44,11 @@ export const PUT = route(async (req, ctx, user) => {
       const { rows: [a] } = await client.query(
         `SELECT a.id,a.status,u.site_id,u.layer FROM audits a JOIN users u ON u.id=a.user_id WHERE a.id=$1 FOR UPDATE OF a`, [Number(it.id)]);
       if (!a || a.status !== 'pending' || !sameSite(user, a.site_id)) { skipped++; continue; }
-      // Solo Layer 1 lleva zona/máquina asignada; el N/P lo captura el auditor al auditar
-      const fixed = a.layer >= 2;
-      await client.query('UPDATE audits SET area=$2 WHERE id=$1',
-        [a.id, fixed ? 'All Areas' : String(it.area ?? '').trim().slice(0, 80)]);
+      // Layer 1: zona (y máquina opcional). Layer 2-4: "All Areas" o una zona; el N/P lo captura el auditor al auditar
+      const area = String(it.area ?? '').trim().slice(0, 80) || (a.layer >= 2 ? 'All Areas' : '');
+      const z = area.split(' · ')[0];
+      await client.query('UPDATE audits SET area=$2' + (a.layer >= 2 ? ', zone=$3' : '') + ' WHERE id=$1',
+        a.layer >= 2 ? [a.id, area, ZONES.includes(z) ? z : ''] : [a.id, area]);
       saved++;
     }
     await client.query('COMMIT');

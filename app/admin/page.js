@@ -516,7 +516,7 @@ function Assign() {
   );
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría.  Layer 2, 3 y 4 auditan todas las áreas y eligen el área durante la auditoría. La zona se sugiere según la rotación y puedes cambiarla.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Asigna a cada auditor de Layer 1 la <b>zona</b> que auditará cada día. La máquina y el <b>número de parte</b> los captura el auditor al realizar su auditoría.  Layer 2, 3 y 4 auditan por defecto "All Areas"; puedes dejarles una zona específica si hace falta.</p>
       <div className="row wrap" style={{ margin: '10px 0' }}>
         <button className="btn alt sm" onClick={() => go(-1)} disabled={!data}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{data ? `${fmtDate(data.days[0], { day: 'numeric', month: 'short' })} – ${fmtDate(data.days[4], { day: 'numeric', month: 'short', year: 'numeric' })}` : '…'}</div>
@@ -540,11 +540,12 @@ function Assign() {
                 <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></div></th>
                 <td className="dcol dtxt">{DEPT[a.dept]}</td>
                 {a.layer >= 2 ? (() => {
-                  // Layer 2-4: una auditoría semanal "All Areas" (sin zona que asignar), como en Semana
+                  // Layer 2-4: una auditoría semanal; por defecto "All Areas", y se puede asignar una zona
                   const w = list[0];
                   if (!w) return <td colSpan={5} className="off" />;
-                  const st = w.status === 'completed' ? 'completed' : w.due_date < data.today ? 'missed' : w.due_date === data.today ? 'last_day' : 'open';
-                  return <td colSpan={5} className="wkcell"><Link href={`/audit/${w.id}`} className={`chip wide ${st}`}>{w.status === 'completed' ? '✓ ' : ''}All Areas · Layer {a.layer} · vence {fmtDate(w.due_date, { weekday: 'short', day: 'numeric' })}</Link></td>;
+                  const v = val(w), cur = v.area || 'All Areas';
+                  if (w.status === 'completed') return <td colSpan={5} className="doneC">✓ {w.area}</td>;
+                  return <td colSpan={5} className="wkcell"><button type="button" className={`acell wk t-${toneOf(cur) || 'none'} ${edits[w.id] ? 'edited' : ''}`} onClick={() => { setOtro(''); setPick({ x: w, list, step: 'zone', zone: zoneOf(cur) }); }}><span>{cur}</span><small>Layer {a.layer}</small></button></td>;
                 })() : data.days.map((d) => {
                   const x = list.find((y) => y.date === d);
                   if (!x) return <td key={d} className="off" />;
@@ -573,6 +574,7 @@ function Assign() {
                     <div className="sub" style={{ margin: 0 }}>{x.name} · {fmtDate(x.date, { weekday: 'long', day: 'numeric', month: 'short' })}</div></div>
                 </div>
                 <>
+                  {x.layer >= 2 && <><div className="apick-sub">Todas las áreas</div><div className="apick-big"><button type="button" className={`apz long t-none ${cur === 'All Areas' || !cur ? 'on' : ''}`} onClick={() => apply('All Areas')}>All Areas</button></div></>}
                   <div className="apick-sub">Zona completa (cualquier área de la zona)</div>
                   <div className="apick-big">{['A', 'B', 'C', 'D', 'E'].map((L) => <button key={L} type="button" className={`apz t-${L.toLowerCase()} ${cur === `ZONA ${L}` ? 'on' : ''}`} onClick={() => apply(`ZONA ${L}`)}>{L}</button>)}</div>
                   <div className="apick-sub">O una zona específica</div>
@@ -595,8 +597,8 @@ function Assign() {
                   })()}
                 </>
                 <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
-                  <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMvErr(''); setMv({ x, list }); }}>📅 Cambiar de día</button>
-                  {cur && <button type="button" className="btn-ghost" onClick={() => apply('')}>Quitar asignación</button>}
+                  {x.layer === 1 && <button type="button" className="btn alt sm" onClick={() => { setPick(null); setMvErr(''); setMv({ x, list }); }}>📅 Cambiar de día</button>}
+                  {cur && x.layer === 1 && <button type="button" className="btn-ghost" onClick={() => apply('')}>Quitar asignación</button>}
                   <span className="grow" />
                   <button type="button" className="btn alt sm" onClick={() => setPick(null)}>Cerrar</button>
                 </div>

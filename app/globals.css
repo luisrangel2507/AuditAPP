@@ -1449,3 +1449,5 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .tvx:not(.wall) .tvx-slide { margin-top: 12px; }
 .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple { grid-template-columns: 52px minmax(0, 1.3fr) minmax(0, 1fr) 60px; grid-template-areas: "av name area st"; gap: 0 18px; }
 .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-area { grid-area: area; font-size: 20px; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-name { grid-area: name; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-av { grid-area: av; } .tvx.wall .tvx-slide .tvx-panel.alert .tvx-row.simple .tvx-st { grid-area: st; }
+
+.asg2 .acell.wk { max-width: 100%; } .asg2 td.wkcell { padding: 7px 8px; }

@@ -110,7 +110,7 @@ function ZoneEdit({ audit, onSaved }) {
   }
   return (
     <>
-      <div className={`partno ${edited ? 'edited' : ''}`}>Zona <b>{audit.zone || 'All Areas'}</b>{edited ? <em> ✎ corregido</em> : null}
+      <div className={`partno ${edited ? 'edited' : ''}`}>Zona <b>{audit.zone || audit.area || 'All Areas'}</b>{edited ? <em> ✎ corregido</em> : null}
         {audit.editable && <button type="button" className="pe-btn" onClick={() => { setZone(audit.zone || ''); setErr(''); setOpen(true); }}>✎ Corregir</button>}</div>
       {edited && audit.area_original && <div className="pe-was">Antes: <s>{audit.area_original}</s></div>}
       {open && (
