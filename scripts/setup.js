@@ -429,6 +429,10 @@ async function main() {
     }
   }
 
+  // Layer 3: una auditoría al mes; se quitan las semanales pendientes que ya no corresponden (fuera de la primera semana del mes)
+  await pool.query(
+    `DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.layer=3 AND a.kind='lpa' AND a.status='pending' AND a.date >= $1 AND EXTRACT(DAY FROM a.date) > 7`, [mxToday]);
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
