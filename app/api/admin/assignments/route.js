@@ -21,7 +21,7 @@ export const GET = route(async (req, ctx, user) => {
     `SELECT a.id,a.user_id,a.date,a.due_date,a.area,a.part_number,a.status,
             u.name,u.dept,u.layer,u.pool,u.site_id, s.code AS site
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN sites s ON s.id=u.site_id
-      WHERE a.date BETWEEN $1 AND $2 AND a.date >= $4 AND a.kind='lpa' AND u.layer=1 AND ($3::int IS NULL OR u.site_id=$3)
+      WHERE a.date BETWEEN $1 AND $2 AND a.date >= $4 AND a.kind='lpa' AND ($3::int IS NULL OR u.site_id=$3)
       ORDER BY u.layer DESC,u.dept,u.name,a.date`, [monday, addDays(monday, 4), scope, gl]);
   const zones = [...new Set(rows.flatMap((r) => r.pool || []).concat(rows.map((r) => r.area)).filter(Boolean))].sort();
   const machines = {};

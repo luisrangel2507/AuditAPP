@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Shell, { useUser } from '@/components/Shell';
 import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
@@ -495,7 +496,7 @@ function Assign() {
   }
 
   const asg = { total: 0, done: 0 };
-  (data?.audits || []).filter((a) => a.status === 'pending').forEach((a) => { const v = val(a); asg.total++; if (v.area) asg.done++; });
+  (data?.audits || []).filter((a) => a.status === 'pending' && a.layer === 1).forEach((a) => { const v = val(a); asg.total++; if (v.area) asg.done++; });
   const people = [];
   (data?.audits || []).forEach((a) => {
     if (qs && !a.name.toLowerCase().includes(qs.toLowerCase())) return;
@@ -538,7 +539,13 @@ function Assign() {
               <tr key={id}>
                 <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></div></th>
                 <td className="dcol dtxt">{DEPT[a.dept]}</td>
-                {data.days.map((d) => {
+                {a.layer >= 2 ? (() => {
+                  // Layer 2-4: una auditoría semanal "All Areas" (sin zona que asignar), como en Semana
+                  const w = list[0];
+                  if (!w) return <td colSpan={5} className="off" />;
+                  const st = w.status === 'completed' ? 'completed' : w.due_date < data.today ? 'missed' : w.due_date === data.today ? 'last_day' : 'open';
+                  return <td colSpan={5} className="wkcell"><Link href={`/audit/${w.id}`} className={`chip wide ${st}`}>{w.status === 'completed' ? '✓ ' : ''}All Areas · Layer {a.layer} · vence {fmtDate(w.due_date, { weekday: 'short', day: 'numeric' })}</Link></td>;
+                })() : data.days.map((d) => {
                   const x = list.find((y) => y.date === d);
                   if (!x) return <td key={d} className="off" />;
                   const v = val(x);
@@ -550,7 +557,7 @@ function Assign() {
                       </button>
                     </td>);
                 })}
-                <td className="mcol"><button type="button" className="dots" aria-label="Más opciones" title="Copiar la primera zona pendiente a toda la semana" onClick={() => { if (list.filter((y) => y.status === 'pending').length < 2) return setMsg('Esta persona no tiene más días pendientes'); if (confirm(`¿Copiar la primera zona pendiente de ${a.name} a todos sus días pendientes de la semana?`)) fillWeek(list); }}>•••</button></td>
+                <td className="mcol">{a.layer === 1 && <button type="button" className="dots" aria-label="Más opciones" title="Copiar la primera zona pendiente a toda la semana" onClick={() => { if (list.filter((y) => y.status === 'pending').length < 2) return setMsg('Esta persona no tiene más días pendientes'); if (confirm(`¿Copiar la primera zona pendiente de ${a.name} a todos sus días pendientes de la semana?`)) fillWeek(list); }}>•••</button>}</td>
               </tr>))}</tbody>
           </table></div>
           <div className="asg-legend">
