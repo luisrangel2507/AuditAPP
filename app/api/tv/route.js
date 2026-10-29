@@ -43,7 +43,7 @@ export async function GET(req) {
       `SELECT a.id,a.date,a.due_date,a.area,a.part_number,a.status,a.score_pct,a.late,a.completed_at,
               a.nok_count,a.partial_count,u.name,u.dept,u.layer
          FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.kind='lpa' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4)
+        WHERE a.kind='lpa' AND a.status<>'excused' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4)
         ORDER BY u.layer DESC,u.name`,
       [monday, addDays(monday, 4), gl, scope]);
     const wk = rows.map((a) => ({ ...a, window: windowState(a, today) }));

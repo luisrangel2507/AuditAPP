@@ -1462,3 +1462,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .syscomp small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); font-weight: 700; }
 .syscomp b { display: block; font-size: 46px; line-height: 1.1; letter-spacing: -.02em; } .syscomp b.ok { color: #1faa5e; } .syscomp b.warn { color: #d98a00; } .syscomp b.nok { color: #d11d2a; }
 .syscomp span { font-size: 13px; color: var(--sub); }
+
+.abs-form { display: grid; gap: 10px; } .abs-form label { display: grid; gap: 4px; font-size: 13px; color: var(--sub); } .abs-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; } @media (max-width: 800px) { .abs-grid { grid-template-columns: 1fr 1fr; } }
+.abs-list { display: grid; gap: 8px; } .abs-row { display: flex; gap: 10px; align-items: center; }
+.chip.excused { background: #d6f1e0; color: #0c6a39; border: 1px solid #7fcfa0; }

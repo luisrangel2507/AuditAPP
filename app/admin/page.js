@@ -703,6 +703,54 @@ function QEs() {
   );
 }
 
+// Ausencias justificadas (vacaciones, permisos…): no penalizan el cumplimiento
+function Absences() {
+  const [d, setD] = useState(null), [users, setUsers] = useState([]), [f, setF] = useState({ user_id: '', date_from: '', date_to: '', kind: 'Vacaciones', note: '' }), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [qs, setQs] = useState('');
+  const load = () => api('/api/admin/absences').then(setD).catch((e) => setMsg(e.message));
+  useEffect(() => { load(); api('/api/admin/users').then((u) => setUsers(u.filter((x) => x.active))); }, []);
+  const set = (k, v) => setF((o) => ({ ...o, [k]: v }));
+  async function save() {
+    setBusy(true); setMsg('');
+    try { const r = await api('/api/admin/absences', { method: 'POST', body: { ...f, date_to: f.date_to || f.date_from } }); setMsg(`Justificado: ${r.audits} auditoría(s) dejan de penalizar`); setF({ ...f, note: '', date_from: '', date_to: '' }); load(); }
+    catch (e) { setMsg(e.message); } finally { setBusy(false); }
+  }
+  async function del(id) { if (!confirm('¿Quitar esta justificación? Sus auditorías vuelven a quedar pendientes.')) return; await api(`/api/admin/absences?id=${id}`, { method: 'DELETE' }); load(); }
+  const csv = () => {
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const L = [['Persona', 'Departamento', 'Layer', 'Desde', 'Hasta', 'Motivo', 'Justificación', 'Auditorías', 'Registró']].concat((d?.rows || []).map((r) => [r.name, DEPT[r.dept] || r.dept, r.layer, r.date_from, r.date_to, r.kind, r.note, r.audits, r.created_by_name]));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + L.map((r) => r.map(esc).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = 'ausencias-justificadas.csv'; a.click();
+  };
+  const rows = (d?.rows || []).filter((r) => !qs || `${r.name} ${r.kind} ${r.note}`.toLowerCase().includes(qs.toLowerCase()));
+  return (
+    <>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Justifica a una persona por <b>vacaciones, permiso, incapacidad</b>, etc. Sus auditorías de ese rango <b>no cuentan como no realizadas</b> ni bajan el cumplimiento, y ya no le salen como pendientes.</p>
+      <div className="card abs-form">
+        <div className="abs-grid">
+          <label>Persona<select className="inp" value={f.user_id} onChange={(e) => set('user_id', e.target.value)}><option value="">Elige…</option>{users.map((u) => <option key={u.id} value={u.id}>{u.name} · {DEPT[u.dept] || u.dept} · L{u.layer}</option>)}</select></label>
+          <label>Motivo<select className="inp" value={f.kind} onChange={(e) => set('kind', e.target.value)}>{(d?.kinds || ['Vacaciones', 'Permiso', 'Incapacidad', 'Otro']).map((k) => <option key={k}>{k}</option>)}</select></label>
+          <label>Del<input className="inp" type="date" value={f.date_from} onChange={(e) => set('date_from', e.target.value)} /></label>
+          <label>Al<input className="inp" type="date" min={f.date_from} value={f.date_to} onChange={(e) => set('date_to', e.target.value)} /></label>
+        </div>
+        <label>Justificación (opcional salvo "Otro")<input className="inp" maxLength={300} placeholder="Ej. Vacaciones aprobadas por RH, permiso de salida…" value={f.note} onChange={(e) => set('note', e.target.value)} /></label>
+        <button className="btn" disabled={busy || !f.user_id || !f.date_from} onClick={save}>{busy ? 'Guardando…' : 'Justificar ausencia'}</button>
+        {msg && <div className={msg.startsWith('Justificado') ? 'sub' : 'err'} style={{ marginTop: 8 }}>{msg}</div>}
+      </div>
+      <div className="row" style={{ margin: '14px 0 8px' }}><h3 style={{ margin: 0 }} className="grow">Lista de ausencias ({rows.length})</h3>
+        <input className="inp" style={{ maxWidth: 220 }} placeholder="Buscar…" value={qs} onChange={(e) => setQs(e.target.value)} />
+        <button className="btn alt sm" onClick={csv} disabled={!rows.length}>⬇ Excel (.csv)</button></div>
+      {!d ? <div className="empty">Cargando…</div> : !rows.length ? <div className="card empty">Sin ausencias registradas.</div> : (
+        <div className="abs-list">{rows.map((r) => (
+          <div key={r.id} className="card abs-row">
+            <div className="grow"><b>{r.name}</b> <span className="sub" style={{ margin: 0 }}>{DEPT[r.dept] || r.dept} · L{r.layer}</span>
+              <div><span className="pill gold">{r.kind}</span> <span className="sub" style={{ margin: 0 }}>{fmtDate(r.date_from, { day: 'numeric', month: 'short', year: 'numeric' })}{r.date_to !== r.date_from ? ` – ${fmtDate(r.date_to, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''} · {r.audits} auditoría(s) justificadas</span></div>
+              {r.note && <div className="sub" style={{ margin: '4px 0 0' }}>“{r.note}”</div>}
+              <div className="sub" style={{ margin: '2px 0 0', fontSize: 11 }}>Registró {r.created_by_name || '—'}</div></div>
+            <button className="btn-ghost" onClick={() => del(r.id)}>Quitar</button>
+          </div>))}</div>)}
+    </>
+  );
+}
+
 function Inner() {
   const me = useUser(), master = isMaster(me);
   const [tab, setTab] = useUrlState('tab', 'assign'), [templates, setTemplates] = useState(null);
@@ -715,12 +763,13 @@ function Inner() {
         <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></svg>Asignaciones</button>
         <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 5.2a3.4 3.4 0 0 1 0 6.6M18 14.8c1.9.7 3.2 2.4 3.5 5.2" /></svg>Usuarios y rotación</button>
         {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.7.4-1.1.9-1.1 1.7M12 17v.1" /></svg>Preguntas</button>}
+        <button className={tab === 'abs' ? 'on' : ''} onClick={() => setTab('abs')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17M9 15l2 2 4-4" /></svg>Ausencias</button>
         <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg>QEs</button>
         <a className="seg-link" href="/reports"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></svg>Reportes</a>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4.5" y="4" width="15" height="16.5" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>Registro</button>
         {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
       </div>
-      {!templates ? <div className="empty">Cargando…</div> : tab === 'qes' ? <QEs /> : tab === 'log' ? <LogTab /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
+      {!templates ? <div className="empty">Cargando…</div> : tab === 'abs' ? <Absences /> : tab === 'qes' ? <QEs /> : tab === 'log' ? <LogTab /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );
 }

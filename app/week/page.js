@@ -70,7 +70,7 @@ function WeekInner() {
           <div className="mydays">
             {[...data.audits].sort((a, b) => a.date.localeCompare(b.date) || (a.slot || 0) - (b.slot || 0)).map((a) => {
               const wide = a.date !== a.due_date, st = status(a), isToday = a.date === today || (wide && today >= a.date && today <= a.due_date);
-              const [label, cls] = ({ completed: ['Completada', 'ok'], late: ['Completada tarde', 'warn'], open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'], upcoming: ['Próxima', ''] })[st] || ['', ''];
+              const [label, cls] = ({ completed: ['Completada', 'ok'], late: ['Completada tarde', 'warn'], open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'], upcoming: ['Próxima', ''], excused: ['Justificada', 'ok'] })[st] || ['', ''];
               return (
                 <Link key={a.id} href={`/audit/${a.id}`} className={`myday ${isToday ? 'today' : ''}`}>
                   <div className="myday-d">{wide ? <><b>Semana</b><span>vence {fmtDate(a.due_date, { weekday: 'short', day: 'numeric' })}</span></> : <><b>{fmtDate(a.date, { weekday: 'long' })}</b><span>{fmtDate(a.date, { day: 'numeric', month: 'short' })}</span></>}</div>

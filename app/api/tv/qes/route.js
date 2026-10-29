@@ -38,7 +38,7 @@ export async function GET(req) {
       `SELECT a.id,a.user_id,u.name,a.date,a.due_date,a.slot,a.area,a.status,a.score_pct,a.nok_count+a.partial_count AS findings,
               a.completed_at
          FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.kind='process' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND u.active
+        WHERE a.kind='process' AND a.status<>'excused' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND u.active
           AND u.access NOT IN ('admin','master') AND ($4::int IS NULL OR u.site_id=$4)
         ORDER BY u.name,a.date,a.slot`, [monday, addDays(monday, 4), gl, scope]);
     const items = rows.map((a) => ({ ...a, score: a.score_pct == null ? null : Number(a.score_pct), window: windowState(a, today) }));

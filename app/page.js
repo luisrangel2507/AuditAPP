@@ -12,7 +12,7 @@ import { isAdmin, isMaster } from '@/lib/roles';
 
 const STATE = {
   open: ['Programada', 'gold'], last_day: ['Último día', 'warn'], missed: ['No realizada', 'nok'],
-  completed: ['Completada', 'ok'], upcoming: ['Próxima', ''],
+  completed: ['Completada', 'ok'], upcoming: ['Próxima', ''], excused: ['Justificada', 'ok'],
 };
 
 function Ticket({ a, today }) {

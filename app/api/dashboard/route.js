@@ -12,7 +12,7 @@ export const GET = route(async (req, ctx, user) => {
   // Ventana pedida, pero nunca antes de la fecha de arranque de la app
   const from = [addDays(mondayOf(today), -(weeks - 1) * 7), gl].sort().pop();
   // Cuentan para cumplimiento: completadas, o cuya ventana (el día programado) ya cerró
-  const due = `(a.due_date < $2::date OR a.status='completed')`;
+  const due = `((a.due_date < $2::date OR a.status='completed') AND a.status<>'excused')`;
   const P = [from, today, scope];
   const SC = `AND ($3::int IS NULL OR u.site_id=$3)`;
 

@@ -358,6 +358,13 @@ async function main() {
   }
 
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
+  await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excuse_reason TEXT');
+  await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_at TIMESTAMPTZ');
+  await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_by INT');
+  await pool.query(`CREATE TABLE IF NOT EXISTS absences (
+    id SERIAL PRIMARY KEY, user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date_from DATE NOT NULL, date_to DATE NOT NULL, kind TEXT NOT NULL, note TEXT DEFAULT '', reason TEXT NOT NULL,
+    created_by INT, created_by_name TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`);
   await pool.query("ALTER TABLE finding_owners ADD COLUMN IF NOT EXISTS plan_action TEXT DEFAULT ''");
   await pool.query('ALTER TABLE finding_owners ADD COLUMN IF NOT EXISTS plan_date DATE');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_template_id INT REFERENCES templates(id) ON DELETE SET NULL');
