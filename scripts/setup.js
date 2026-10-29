@@ -514,6 +514,15 @@ async function main() {
     console.log(`[setup] Paint Line Layer 1 Audit asignada a ${up.rowCount} usuario(s) (Cell Leader – Paint)`);
   }
 
+  // Nombre correcto de la línea: "Línea de ensamble - 920B Instrument Panel" (había quedado "Linea de ensamble - 920B Instrument Pane")
+  const flagMn = await pool.query(`INSERT INTO settings(key,value) VALUES('machine_rename_920b','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagMn.rowCount) {
+    const NEW = 'Línea de ensamble - 920B Instrument Panel';
+    const r = await pool.query(
+      `UPDATE audits SET machine=$1, area=REPLACE(area, machine, $1) WHERE machine ~* '^l[ií]nea de ensamble\\s*[-–]\\s*920b instrument pane?l?$' AND machine <> $1`, [NEW]);
+    console.log(`[setup] máquina 920B renombrada en ${r.rowCount} auditoría(s)`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);

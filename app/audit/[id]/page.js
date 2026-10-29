@@ -82,7 +82,7 @@ function Setup({ audit, onSaved, onExit }) {
           <div className="setup-h"><i />2. Máquina <span>Zona {zone}</span></div>
           <div className="ztiles m">{list.map((m) => (
             <button key={m} type="button" className={`ztile t-${ZTONE(zone)} ${machine === m ? 'on' : ''}`} onClick={() => { setMachine(m); setStep('part'); }}>
-              <span className="zi">{fac}</span><b>{m}</b><span className="zc">{chev}</span>
+              <span className="zi">{fac}</span><b className={m.length > 12 ? 'mlong' : ''}>{m}</b><span className="zc">{chev}</span>
             </button>))}</div>
           <div className="row" style={{ marginTop: 12 }}>
             <input className="inp" placeholder="Otra máquina…" maxLength={40} value={list.includes(machine) ? '' : machine} onChange={(e) => setMachine(e.target.value)} />
