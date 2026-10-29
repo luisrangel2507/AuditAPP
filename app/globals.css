@@ -1457,3 +1457,8 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .ztiles.m .ztile b { font-size: 15px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; display: block; max-width: 100%; padding-right: 4px; }
 .ztiles.m .ztile b.mlong { font-size: 13.5px; }
 .ztiles.m { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+.syscomp { text-align: center; margin: 14px 0 6px; padding: 14px; border-radius: 16px; background: rgba(120,135,170,.08); border: 1px solid var(--line2); }
+.syscomp small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); font-weight: 700; }
+.syscomp b { display: block; font-size: 46px; line-height: 1.1; letter-spacing: -.02em; } .syscomp b.ok { color: #1faa5e; } .syscomp b.warn { color: #d98a00; } .syscomp b.nok { color: #d11d2a; }
+.syscomp span { font-size: 13px; color: var(--sub); }

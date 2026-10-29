@@ -170,6 +170,7 @@ function Inner() {
             </div>
           <div className="sect">Resultados de las auditorías · {weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
             <div className="card"><ResultsPie results={d.results} />
+            <div className="syscomp"><small>System Compliance</small><b className={pct(d.users.completed, d.users.total) >= 90 ? 'ok' : pct(d.users.completed, d.users.total) >= 70 ? 'warn' : 'nok'}>{pct(d.users.completed, d.users.total)}%</b><span>{d.users.completed} de {d.users.total} usuarios han hecho su auditoría</span></div>
             <div className="usr-bar"><div className="usr-top"><span>Usuarios al corriente</span><b>{pct(d.users.completed, d.users.total)}% · {d.users.completed} de {d.users.total}</b></div>
               <div className="track"><i style={{ width: `${pct(d.users.completed, d.users.total)}%` }} /></div>
               <div className="sub">Completaron al menos una auditoría en el periodo y no tienen ninguna vencida sin hacer.{d.users.with_missed > 0 && ` ${d.users.with_missed} usuario(s) con auditorías no realizadas.`}</div></div></div>
