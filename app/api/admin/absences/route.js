@@ -3,6 +3,9 @@ import { q } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
 import { siteScope, sameSite } from '@/lib/site';
 import { resetEnsured } from '@/lib/schedule';
+import { mxToday, addDays } from '@/lib/dates';
+
+const GRACE = 3; // días después de la ausencia en que aún se puede justificar
 
 const KINDS = ['Vacaciones', 'Permiso', 'Incapacidad', 'Capacitación', 'Comisión', 'Otro'];
 
@@ -22,6 +25,7 @@ export const POST = route(async (req, ctx, user) => {
   const uid = Number(b.user_id), from = String(b.date_from || ''), to = String(b.date_to || b.date_from || '');
   const kind = KINDS.includes(b.kind) ? b.kind : 'Otro', note = String(b.note || '').trim().slice(0, 300);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to) || to < from) return err('Elige un rango de fechas válido');
+  if (addDays(to, GRACE) < mxToday()) return err(`Ya pasó el plazo: solo se puede justificar hasta ${GRACE} días después de que termina la ausencia`);
   if (kind === 'Otro' && note.length < 3) return err('Escribe la justificación');
   const { rows: [t] } = await q('SELECT id,site_id FROM users WHERE id=$1', [uid]);
   if (!t || !sameSite(user, t.site_id)) return err('Usuario inválido', 404);

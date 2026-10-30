@@ -709,6 +709,8 @@ function Absences() {
   const load = () => api('/api/admin/absences').then(setD).catch((e) => setMsg(e.message));
   useEffect(() => { load(); api('/api/admin/users').then((u) => setUsers(u.filter((x) => x.active))); }, []);
   const set = (k, v) => setF((o) => ({ ...o, [k]: v }));
+  // Solo se puede justificar hasta 3 días después de que termina la ausencia
+  const minD = (() => { const t = new Date(); t.setDate(t.getDate() - 3); return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(t); })();
   async function save() {
     setBusy(true); setMsg('');
     try { const r = await api('/api/admin/absences', { method: 'POST', body: { ...f, date_to: f.date_to || f.date_from } }); setMsg(`Justificado: ${r.audits} auditoría(s) dejan de penalizar`); setF({ ...f, note: '', date_from: '', date_to: '' }); load(); }
@@ -723,13 +725,13 @@ function Absences() {
   const rows = (d?.rows || []).filter((r) => !qs || `${r.name} ${r.kind} ${r.note}`.toLowerCase().includes(qs.toLowerCase()));
   return (
     <>
-      <p className="sub" style={{ margin: '4px 0 12px' }}>Justifica a una persona por <b>vacaciones, permiso, incapacidad</b>, etc. Sus auditorías de ese rango <b>no cuentan como no realizadas</b> ni bajan el cumplimiento, y ya no le salen como pendientes.</p>
+      <p className="sub" style={{ margin: '4px 0 12px' }}>Justifica a una persona por <b>vacaciones, permiso, incapacidad</b>, etc. Sus auditorías de ese rango <b>no cuentan como no realizadas</b> ni bajan el cumplimiento, y ya no le salen como pendientes. Se puede justificar hasta <b>3 días después</b> de que termina la ausencia.</p>
       <div className="card abs-form">
         <div className="abs-grid">
           <label>Persona<select className="inp" value={f.user_id} onChange={(e) => set('user_id', e.target.value)}><option value="">Elige…</option>{users.map((u) => <option key={u.id} value={u.id}>{u.name} · {DEPT[u.dept] || u.dept} · L{u.layer}</option>)}</select></label>
           <label>Motivo<select className="inp" value={f.kind} onChange={(e) => set('kind', e.target.value)}>{(d?.kinds || ['Vacaciones', 'Permiso', 'Incapacidad', 'Otro']).map((k) => <option key={k}>{k}</option>)}</select></label>
-          <label>Del<input className="inp" type="date" value={f.date_from} onChange={(e) => set('date_from', e.target.value)} /></label>
-          <label>Al<input className="inp" type="date" min={f.date_from} value={f.date_to} onChange={(e) => set('date_to', e.target.value)} /></label>
+          <label>Del<input className="inp" type="date" min={minD} value={f.date_from} onChange={(e) => set('date_from', e.target.value)} /></label>
+          <label>Al<input className="inp" type="date" min={f.date_from || minD} value={f.date_to} onChange={(e) => set('date_to', e.target.value)} /></label>
         </div>
         <label>Justificación (opcional salvo "Otro")<input className="inp" maxLength={300} placeholder="Ej. Vacaciones aprobadas por RH, permiso de salida…" value={f.note} onChange={(e) => set('note', e.target.value)} /></label>
         <button className="btn" disabled={busy || !f.user_id || !f.date_from} onClick={save}>{busy ? 'Guardando…' : 'Justificar ausencia'}</button>
