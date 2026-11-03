@@ -42,7 +42,7 @@ function Sheet({ d, k, cols, finds, total }) {
     const answers = {};
     for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
     const u = (f) => [...new Set(L.map(f).filter(Boolean))];
-    return { initials: u((c) => c.initials).join('/'), part: u((c) => c.part).join(' / '), area: u((c) => c.status === 'completed' && c.area).join(' / '), answers, status: L.some((c) => c.status === 'completed') ? 'completed' : 'pending' };
+    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), part: u((c) => c.status === 'completed' && c.part).join(' / '), area: u((c) => c.status === 'completed' && c.area).join(' / '), answers, status: L.some((c) => c.status === 'completed') ? 'completed' : 'pending' };
   };
   const wm = new Date(d.monday + 'T12:00:00Z');
   return (
@@ -101,7 +101,7 @@ function Sheet2({ d, finds }) {
     const answers = {};
     for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
     const u = (f) => [...new Set(L.map(f).filter(Boolean))];
-    return { initials: u((c) => c.initials).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
+    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
   };
   const mo = new Date(wk[0] + 'T12:00:00Z');
   return (
