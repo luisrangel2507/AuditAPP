@@ -13,6 +13,7 @@ function Inner() {
   const shift = (n) => { const t = new Date(d.monday + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n * 7); setDate(t.toISOString().slice(0, 10)); };
   return (
     <div className="wk">
+      <div className="crumb" style={{ fontSize: 13, color: 'var(--sub)', marginBottom: 8 }}><a href="/admin" style={{ color: 'inherit' }}>Administración</a> › <a href="/reports" style={{ color: 'inherit' }}>Reportes</a> › <b>{'Reporte semanal'}</b></div>
       <div className="row wk-bar">
         <button className="btn alt sm" onClick={() => shift(-1)}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>Semana {fmtDate(d.monday, { day: 'numeric', month: 'short' })} – {fmtDate(d.friday, { day: 'numeric', month: 'short', year: 'numeric' })}</div>

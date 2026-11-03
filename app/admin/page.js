@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import AdminTabs from '@/components/AdminTabs';
 import Shell, { useUser } from '@/components/Shell';
 import { isMaster } from '@/lib/roles';
 import Bi from '@/components/Bi';
@@ -767,23 +769,14 @@ function Absences() {
 }
 
 function Inner() {
-  const me = useUser(), master = isMaster(me);
+  const me = useUser(), master = isMaster(me), router = useRouter();
   const [tab, setTab] = useUrlState('tab', 'assign'), [templates, setTemplates] = useState(null);
   const loadT = () => api('/api/admin/templates').then(setTemplates);
   useEffect(() => { loadT(); }, []);
   return (
     <>
       <h1 className="title">Administración</h1>
-      <div className="seg uline" style={{ margin: '12px 0' }}>
-        <button className={tab === 'assign' ? 'on' : ''} onClick={() => setTab('assign')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></svg>Asignaciones</button>
-        <button className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 5.2a3.4 3.4 0 0 1 0 6.6M18 14.8c1.9.7 3.2 2.4 3.5 5.2" /></svg>Usuarios y rotación</button>
-        {(master || !me.multi_site) && <button className={tab === 'q' ? 'on' : ''} onClick={() => setTab('q')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.7.4-1.1.9-1.1 1.7M12 17v.1" /></svg>Preguntas</button>}
-        <button className={tab === 'abs' ? 'on' : ''} onClick={() => setTab('abs')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17M9 15l2 2 4-4" /></svg>Ausencias</button>
-        <button className={tab === 'qes' ? 'on' : ''} onClick={() => setTab('qes')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg>QEs</button>
-        <a className="seg-link" href="/reports"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z" /><path d="M14 3.5V8h5M10 12.5h6M10 16h6" /></svg>Reportes</a>
-        <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4.5" y="4" width="15" height="16.5" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>Registro</button>
-        {me.multi_site && <button className={tab === 'sites' ? 'on' : ''} onClick={() => setTab('sites')}>{master ? 'Plantas' : 'Mi planta'}</button>}
-      </div>
+      <AdminTabs active={tab} onSelect={(k) => (k === 'reports' ? router.push('/reports') : setTab(k))} me={me} master={master} />
       {!templates ? <div className="empty">Cargando…</div> : tab === 'abs' ? <Absences /> : tab === 'qes' ? <QEs /> : tab === 'log' ? <LogTab /> : tab === 'sites' ? <Sites /> : tab === 'assign' ? <Assign /> : tab === 'users' ? <Users templates={templates} /> : <Questions templates={templates} reloadTemplates={loadT} />}
     </>
   );

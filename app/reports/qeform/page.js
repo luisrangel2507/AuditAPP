@@ -173,6 +173,7 @@ function Inner() {
   };
   return (
     <div className="qf">
+      <div className="crumb" style={{ fontSize: 13, color: 'var(--sub)', marginBottom: 8 }}><a href="/admin" style={{ color: 'inherit' }}>Administración</a> › <a href="/reports" style={{ color: 'inherit' }}>Reportes</a> › <b>{'Formato impreso por Layer'}</b></div>
       <div className="row qf-bar">
         <button className="btn alt sm" onClick={() => shift(-1)}>‹</button>
         <div className="grow" style={{ textAlign: 'center' }}>{d.weeks ? `Mes de ${MONTHS[new Date(d.weeks[0] + 'T12:00:00Z').getUTCMonth()]} ${d.weeks[0].slice(0, 4)}` : `Semana del ${fmtDate(d.monday, { day: 'numeric', month: 'long', year: 'numeric' })}`}</div>

@@ -1468,3 +1468,23 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .chip.excused { background: #d6f1e0; color: #0c6a39; border: 1px solid #7fcfa0; }
 
 .asg-filters { grid-template-columns: 1fr 1fr 1fr 1.2fr auto; } @media (max-width: 900px) { .asg-filters { grid-template-columns: 1fr 1fr; } }
+/* Reportes: estructura y PDF por reporte */
+.rp-crumb { font-size: 13px; color: var(--sub); margin: 0 0 8px; } .rp-crumb b { color: var(--ink); }
+.rp-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #1f6bf0; } .rp-h h2 { margin: 0; font-size: 18px; color: var(--ink); }
+.rp-sec .rp-h + .seg, .rp-sec .rp-h + .card { margin-top: 0; }
+.rp-sec { background: var(--panel); border: 1px solid var(--line2); border-radius: 18px; padding: 16px 18px; box-shadow: var(--shadow-s); margin-top: 16px; }
+.rp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; } @media (max-width: 800px) { .rp-kpis { grid-template-columns: 1fr 1fr; } }
+.rp-kpis > div { text-align: center; padding: 12px 8px; border-radius: 14px; background: rgba(120,135,170,.08); border: 1px solid var(--line2); } .rp-kpis b { display: block; font-size: 30px; color: #1f5bd6; line-height: 1.1; } .rp-kpis span { display: block; font-size: 13px; font-weight: 700; color: var(--ink); } .rp-kpis small { color: var(--sub); font-size: 11.5px; }
+.rp-table { width: 100%; border-collapse: collapse; font-size: 13px; } .rp-table th { text-align: left; background: rgba(120,135,170,.12); padding: 8px; } .rp-table td { padding: 8px; border-top: 1px solid var(--line2); vertical-align: top; } .rp-table td small { display: block; color: var(--sub); }
+.rp-phead { display: none; }
+@media print {
+  @page { size: letter portrait; margin: 12mm; }
+  body.rp-printing .apphero, body.rp-printing .nav, body.rp-printing .norep, body.rp-printing .seg, body.rp-printing .btn, body.rp-printing .rp-crumb, body.rp-printing .title, body.rp-printing .rp-pdf, body.rp-printing .rp-ch i, body.rp-printing .linkbtn { display: none !important; }
+  body.rp-printing .rp-sec:not(.rp-on) { display: none !important; }
+  body.rp-printing .rp-sec { box-shadow: none; border: 0; padding: 0; margin: 0 0 8mm; break-inside: auto; }
+  body.rp-printing .rp-h { break-after: avoid; } body.rp-printing .rp-keep, body.rp-printing .rp-table tr, body.rp-printing .bar { break-inside: avoid; }
+  body.rp-printing .rp-phead { display: flex; align-items: center; gap: 8mm; padding-bottom: 4mm; margin-bottom: 6mm; border-bottom: 3px solid #1f6bf0; } body.rp-printing .rp-phead img { height: 14mm; } body.rp-printing .rp-phead b { display: block; font-size: 15pt; color: #0b1f4d; } body.rp-printing .rp-phead span { display: block; font-size: 9pt; color: #555; }
+  body.rp-printing .page.sheetpage { margin: 0; padding: 0; max-width: none; background: none; box-shadow: none; border-radius: 0; min-height: 0; }
+  body.rp-printing { background: #fff !important; } body.rp-printing * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .crumb { display: none !important; }
+}
