@@ -125,7 +125,7 @@ function Sheet2({ d, finds }) {
       <table className="qfs-t">
         <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '38.4%' }} /><col style={{ width: '5.4%' }} />{IDX.map((i) => <col key={i} style={{ width: `${33 / N}%` }} />)}<col style={{ width: '13.2%' }} /></colgroup>
         <thead>
-          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">QA Layer 2 Audit</div></div></th>
+          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
             <th colSpan={N + 1} className="sh">Layer 2 – Weekly by Dept. Manager <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={N + 1} className="sh">Month of: &nbsp; <b>{MONTHS[mo.getUTCMonth()]}</b></th></tr>
           <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">Week {i + 1}</th>)}</tr>

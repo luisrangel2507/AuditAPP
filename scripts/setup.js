@@ -538,6 +538,34 @@ async function main() {
     console.log(`[setup] máquina 920B renombrada en ${r.rowCount} auditoría(s)`);
   }
 
+  // Formatos corporativos (MGMT-015-C): plantillas con preguntas fijas y asignación por nombre
+  const corp = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'corp-forms.json'), 'utf8'));
+  const norm = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  for (const f of corp) {
+    let { rows: [ct] } = await pool.query('SELECT id FROM templates WHERE name=$1', [f.name]);
+    if (!ct) {
+      ({ rows: [ct] } = await pool.query('INSERT INTO templates(name,zone,per_audit) VALUES($1,$2,$3) RETURNING id', [f.name, f.zone, f.questions.length]));
+      for (let i = 0; i < f.questions.length; i++) {
+        const [item, es, en] = f.questions[i];
+        await pool.query('INSERT INTO questions(template_id,text,category,sort_order,item_no,required) VALUES($1,$2,$3,$4,$5,TRUE)', [ct.id, `${es}\n${en}`, f.zone, i, item]);
+      }
+      console.log(`[setup] plantilla ${f.name} cargada (${f.questions.length})`);
+    }
+    if (!f.users.length) continue;
+    const key = `corp_assign_${f.name}`;
+    const first = await pool.query(`INSERT INTO settings(key,value) VALUES($1,'1') ON CONFLICT DO NOTHING RETURNING key`, [key]);
+    if (!first.rowCount) continue;
+    const { rows: us } = await pool.query(`SELECT id,name FROM users WHERE active AND access NOT IN ('admin','master')`);
+    const ids = us.filter((u) => f.users.some((n) => norm(u.name) === norm(n))).map((u) => u.id);
+    if (ids.length) {
+      await pool.query('UPDATE users SET template_id=$1 WHERE id = ANY($2::int[])', [ct.id, ids]);
+      await pool.query(
+        `UPDATE audits a SET template_id=$1, question_ids=(SELECT array_agg(x.id ORDER BY x.sort_order,x.id) FROM questions x WHERE x.template_id=$1 AND x.active)
+          WHERE a.user_id = ANY($2::int[]) AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date >= $3`, [ct.id, ids, mxToday]);
+    }
+    console.log(`[setup] ${f.name} asignada a ${ids.length} de ${f.users.length} usuario(s)`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);

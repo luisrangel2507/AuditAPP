@@ -15,7 +15,7 @@ export const GET = route(async (req, ctx, user) => {
   let monday = mondayOf(/^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : mxToday());
   const scope = await siteScope(user);
 
-  const isL2 = tpls.find((t) => t.id === tpl)?.name === 'QA Layer 2 Audit';
+  const isL2 = (await q(`SELECT 1 FROM users WHERE template_id=$1 AND layer=2 LIMIT 1`, [tpl])).rowCount > 0;
   // Layer 2: formato mensual con una columna por semana (Week 1 … Week 4/5); lunes dentro del mes
   let sunday = addDays(monday, 6), weeks = null;
   if (isL2) {
