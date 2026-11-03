@@ -358,6 +358,14 @@ async function main() {
   }
 
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_id INT REFERENCES users(id) ON DELETE SET NULL');
+  // Juventino Morales (GM): Auditor y encargado para ver el Panel de todos
+  const jv = await pool.query(`UPDATE users SET access='lead' WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'juventino%' AND layer >= 3 AND access='auditor'`);
+  if (jv.rowCount) console.log('[setup] Juventino → Auditor y encargado (Panel)');
+  // Hugo Beltrán es Layer 2 (gerente)
+  const hb = await pool.query(`SELECT id FROM users WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'hugo beltran%' AND layer <> 2`);
+  if (hb.rowCount) { await pool.query(`UPDATE users SET layer=2 WHERE id = ANY($1::int[])`, [hb.rows.map((r) => r.id)]); await pool.query(`DELETE FROM audits WHERE user_id = ANY($1::int[]) AND status='pending' AND kind='lpa' AND date >= CURRENT_DATE`, [hb.rows.map((r) => r.id)]); console.log('[setup] Hugo Beltrán → Layer 2'); }
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excuse_reason TEXT');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_at TIMESTAMPTZ');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_by INT');

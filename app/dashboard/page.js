@@ -101,16 +101,18 @@ function printReport() {
 }
 
 function Inner() {
-  const [weeks, setWeeks] = useUrlState('w', 4), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
+  const [weeks, setWeeks] = useUrlState('w', 4), [cf, setCf] = useUrlState('f', ''), [ct, setCt] = useUrlState('t', ''), [d, setD] = useState(null), [err, setErr] = useState(''), [siteTv, setSiteTv] = useState('');
   // La TV usa la planta que ve el admin; un líder siempre ve la suya (lo resuelve el servidor)
   useEffect(() => { const c = getSiteCookie(); setSiteTv(c !== 'ALL' ? `?site=${c}` : ''); }, []);
-  useEffect(() => { setD(null); api(`/api/dashboard?weeks=${weeks}`).then(setD).catch((e) => setErr(e.message)); }, [weeks]);
+  useEffect(() => { setD(null); const q = weeks === 0 ? (cf && ct ? `&from=${cf}&to=${ct}` : null) : ''; if (q === null) return; let on = true; api(`/api/dashboard?weeks=${weeks || 4}${q}`).then((r) => on && setD(r)).catch((e) => on && setErr(e.message)); return () => { on = false; }; }, [weeks, cf, ct]);
   return (
     <>
       <div className="row wrap norep"><h1 className="title grow">Panel de cumplimiento</h1><a className="btn alt sm" href={`/tv${siteTv}`} target="_blank" rel="noreferrer">Abrir pantalla TV</a></div>
       <div className="seg norep" style={{ margin: '12px 0' }}>
         {[1, 4, 8, 12].map((w) => <button key={w} className={weeks === w ? 'on' : ''} onClick={() => setWeeks(w)}>{w === 1 ? 'Esta semana' : `${w} semanas`}</button>)}
+        <button className={weeks === 0 ? 'on' : ''} onClick={() => { setWeeks(0); if (!cf) { const t = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date()); setCf(`${t.slice(0, 8)}01`); setCt(t); } }}>Personalizado</button>
       </div>
+      {weeks === 0 && <div className="rp-dates norep" style={{ marginBottom: 10 }}><label>Del<input className="inp" type="date" value={cf} max={ct || undefined} onChange={(e) => setCf(e.target.value)} /></label><label>Al<input className="inp" type="date" value={ct} min={cf || undefined} onChange={(e) => setCt(e.target.value)} /></label></div>}
       {err && <div className="err norep">{err}</div>}
       {!d ? <div className="empty">Cargando…</div> : (
         <>
@@ -160,7 +162,7 @@ function Inner() {
             <div className="rep-head">
               <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
               <div><h1>LPA Summary · {d.siteName}</h1>
-                <div>{weeks === 1 ? 'Semana en curso' : `Últimas ${weeks} semanas`} · al {fmtDate(d.today, { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+                <div>{weeks === 0 ? 'Periodo personalizado' : weeks === 1 ? 'Semana en curso' : `Últimas ${weeks} semanas`} · al {fmtDate(d.today, { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
               <div className="rep-kpis">
                 <span><b>{pct(d.kpi.completed, d.kpi.scheduled)}%</b> cumplimiento ({d.kpi.completed}/{d.kpi.scheduled})</span>
                 <span><b>{pct(d.users.completed, d.users.total)}%</b> usuarios al corriente ({d.users.completed} de {d.users.total})</span>
@@ -168,7 +170,7 @@ function Inner() {
                 <span><b>{d.openFindings.n}</b> hallazgos abiertos ({d.openFindings.overdue} vencidos)</span>
               </div>
             </div>
-          <div className="sect">Resultados de las auditorías · {weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
+          <div className="sect">Resultados de las auditorías · {weeks === 0 ? 'periodo elegido' : weeks === 1 ? 'esta semana' : `últimas ${weeks} semanas`} (al {fmtDate(d.to || d.today, { day: 'numeric', month: 'short', year: 'numeric' })})</div>
             <div className="card"><ResultsPie results={d.results} />
             <div className="syscomp"><small>System Compliance</small><b className={pct(d.users.completed, d.users.total) >= 90 ? 'ok' : pct(d.users.completed, d.users.total) >= 70 ? 'warn' : 'nok'}>{pct(d.users.completed, d.users.total)}%</b><span>{d.users.completed} de {d.users.total} usuarios han hecho su auditoría</span></div>
             <div className="usr-bar"><div className="usr-top"><span>Usuarios al corriente</span><b>{pct(d.users.completed, d.users.total)}% · {d.users.completed} de {d.users.total}</b></div>
@@ -181,4 +183,4 @@ function Inner() {
     </>
   );
 }
-export default function Dashboard() { return <Shell need="lead"><Inner /></Shell>; }
+export default function Dashboard() { return <Shell need="panel"><Inner /></Shell>; }

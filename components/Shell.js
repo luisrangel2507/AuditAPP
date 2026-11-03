@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { api, peek, DEPT, LAYER, getSiteCookie, setSiteCookie } from '@/lib/client';
 import Guide from '@/components/Guide';
 import ThemeToggle from '@/components/ThemeToggle';
-import { isAdmin, isMaster, roleLabel } from '@/lib/roles';
+import { isAdmin, isMaster, roleLabel, canPanel } from '@/lib/roles';
 import { I } from '@/components/Icons';
 
 const ROLE = { quality: 'Calidad', process: 'Procesos', production: 'Producción', logistics: 'Logística', hr: 'RH', maintenance: 'Mantenimiento', toolroom: 'Tool Room', program: 'Programas', management: 'Gerencia' };
@@ -94,6 +94,7 @@ export default function Shell({ children, need }) {
   useEffect(() => { if (user) api('/api/findings/count').then((c) => setIssues(c.n)).catch(() => {}); }, [user, path]);
   useEffect(() => {
     if (user && (need === 'lead' || need === 'admin') && !isAdmin(user)) router.replace('/');
+    if (user && need === 'panel' && !canPanel(user)) router.replace('/');
     if (user && need === 'master' && !isMaster(user)) router.replace('/');
   }, [user, need, router]);
 
@@ -108,7 +109,7 @@ export default function Shell({ children, need }) {
   const lead = isAdmin(user);
   const items = [
     ['/', 'Hoy', I.home], ['/week', 'Semana', I.calendar], ['/findings', 'Issues', I.chart],
-    ...(lead ? [['/dashboard', 'Panel', I.grid]] : []),
+    ...(canPanel(user) ? [['/dashboard', 'Panel', I.grid]] : []),
     ...(isAdmin(user) ? [['/admin', 'Admin', I.settings]] : []),
   ];
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();

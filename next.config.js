@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  serverExternalPackages: ['pg', 'bcryptjs', 'web-push'],
+  serverExternalPackages: ['pg', 'bcryptjs', 'web-push', 'nodemailer'],
   poweredByHeader: false,
   // Imágenes estáticas: el navegador las guarda una semana y las refresca en segundo plano
   async headers() {

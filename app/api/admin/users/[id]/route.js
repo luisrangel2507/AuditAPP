@@ -1,4 +1,6 @@
 import bcrypt from 'bcryptjs';
+import { notifyAdmins } from '@/lib/notify';
+import { sendAlertMail } from '@/lib/mail';
 import { resetEnsured } from '@/lib/schedule';
 import { q } from '@/lib/db';
 import { passwordError } from '@/lib/password';
@@ -6,7 +8,7 @@ import { route, json, err } from '@/lib/api';
 import { isMaster, isAdmin } from '@/lib/roles';
 import { mxToday } from '@/lib/dates';
 
-const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id', 'process_per_day', 'process_template_id'];
+const FIELDS = ['name', 'dept', 'layer', 'access', 'template_id', 'days', 'pool', 'start_idx', 'rotate_daily', 'active', 'site_id', 'process_per_day', 'process_template_id', 'email', 'manager_id'];
 
 export const PATCH = route(async (req, { params }, user) => {
   const b = await req.json();
@@ -33,10 +35,26 @@ export const PATCH = route(async (req, { params }, user) => {
     add('pin_hash', await bcrypt.hash(String(b.reset_password), 10)); add('must_change', true);
   }
   if (!sets.length) return err('Nada que cambiar');
+  // Baja de personal: doble confirmación (casilla + escribir el nombre) y aviso por correo y en la app
+  let baja = null;
+  if (b.active === false) {
+    const { rows: [cur] } = await q('SELECT id,name,username,dept,layer,site_id,active FROM users WHERE id=$1', [params.id]);
+    if (cur?.active) {
+      if (!b.confirm_baja || String(b.confirm_name || '').trim().toLowerCase() !== String(cur.name).trim().toLowerCase()) return err('Para dar de baja confirma dos veces: marca la confirmación y escribe el nombre completo de la persona');
+      baja = cur;
+    }
+  }
   if (Number(params.id) === user.id && (b.active === false || (b.access && !isAdmin({ access: b.access }))))
     return err('No puedes quitarte tu propio acceso de administración');
   vals.push(params.id);
   await q(`UPDATE users SET ${sets.join(',')} WHERE id=$${vals.length}`, vals);
+  if (baja) {
+    const msg = `${user.name} dio de baja a ${baja.name} (${baja.username}, Layer ${baja.layer})`;
+    await notifyAdmins({ siteId: baja.site_id, type: 'user_baja', link: '/admin?tab=users', message: msg, dedupe: `baja:${baja.id}:${Date.now()}` }).catch(() => {});
+    sendAlertMail(baja.site_id, `LPApp · Baja de personal: ${baja.name}`, `${msg}
+Fecha: ${new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}
+Si no fue intencional, reactívalo en Admin → Usuarios.`).catch(() => {});
+  }
   // Quita las auditorías pendientes que ya no le corresponden (cambio de días, capa, rol o baja)
   await q(
     `DELETE FROM audits a USING users u

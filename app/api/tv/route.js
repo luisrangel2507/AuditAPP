@@ -24,13 +24,16 @@ export async function GET(req) {
     const code = sp.get('site');
     const byCode = async () => (await q('SELECT id FROM sites WHERE code=$1', [code])).rows[0]?.id ?? 0;
     let scope = null; // null = todas las plantas
+    let mgr = Number(sp.get('mgr')) || null; // TV de un gerente: solo la gente que le reporta
     if (keyOk(sp.get('key'))) {
       if (code) scope = await byCode();
     } else {
       const u = await getUser();
       if (!u) return err('No autorizado', 401);
-      if (!isAdmin(u)) return err('Sin permiso', 403);
-      scope = isMaster(u) && code ? await byCode() : await siteScope(u);
+      if (!isAdmin(u)) {
+        if (Number(u.layer) < 2) return err('Sin permiso', 403);
+        mgr = u.id; scope = u.site_id ?? 0; // gerente con sesión: su equipo
+      } else scope = isMaster(u) && code ? await byCode() : await siteScope(u);
     }
     const site = scope == null ? null : (await q('SELECT code,name FROM sites WHERE id=$1', [scope])).rows[0] || null;
     const today = mxToday();
@@ -43,9 +46,9 @@ export async function GET(req) {
       `SELECT a.id,a.date,a.due_date,a.area,a.part_number,a.status,a.score_pct,a.late,a.completed_at,
               a.nok_count,a.partial_count,u.name,u.dept,u.layer
          FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.kind='lpa' AND a.status<>'excused' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4)
+        WHERE a.kind='lpa' AND a.status<>'excused' AND a.date BETWEEN $1 AND $2 AND a.date >= $3 AND ($4::int IS NULL OR u.site_id=$4) AND ($5::int IS NULL OR u.manager_id=$5)
         ORDER BY u.layer DESC,u.name`,
-      [monday, addDays(monday, 4), gl, scope]);
+      [monday, addDays(monday, 4), gl, scope, mgr]);
     const wk = rows.map((a) => ({ ...a, window: windowState(a, today) }));
 
     const scheduled = wk.filter((a) => a.layer === 1 && a.date === today);
@@ -66,8 +69,8 @@ export async function GET(req) {
     const { rows: f } = await q(
       `SELECT COUNT(*)::int open, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue
          FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
-        WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`,
-      [today, scope]);
+        WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2) AND ($3::int IS NULL OR u.manager_id=$3)`,
+      [today, scope, mgr]);
 
     // Open issues abiertos (la TV los muestra 30 s cada 2 min)
     const { rows: iss } = await q(
@@ -75,8 +78,8 @@ export async function GET(req) {
               COALESCE((SELECT json_agg(json_build_object('name',ou.name,'plan',o.plan_action,'plan_date',o.plan_date,'status',o.status) ORDER BY o.added_at)
                           FROM finding_owners o JOIN users ou ON ou.id=o.user_id WHERE o.finding_id=f.id),'[]') AS owners
          FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id
-        WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1)
-        ORDER BY (f.due_date < $2) DESC NULLS LAST, f.due_date NULLS LAST, f.id LIMIT 60`, [scope, today]);
+        WHERE f.status <> 'closed' AND ($1::int IS NULL OR u.site_id=$1) AND ($3::int IS NULL OR u.manager_id=$3)
+        ORDER BY (f.due_date < $2) DESC NULLS LAST, f.due_date NULLS LAST, f.id LIMIT 60`, [scope, today, mgr]);
 
     // Semana anterior (para el cambio vs. semana pasada): todo lo que ya cerró su ventana
     const pm = addDays(monday, -7);

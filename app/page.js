@@ -61,6 +61,7 @@ function MyHome() {
     <>
       <div className="row"><h1 className="title grow">Mis auditorías</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{data ? fmtDate(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</div>
+      {Number(user.layer) >= 2 && <a href="/tv" target="_blank" rel="noreferrer" className="btn alt" style={{ display: 'block', textAlign: 'center', margin: '8px 0 4px' }}>📺 Pantalla TV de mi equipo</a>}
       {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={newProcess}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
       {!data ? <div className="empty">Cargando…</div> : (
         <>

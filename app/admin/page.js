@@ -11,7 +11,8 @@ function UserSheet({ u, templates, onClose, onSaved }) {
   const me = useUser(), master = isMaster(me);
   const isNew = !u.id;
   const [f, setF] = useState({ name: '', username: '', dept: 'production', layer: 1, access: 'auditor', template_id: '', days: [], pool: [], start_idx: 0, rotate_daily: false, active: true, ...u });
-  const [pool, setPool] = useState((u.pool || []).join(', ')), [pin, setPin] = useState(''), [err, setErr] = useState('');
+  const [pool, setPool] = useState((u.pool || []).join(', ')), [pin, setPin] = useState(''), [err, setErr] = useState(''), [bajaStep, setBajaStep] = useState(0), [bajaName, setBajaName] = useState(''), [mgrs, setMgrs] = useState([]);
+  useEffect(() => { api('/api/admin/users').then((r) => setMgrs(r.filter((x) => x.active && x.layer >= 2 && x.id !== u.id))).catch(() => {}); /* eslint-disable-next-line */ }, []);
   const [sites, setSites] = useState([]);
   useEffect(() => { api('/api/sites').then((s) => { setSites(s); if (isNew) { const c = getSiteCookie(); const d = s.find((x) => x.code === c) || s[0]; if (d) setF((v) => ({ ...v, site_id: d.id })); } }); /* eslint-disable-next-line */ }, []);
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
@@ -19,9 +20,10 @@ function UserSheet({ u, templates, onClose, onSaved }) {
     setErr('');
     const body = { ...f, layer: Number(f.layer), template_id: f.template_id ? Number(f.template_id) : null, start_idx: Number(f.start_idx) || 0,
       pool: pool.split(',').map((s) => s.trim()).filter(Boolean), days: Number(f.layer) >= 2 ? [] : f.days };
+    if (!isNew && u.active && !f.active && !(bajaStep === 2 && bajaName.trim())) { setBajaStep(1); setErr('Dar de baja requiere confirmación: sigue los 2 pasos'); return; }
     try {
       if (isNew) await api('/api/admin/users', { method: 'POST', body: { ...body, password: pin } });
-      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(pin ? { reset_password: pin } : {}), ...(f.lpa_on !== u.lpa_on ? { lpa_enabled: !!f.lpa_on } : {}) } });
+      else await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { ...body, ...(u.active && !f.active ? { confirm_baja: true, confirm_name: bajaName } : {}), ...(pin ? { reset_password: pin } : {}), ...(f.lpa_on !== u.lpa_on ? { lpa_enabled: !!f.lpa_on } : {}) } });
       onSaved();
     } catch (e) { setErr(e.message); }
   }
@@ -71,7 +73,16 @@ function UserSheet({ u, templates, onClose, onSaved }) {
       </div>}
       <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
       <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
-      {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} /> Activo</label>}
+      {!isNew && <label className="row" style={{ marginTop: 14 }}><input type="checkbox" checked={f.active} onChange={(e) => { set('active', e.target.checked); setBajaStep(0); setBajaName(''); }} /> Activo</label>}
+      {!isNew && u.active && !f.active && <div className="card" style={{ borderColor: '#d11d2a', marginTop: 8 }}>
+        <b style={{ color: '#d11d2a' }}>Baja de personal · confirmación en 2 pasos</b>
+        {bajaStep < 2 ? <><div className="sub">Paso 1: ¿Seguro que quieres dar de baja a <b>{u.name}</b>? Dejará de recibir auditorías y se avisará por correo a los administradores.</div>
+          <button type="button" className="btn alt sm" onClick={() => setBajaStep(2)}>Sí, continuar</button></>
+          : <><div className="sub">Paso 2: escribe el nombre completo <b>{u.name}</b> para confirmar.</div>
+            <input className="inp" value={bajaName} onChange={(e) => setBajaName(e.target.value)} placeholder="Nombre completo" /></>}
+      </div>}
+      <label className="lbl">Correo (para avisos)</label><input className="inp" type="email" value={f.email || ''} onChange={(e) => set('email', e.target.value)} placeholder="nombre@empresa.com" />
+      {Number(f.layer) === 1 && <><label className="lbl">Reporta a (gerente)</label><select className="inp" value={f.manager_id || ''} onChange={(e) => set('manager_id', e.target.value ? Number(e.target.value) : null)}><option value="">— Sin gerente asignado —</option>{mgrs.map((m) => <option key={m.id} value={m.id}>{m.name} · L{m.layer}</option>)}</select></>}
       {err && <div className="err">{err}</div>}
       <div className="row" style={{ marginTop: 16 }}><button className="btn alt grow" onClick={onClose}>Cancelar</button><button className="btn grow" onClick={save}>Guardar</button></div>
     </div></div>
@@ -460,7 +471,7 @@ const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[
 function Assign() {
   const me = useUser();
   const [date, setDate] = useState(null), [data, setData] = useState(null), [edits, setEdits] = useState({});
-  const [qs, setQs] = useState(''), [dq, setDq] = useState(''), [lq, setLq] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [mvErr, setMvErr] = useState(''), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
+  const [qs, setQs] = useState(''), [dq, setDq] = useState(''), [lq, setLq] = useState(''), [mq, setMq] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [paste, setPaste] = useState(false), [mv, setMv] = useState(null), [mvErr, setMvErr] = useState(''), [pick, setPick] = useState(null), [otro, setOtro] = useState('');
   const dirty = Object.keys(edits).length;
 
   const load = (d) => { setData(null); return api(`/api/admin/assignments${d ? `?date=${d}` : ''}`).then((r) => { setData(r); setDate(r.monday); }).catch((e) => setMsg(e.message)); };
@@ -502,6 +513,7 @@ function Assign() {
     if (qs && !a.name.toLowerCase().includes(qs.toLowerCase())) return;
     if (dq && a.dept !== dq) return;
     if (lq && String(a.layer) !== lq) return;
+    if (mq && String(a.manager_id || '') !== mq) return;
     let p = people[people.length - 1];
     if (!p || p.id !== a.user_id) { p = { id: a.user_id, a, list: [] }; people.push(p); }
     p.list.push(a);
@@ -525,6 +537,7 @@ function Assign() {
       <div className="asg-filters">
         <select className="inp" value={dq} onChange={(e) => setDq(e.target.value)} aria-label="Departamento"><option value="">Todos los departamentos</option>{[...new Set((data?.audits || []).map((a) => a.dept))].map((d) => <option key={d} value={d}>{DEPT[d] || d}</option>)}</select>
         <select className="inp" value={lq} onChange={(e) => setLq(e.target.value)} aria-label="Capa"><option value="">Todas las capas (Layer)</option>{[...new Set((data?.audits || []).map((a) => String(a.layer)))].sort().map((l) => <option key={l} value={l}>Layer {l}</option>)}</select>
+        <select className="inp" value={mq} onChange={(e) => setMq(e.target.value)} aria-label="Gerente"><option value="">Todos los gerentes</option>{[...new Map((data?.audits || []).filter((a) => a.manager_id).map((a) => [a.manager_id, a.manager])).entries()].map(([id, n]) => <option key={id} value={id}>Reportan a {n}</option>)}</select>
         <input className="inp" placeholder="Buscar persona…" value={qs} onChange={(e) => setQs(e.target.value)} />
         <button className="btn alt sm" disabled={!data} onClick={() => setPaste(true)}>⬇ Importar desde Excel</button>
       </div>
@@ -537,7 +550,7 @@ function Assign() {
             <thead><tr><th>Persona</th><th className="dcol">Departamento</th>{data.days.map((d, k) => <th key={d} className={`dayh ${d === data.today ? 'today' : ''}`}><b>{DAYS_SHORT[k]}</b><span>{Number(d.slice(8))} {fmtDate(d, { month: 'short' }).replace('.', '')}</span></th>)}<th className="mcol" /></tr></thead>
             <tbody>{people.map(({ id, a, list }) => (
               <tr key={id}>
-                <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}</span></div></div></th>
+                <th className="asg-who"><div className="aw"><span className={`uc-av d-${a.dept}`}>{initials(a.name)}</span><div><b>{a.name}</b><span className="sub">{DEPT[a.dept]}{a.manager ? ` · ${a.manager}` : ''}</span></div></div></th>
                 <td className="dcol dtxt">{DEPT[a.dept]}</td>
                 {a.layer >= 2 ? (() => {
                   // Layer 2-4: una auditoría semanal; por defecto "All Areas", y se puede asignar una zona

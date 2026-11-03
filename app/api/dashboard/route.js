@@ -7,13 +7,15 @@ import { mxToday, mondayOf, addDays } from '@/lib/dates';
 export const GET = route(async (req, ctx, user) => {
   const scope = await siteScope(user);
   const today = mxToday();
-  const weeks = Math.min(12, Math.max(1, Number(new URL(req.url).searchParams.get('weeks')) || 4));
+  const sp = new URL(req.url).searchParams, weeks = Math.min(12, Math.max(1, Number(sp.get('weeks')) || 4));
+  const okd = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || ''), cf = sp.get('from'), ct = sp.get('to');
   const gl = (await q(`SELECT value FROM settings WHERE key='go_live'`)).rows[0]?.value || '1970-01-01';
   // Ventana pedida, pero nunca antes de la fecha de arranque de la app
-  const from = [addDays(mondayOf(today), -(weeks - 1) * 7), gl].sort().pop();
+  const from = okd(cf) && okd(ct) ? [cf, gl].sort().pop() : [addDays(mondayOf(today), -(weeks - 1) * 7), gl].sort().pop();
+  const upto = okd(cf) && okd(ct) ? (ct > today ? today : ct) : today; // fin del rango (personalizado)
   // Cuentan para cumplimiento: completadas, o cuya ventana (el día programado) ya cerró
-  const due = `((a.due_date < $2::date OR a.status='completed') AND a.status<>'excused')`;
-  const P = [from, today, scope];
+  const due = `((a.due_date < $2::date OR a.status='completed') AND a.status<>'excused' AND a.date <= $4::date)`;
+  const P = [from, today, scope, upto];
   const SC = `AND ($3::int IS NULL OR u.site_id=$3)`;
 
   const [kpi, layer, dept, week, area, fail, missing, open, results, issues, ppl] = await Promise.all([
@@ -34,16 +36,16 @@ export const GET = route(async (req, ctx, user) => {
     q(`SELECT a.area, COUNT(*) FILTER (WHERE a.status='completed')::int audits,
               COALESCE(SUM(a.nok_count + a.partial_count),0)::int findings,
               ROUND(AVG(a.score_pct) FILTER (WHERE a.status='completed'),1) avg_score
-         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND a.status='completed' AND a.area <> 'All Areas' AND ($2::int IS NULL OR u.site_id=$2)
-         GROUP BY 1 HAVING COUNT(*) > 0 ORDER BY avg_score NULLS LAST, findings DESC LIMIT 10`, [from, scope]),
+         FROM audits a JOIN users u ON u.id=a.user_id WHERE a.kind='lpa' AND a.date >= $1 AND a.status='completed' AND a.date <= $3::date AND a.area <> 'All Areas' AND ($2::int IS NULL OR u.site_id=$2)
+         GROUP BY 1 HAVING COUNT(*) > 0 ORDER BY avg_score NULLS LAST, findings DESC LIMIT 10`, [from, scope, upto]),
     q(`SELECT r.question, COUNT(*)::int fails FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
-        WHERE a.date >= $1 AND r.result IN ('nok','partial') AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1 ORDER BY 2 DESC LIMIT 8`, [from, scope]),
+        WHERE a.date >= $1 AND a.date <= $3::date AND r.result IN ('nok','partial') AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1 ORDER BY 2 DESC LIMIT 8`, [from, scope, upto]),
     q(`SELECT a.id,a.date,a.area,u.name,u.dept,u.layer FROM audits a JOIN users u ON u.id=a.user_id
-        WHERE a.kind='lpa' AND a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope]),
+        WHERE a.kind='lpa' AND a.status='pending' AND a.due_date < $1::date AND a.date >= $2 AND a.date <= $4::date AND ($3::int IS NULL OR u.site_id=$3) ORDER BY a.date DESC, u.name LIMIT 60`, [today, from, scope, upto]),
     q(`SELECT COUNT(*)::int n, COUNT(*) FILTER (WHERE f.due_date < $1)::int overdue FROM findings f JOIN audits a ON a.id=f.audit_id JOIN users u ON u.id=a.user_id WHERE f.status <> 'closed' AND ($2::int IS NULL OR u.site_id=$2)`, [today, scope]),
     // Distribución de resultados (todas las respuestas de auditorías completadas en el periodo)
     q(`SELECT r.result, COUNT(*)::int n FROM responses r JOIN audits a ON a.id=r.audit_id JOIN users u ON u.id=a.user_id
-        WHERE a.status='completed' AND a.date >= $1 AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1`, [from, scope]),
+        WHERE a.status='completed' AND a.date >= $1 AND a.date <= $3::date AND ($2::int IS NULL OR u.site_id=$2) GROUP BY 1`, [from, scope, upto]),
     // Open issues (lista tipo PDCA): todos los abiertos de la planta, los vencidos primero
     q(`SELECT f.id,f.area,a.part_number,f.question,f.notes,f.result,f.status,f.due_date,f.created_at,a.date AS audit_date,u.name AS auditor,
               COALESCE((SELECT json_agg(json_build_object('name',ou.name,'status',o.status,'action',o.action,'plan_action',o.plan_action,'plan_date',o.plan_date) ORDER BY o.added_at)
@@ -66,8 +68,8 @@ export const GET = route(async (req, ctx, user) => {
   ]);
   const siteName = scope != null ? (await q('SELECT name FROM sites WHERE id=$1', [scope])).rows[0]?.name || ''
     : MULTI_SITE ? 'Todas las plantas' : ((await q('SELECT name FROM sites WHERE code=$1', [HOME_SITE])).rows[0]?.name || HOME_SITE);
-  return json({ today, from, weeks, siteName, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
+  return json({ today, from, to: upto, custom: okd(cf) && okd(ct), weeks, siteName, kpi: kpi.rows[0], layer: layer.rows, dept: dept.rows, week: week.rows,
     area: area.rows, topFailing: fail.rows, missing: missing.rows, openFindings: open.rows[0],
     users: ppl.rows[0],
     results: Object.fromEntries(['ok', 'na', 'partial', 'nok'].map((k) => [k, results.rows.find((r) => r.result === k)?.n || 0])), issues: issues.rows });
-}, { need: 'lead' });
+}, { need: 'panel' });
