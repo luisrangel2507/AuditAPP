@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
 import { api, fmtDate } from '@/lib/client';
+import { metaFor } from '@/lib/formMeta';
 
 // Réplica del formato impreso "QE Layer 1 Audit" (MGMT-015-C Rev.003): una hoja por "carril" (1.ª auditoría de cada día, 2.ª, …)
 const SYM = { ok: 'O', partial: 'Δ', nok: 'X', na: 'NA' };
@@ -33,6 +34,7 @@ const NOTES = { 0: 'Control Plan Audited :', 1: '* Registre número de nómina d
 const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
 function Sheet({ d, k, cols, finds, total }) {
   const qe = d.tplName === 'Quality Engineer';
+  const M = metaFor(qe ? 'QE Layer 1 Audit' : d.tplName);
   const days = [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
   // Todas las auditorías del día se juntan en la misma columna (el peor resultado de cada pregunta)
   const cell = (day) => {
@@ -52,19 +54,15 @@ function Sheet({ d, k, cols, finds, total }) {
       </div>
       <div className="qfs-ins">
         <div className="l"><div className="cd">Content Date:</div>
-          <p><b>1. QE:</b> Perform Layer 1 audit daily and document any findings and corrections made below.</p>
-          <p><b>2. Quality Manager:</b> Reviews Layer 1 Audit Daily &amp; Signs-off</p>
-          <p><b>3. QE:</b> Document any findings and corrections made below.</p></div>
+          {(M.left || []).map(([r, t], i) => <p key={i}><b>{i + 1}. {r}:</b> {t}</p>)}</div>
         <div className="r"><u>Instructions</u>
-          <p><b>4. Quality Manager:</b> Perform Layer 2 audit weekly and document any findings and corrections on that form.</p>
-          <p><b>5. General Manager:</b> Perform Layer 3 audit monthly and document any findings and corrections on that form.</p>
-          <p><b>6. Director of Quality:</b> Perform Layer 4 audit quarterly and document any findings and corrections on that form.</p></div>
+          {M.right.map(([r, t], i) => <p key={i}><b>{(M.left ? 4 : 1) + i}. {r}:</b> {t}</p>)}</div>
       </div>
       <table className="qfs-t">
         <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{days.map((x) => <col key={x} style={{ width: '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
         <thead>
           <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{qe ? 'QE Layer 1 Audit' : d.tplName}</div></div></th>
-            <th colSpan={8} className="sh">{qe ? 'Layer 1 – Daily by QE' : `Layer ${d.layer} – ${d.tplName}`} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+            <th colSpan={8} className="sh">{qe ? 'Layer 1 – Daily by QE' : (M.hdr || `Layer ${d.layer} – Daily by Supervisor`)} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={8} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
           <tr><th className="sh" />{days.map((x, i) => <th key={x} className="sh dn">{DAYS[i]}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{days.map((x) => <td key={x} className="in">{cell(x)?.initials || ''}</td>)}</tr>
@@ -77,7 +75,7 @@ function Sheet({ d, k, cols, finds, total }) {
             <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt">{(qe && TXT[r.item]) || r.text}</td>
               {days.map((x) => { const v = cell(x)?.answers[r.id]; return <td key={x} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
               <td className="nn">{qe ? NOTES[r.item] || '' : ''}</td></tr>))}
-          <tr className="so"><td colSpan={3} className="qs">Quality Manager Sign Off</td>{days.map((x) => <td key={x} />)}<td /></tr>
+          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} />)}<td /></tr>
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
@@ -96,6 +94,7 @@ function Sheet({ d, k, cols, finds, total }) {
 // Formato "QA Layer 2 Audit" (mensual, una columna por semana). Preguntas e instrucciones como en el impreso.
 const monOf = (s) => { const t = new Date(s + 'T12:00:00Z'); const w = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - w); return t.toISOString().slice(0, 10); };
 function Sheet2({ d, finds }) {
+  const M = metaFor(d.tplName);
   const wk = d.weeks, N = wk.length, IDX = [...Array(N).keys()];
   const cell = (w) => {
     const L = d.columns.filter((c) => monOf(c.date) === w); if (!L.length) return undefined;
@@ -114,19 +113,15 @@ function Sheet2({ d, finds }) {
       </div>
       <div className="qfs-ins">
         <div className="l"><div className="cd">Content Date:</div>
-          <p><b>1. QE:</b> Perform Layer 1 audit daily and document any findings and corrections.</p>
-          <p><b>2. Quality Manager:</b> Reviews Layer 1 Audit Daily &amp; Signs-off</p>
-          <p><b>3. Quality Manager:</b> Document any findings and corrections made below.</p></div>
+          {(M.left || []).map(([r, t], i) => <p key={i}><b>{i + 1}. {r}:</b> {t}</p>)}</div>
         <div className="r"><u>Instructions</u>
-          <p><b>4. Quality Manager:</b> Perform Layer 2 audit weekly and document any findings and corrections on that form.</p>
-          <p><b>5. General Manager:</b> Perform Layer 3 audit monthly and document any findings and corrections on that form.</p>
-          <p><b>6. Director of Quality:</b> Perform Layer 4 audit quarterly and document any findings and corrections on that form.</p></div>
+          {M.right.map(([r, t], i) => <p key={i}><b>{(M.left ? 4 : 1) + i}. {r}:</b> {t}</p>)}</div>
       </div>
       <table className="qfs-t">
         <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '38.4%' }} /><col style={{ width: '5.4%' }} />{IDX.map((i) => <col key={i} style={{ width: `${33 / N}%` }} />)}<col style={{ width: '13.2%' }} /></colgroup>
         <thead>
           <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
-            <th colSpan={N + 1} className="sh">Layer 2 – Weekly by Dept. Manager <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+            <th colSpan={N + 1} className="sh">{M.hdr || 'Layer 2 – Weekly by Dept. Manager'} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={N + 1} className="sh">Month of: &nbsp; <b>{MONTHS[mo.getUTCMonth()]}</b></th></tr>
           <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">Week {i + 1}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.initials || ''}</td>)}</tr>
@@ -139,7 +134,7 @@ function Sheet2({ d, finds }) {
             <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt" style={{ fontSize: '9px' }}>{r.text}</td>
               {IDX.map((i) => { const v = cell(wk[i])?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
               <td className="nn" /></tr>))}
-          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>General Manager Sign Off</td>{IDX.map((i) => <td key={i} />)}<td /></tr>
+          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>{M.signoff}</td>{IDX.map((i) => <td key={i} />)}<td /></tr>
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
