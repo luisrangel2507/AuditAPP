@@ -130,6 +130,7 @@ function Inner() {
           <Link href="/reports/weekly" className="rep-link"><b>Reporte semanal (imprimir / PDF)</b></Link>
           <Link href="/reports/qeform" className="rep-link"><b>Formato impreso por Layer (QEs, Gerente de Calidad…)</b></Link>
           <Link href="/reports/qa062" className="rep-link"><b>QA-062-C · Gestión de Programa de Auditorías (gerencial)</b></Link>
+          <Link href="/reports/qa075" className="rep-link"><b>QA-075-C · Management Audit Findings (hallazgos gerenciales)</b></Link>
         </div>
       </div>
 
