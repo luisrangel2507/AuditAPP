@@ -1488,3 +1488,7 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
   body.rp-printing { background: #fff !important; } body.rp-printing * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .crumb { display: none !important; }
 }
+
+/* Formatos impresos: tamaño fijo y párrafos justificados cuando ocupan más renglones */
+.qfs-t .qt, .qfs-t .nn, .qfs-f .ft, .qfs-ins p, .q62 p, .q62-n div, .q75-b td.iss { text-align: justify; hyphens: auto; }
+.qfs-t .qt, .qfs-f .ft { overflow: hidden; }

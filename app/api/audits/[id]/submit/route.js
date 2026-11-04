@@ -10,7 +10,7 @@ const STICKERS = ['White', 'Green', 'Yellow', 'Orange', 'Pink'];
 const STICKER_ES = { White: 'Blanco', Green: 'Verde', Yellow: 'Amarillo', Orange: 'Naranja', Pink: 'Rosa' };
 
 export const POST = route(async (req, { params }, user) => {
-  const { responses, active_sec, area, part_number, shipper, parts, extra_ids } = await req.json();
+  const { responses, active_sec, area, part_number, shipper, dock_part, parts, extra_ids } = await req.json();
   if (!Array.isArray(responses)) return err('responses requerido');
   const client = await pool.connect();
   try {
@@ -60,6 +60,8 @@ export const POST = route(async (req, { params }, user) => {
       ? parts.map((x) => ({ name: String(x?.name || '').trim().slice(0, 80), number: String(x?.number || '').trim().slice(0, 40), color: String(x?.color || '').trim().slice(0, 30), freq: String(x?.freq || '').trim().slice(0, 40) })).filter((x) => x.name && x.number).slice(0, 10)
       : [];
     if (hasGer && !cleanParts.length) { await client.query('ROLLBACK'); return err('Captura al menos una parte (nombre y número) en la etapa de auditoría gerencial'); }
+    const dockP = String(dock_part || '').trim().slice(0, 40);
+    if (hasDock && !dockP) { await client.query('ROLLBACK'); return err('Indica el número de parte inspeccionado en el Dock Audit'); }
     if (hasDock && !ship) { await client.query('ROLLBACK'); return err('Indica el Shipper # que revisaste en el Dock Audit'); }
 
     // Validación: todas contestadas; X y Δ exigen comentario
@@ -148,7 +150,7 @@ export const POST = route(async (req, { params }, user) => {
     if (act !== null && startedAt) act = Math.min(act, Math.round((Date.now() - startedAt) / 1000) + 5);
     await client.query(
       `UPDATE audits SET shipper=$9,extra=$10,status='completed',completed_at=NOW(),started_at=COALESCE(started_at,NOW()),active_sec=$8,late=$1,ok_count=$2,nok_count=$3,partial_count=$4,na_count=$5,score_pct=$6 WHERE id=$7`,
-      [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act, ship, cleanParts.length ? JSON.stringify({ parts: cleanParts }) : null]);
+      [today > a.due_date, c.ok, c.nok, c.partial, c.na, score, a.id, act, ship, cleanParts.length || dockP ? JSON.stringify({ ...(cleanParts.length ? { parts: cleanParts } : {}), ...(dockP ? { dock_part: dockP } : {}) }) : null]);
     // Auditoría muy corta (menos de 10 min de tiempo activo): se avisa al administrador
     if (act !== null && act < MIN_SEC && !proc) {
       const { rows: [au2] } = await client.query('SELECT name,site_id FROM users WHERE id=$1', [a.user_id]);

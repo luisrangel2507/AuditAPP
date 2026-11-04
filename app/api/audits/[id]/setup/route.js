@@ -7,7 +7,7 @@ import { ZONES, NO_MACHINE, areaLabel } from '@/lib/zones';
 export const POST = route(async (req, { params }, user) => {
   const b = await req.json();
   const { rows: [a] } = await q(
-    `SELECT a.user_id,a.status,a.kind,a.area AS arow,u.layer,t.name AS tname FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id WHERE a.id=$1`, [params.id]);
+    `SELECT a.user_id,a.status,a.kind,a.area AS arow,u.layer,u.dept,t.name AS tname FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id WHERE a.id=$1`, [params.id]);
   if (!a) return err('No encontrada', 404);
   if (a.user_id !== user.id) return err('Esta auditoría no es tuya', 403);
   if (a.status === 'completed') return err('Ya fue completada');
@@ -23,7 +23,11 @@ export const POST = route(async (req, { params }, user) => {
   const p1 = [...new Set(list)].slice(0, 8).join(' / '), p2 = '';
   if (full && !noPart && !p1) return err('Captura el número de parte');
   const part = !full ? '' : p2 ? `${p1} / ${p2}` : p1;
-  await q('UPDATE audits SET zone=$2, machine=$3, area=$4, part_number=$5, started_at=COALESCE(started_at,NOW()), shift=COALESCE(shift,$6) WHERE id=$1',
-    [params.id, zone, machine, line || areaLabel(zone, machine), part, shiftOf()]);
+  // QEs: números de los operadores que participan en la operación (obligatorio al inicio)
+  const isQE = a.dept === 'quality' && a.layer === 1;
+  const ops = [...new Set((Array.isArray(b.operators) ? b.operators : []).map((x) => String(x || '').trim().slice(0, 20)).filter(Boolean))].slice(0, 12).join(' / ');
+  if (isQE && !ops) return err('Captura el número de los operadores que participan en la operación');
+  await q('UPDATE audits SET zone=$2, machine=$3, area=$4, part_number=$5, started_at=COALESCE(started_at,NOW()), shift=COALESCE(shift,$6), operators=COALESCE(NULLIF($7,\'\'),operators) WHERE id=$1',
+    [params.id, zone, machine, line || areaLabel(zone, machine), part, shiftOf(), ops]);
   return json({ ok: true, zone, machine, area: line || areaLabel(zone, machine), part_number: part });
 });

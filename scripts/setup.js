@@ -358,6 +358,7 @@ async function main() {
   }
 
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS process_per_day INT');
+  await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS operators TEXT');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_id INT REFERENCES users(id) ON DELETE SET NULL');
   // Juventino Morales (GM): Auditor y encargado para ver el Panel de todos

@@ -46,16 +46,18 @@ function Setup({ audit, onSaved, onExit }) {
   const start1 = lineHint ? 'run' : pre ? 'part' : assigned.length === 1 ? (NO_MACHINE.includes(assigned[0]) ? 'part' : 'machine') : 'zone';
   const [step, setStep] = useState(start1);
   const [zone, setZone] = useState(pre?.z || (assigned.length === 1 ? assigned[0] : (!full && ZONES.includes(hint) ? hint : ''))), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
+  const isQE = audit.dept === 'quality' && audit.layer === 1; // los QEs capturan los operadores que participan
+  const [ops, setOps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
   const noMach = NO_MACHINE.includes(zone);
   const list = (audit.machines && audit.machines[zone]) || [];
   const noPart = audit.template === 'QE Proveedores (LPA)'; // auditoría especial: solo zona
-  const partOk = noPart || (nps.length > 0 && nps.every((x) => x.trim()));
+  const partOk = (noPart || (nps.length > 0 && nps.every((x) => x.trim()))) && (!isQE || ops.some((x) => x.trim()));
   const sub = step === 'run' ? 'Confirma si la línea asignada está corriendo' : step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
     : step === 'machine' ? `Zona ${zone}: selecciona la máquina` : `Zona ${zone}${machine ? ' · ' + machine : ''}: captura el número de parte`;
   async function go() {
     setBusy(true); setErr('');
-    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, assigned: auto || undefined, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
+    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, assigned: auto || undefined, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean), operators: ops.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
   const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(noPart || NO_MACHINE.includes(z) ? 'part' : 'machine'); };
@@ -100,6 +102,11 @@ function Setup({ audit, onSaved, onExit }) {
         </>}
         {step === 'part' && <>
           <div className="setup-h"><i />{noMach ? '2' : '3'}. Número de parte</div>
+          {isQE && <div className="card" style={{ marginBottom: 12 }}>
+            <div className="sect" style={{ marginTop: 0 }}>Número(s) de operador que participan en la operación</div>
+            {ops.map((v, i) => <div key={i} className="row" style={{ gap: 6, marginTop: i ? 6 : 0 }}><input className="inp grow" inputMode="numeric" placeholder="No. de operador" maxLength={20} value={v} onChange={(e) => setOps((l) => l.map((x, k) => (k === i ? e.target.value : x)))} />{i > 0 && <button type="button" className="npx" onClick={() => setOps((l) => l.filter((_, k) => k !== i))} aria-label="Quitar">×</button>}</div>)}
+            {ops.length < 12 && <button type="button" className="btn alt sm" style={{ marginTop: 8 }} onClick={() => setOps((l) => [...l, ''])}>＋ Agregar operador</button>}
+          </div>}
           {noPart && <div className="setup-note">Esta auditoría especial no lleva número de parte ni máquina. Solo confirma la zona y comienza.</div>}
           {!noPart && nps.map((v, i) => (
             <label key={i} className="npcard"><span className="npi">{cube}</span><i className="npsep" /><input placeholder={i ? 'Otro N/P' : 'No. de parte'} maxLength={40} autoCapitalize="characters" value={v} onChange={(e) => setNps((l) => l.map((x, k) => (k === i ? e.target.value : x)))} />
@@ -212,7 +219,7 @@ function RunnerInner({ audit, onExit, onDone }) {
   const [marking, setMarking] = useState(null), [summary, setSummary] = useState(false), [area, setArea] = useState(() => draft.read().area || '');
   const needArea = false, needPart = false;
   const [part, setPart] = useState(() => draft.read().part || audit.part_number || '');
-  const [shipper, setShipper] = useState(() => draft.read().shipper || '');
+  const [shipper, setShipper] = useState(() => draft.read().shipper || ''), [dockPart, setDockPart] = useState(() => draft.read().dockPart || '');
   const [busy, setBusy] = useState(false), [err, setErr] = useState('');
   const [extras, setExtras] = useState(() => draft.read().extras || []), [pickOpen, setPickOpen] = useState(false), [pickQ, setPickQ] = useState('');
   const setIdx = (n) => setIdx_(Math.max(0, Math.min(n, qs.length - 1)));
@@ -236,7 +243,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { draft.write({ answers, idx, area, part, shipper, parts, introDone, extras, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper, parts, introDone, extras]);
+  useEffect(() => { draft.write({ answers, idx, area, part, shipper, dockPart, parts, introDone, extras, sec: tick.current.sec }); /* eslint-disable-next-line */ }, [answers, idx, area, part, shipper, parts, introDone, extras]);
 
   const q = qs[Math.min(idx, qs.length - 1)];
   const cleanParts = parts.filter((x) => x.name.trim() && x.number.trim());
@@ -289,7 +296,7 @@ function RunnerInner({ audit, onExit, onDone }) {
     setBusy(true); setErr('');
     try {
       const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
-      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) } });
+      const res = await api(`/api/audits/${audit.id}/submit`, { method: 'POST', body: { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, dock_part: hasDock ? dockPart.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) } });
       draft.clear(); onDone(res);
     } catch (e) {
       if (e.network) {
@@ -297,7 +304,7 @@ function RunnerInner({ audit, onExit, onDone }) {
         const responses = qs.map((x) => ({ question_id: x.id, ...answers[x.id], extra: { sticker: answers[x.id]?.sticker, operator: answers[x.id]?.operator, shift: answers[x.id]?.shift, part: answers[x.id]?.part } }));
         const c = { ok: 0, nok: 0, partial: 0, na: 0 }; qs.forEach((x) => { c[answers[x.id]?.result]++; });
         const scored = c.ok + c.nok + c.partial;
-        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
+        queueAudit(audit.id, { responses, active_sec: tick.current.sec, area: needArea ? area.trim() : undefined, part_number: needPart ? part.trim() : undefined, shipper: hasDock ? shipper.trim() : undefined, dock_part: hasDock ? dockPart.trim() : undefined, parts: hasGer ? cleanParts : undefined, extra_ids: extras.map((x) => x.id) }, `${audit.kind === 'process' ? 'Auditoría de proceso' : 'Auditoría'} · ${audit.date}`);
         draft.clear(); onDone({ queued: true, score: scored ? Math.round((c.ok / scored) * 1000) / 10 : 100, findings: c.nok + c.partial });
         return;
       }
@@ -365,7 +372,7 @@ function RunnerInner({ audit, onExit, onDone }) {
         </div>
         <div className="exec-foot">
           <button className="btn alt" onClick={() => setSummary(false)}>‹ Revisar</button>
-          <button className="btn grow" disabled={busy || (needArea && !area.trim()) || (needPart && !part.trim()) || (hasDock && !shipper.trim())} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
+          <button className="btn grow" disabled={busy || (needArea && !area.trim()) || (needPart && !part.trim()) || (hasDock && (!shipper.trim() || !dockPart.trim()))} onClick={submit}>{busy ? 'Enviando…' : 'Enviar auditoría'}</button>
         </div>
       </div>
     );
@@ -374,7 +381,7 @@ function RunnerInner({ audit, onExit, onDone }) {
   if (needIntro) {
     const stageBar = <div className="stagechip">Etapa {sIdx + 1} de {stages.length} · {STAGE_LABEL[stage]}</div>;
     const setPart_ = (i, k, v) => setParts((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
-    const ok = stage === 'gerencial' ? partsOk : !!shipper.trim();
+    const ok = stage === 'gerencial' ? partsOk : !!shipper.trim() && !!dockPart.trim();
     return (
       <div className="exec">
         <div className="exec-top">
@@ -407,6 +414,8 @@ function RunnerInner({ audit, onExit, onDone }) {
           {stage === 'dock' && <>
             <label className="lbl">Shipper # revisado (obligatorio)</label>
             <input className="inp" placeholder="Ej. QQ13497283" maxLength={40} autoCapitalize="characters" value={shipper} onChange={(e) => setShipper(e.target.value)} />
+            <label className="lbl">Número de parte inspeccionado en el Dock Audit (obligatorio)</label>
+            <input className="inp" placeholder="Ej. 41907A01" maxLength={40} autoCapitalize="characters" value={dockPart} onChange={(e) => setDockPart(e.target.value)} />
           </>}
         </div>
         <div className="exec-foot">
@@ -574,7 +583,7 @@ export default function AuditPage() {
       {audit.status === 'completed' && (audit.zone || audit.area) && <div className="zm"><b>Zona {audit.zone || audit.area}</b>{audit.shift ? <><i>/</i><b>Turno {audit.shift}</b></> : null}{audit.machine ? <><i>/</i><b>Máquina {audit.machine}</b></> : null}</div>}
       {((audit.layer >= 2 && audit.kind !== 'process') || audit.template === 'QE Proveedores (LPA)') && <ZoneEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, area: r.area, zone: r.zone, machine: '', part_edited_at: new Date().toISOString(), area_original: audit.area_original || audit.area }))} />}
       {audit.part_number && <PartEdit audit={audit} onSaved={(r) => (r.unchanged ? null : setAudit({ ...audit, part_number: r.part_number, area: r.area ?? audit.area, zone: r.zone ?? audit.zone, machine: r.machine ?? audit.machine, part_edited_at: new Date().toISOString(), part_original: r.part_number !== audit.part_number ? (audit.part_original || audit.part_number) : audit.part_original, area_original: (r.area ?? audit.area) !== audit.area ? (audit.area_original || audit.area) : audit.area_original }))} />}
-      <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
+      <div className="audit-meta"><span>{G.doc}{audit.template}</span>{audit.shipper && <span>📦 Shipper {audit.shipper}</span>}{audit.operators && <span>👷 Operadores {audit.operators}</span>}{!audit.editable && <span>{G.user}{audit.auditor}</span>}<span>{G.layers}{LAYER[audit.layer]}</span>{!audit.editable && <span>{G.shield}{DEPT[audit.dept]}</span>}</div>
     </>), [audit, router]);
 
   if (err) return <Shell><div className="err">{err}</div></Shell>;
