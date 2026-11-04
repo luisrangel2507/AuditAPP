@@ -74,8 +74,8 @@ function Sheet({ d, k, cols, finds, total }) {
           {d.rows.map((r, i) => (
             <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt">{(qe && TXT[r.item]) || r.text}</td>
               {days.map((x) => { const v = cell(x)?.answers[r.id]; return <td key={x} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
-              <td className="nn">{qe ? NOTES[r.item] || '' : ''}</td></tr>))}
-          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} />)}<td /></tr>
+              <td className="nn">{qe ? NOTES[r.item] || '' : M.notes?.[r.item] || ''}</td></tr>))}
+          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} className="sg">{d.signoffs?.[x] ? <>{d.signoffs[x].name}<small>{d.signoffs[x].at}</small></> : null}</td>)}<td /></tr>
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
@@ -97,7 +97,7 @@ function Sheet2({ d, finds }) {
   const M = metaFor(d.tplName);
   const wk = d.weeks, N = wk.length, IDX = [...Array(N).keys()];
   const cell = (w) => {
-    const L = d.columns.filter((c) => monOf(c.date) === w); if (!L.length) return undefined;
+    const L = d.columns.filter((c) => (d.monthly ? c.date.slice(0, 7) === w.slice(0, 7) : monOf(c.date) === w)); if (!L.length) return undefined;
     const answers = {};
     for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
     const u = (f) => [...new Set(L.map(f).filter(Boolean))];
@@ -122,19 +122,19 @@ function Sheet2({ d, finds }) {
         <thead>
           <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
             <th colSpan={N + 1} className="sh">{M.hdr || 'Layer 2 – Weekly by Dept. Manager'} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
-          <tr><th colSpan={N + 1} className="sh">Month of: &nbsp; <b>{MONTHS[mo.getUTCMonth()]}</b></th></tr>
-          <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">Week {i + 1}</th>)}</tr>
+          <tr><th colSpan={N + 1} className="sh">{d.monthly ? 'Year: ' : 'Month of: '}&nbsp; <b>{d.monthly ? wk[0].slice(0, 4) : MONTHS[mo.getUTCMonth()]}</b></th></tr>
+          <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">{d.monthly ? `Month ${Number(wk[i].slice(5, 7))}` : `Week ${i + 1}`}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.initials || ''}</td>)}</tr>
           <tr><td className="lb">Area →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.area || ''}</td>)}</tr>
-          <tr><td className="lb">Week →</td>{IDX.map((i) => <td key={i} className="in sm">{`${Number(wk[i].slice(8))}-${MON[Number(wk[i].slice(5, 7)) - 1]}`}</td>)}</tr>
+          <tr><td className="lb">{d.monthly ? 'Month →' : 'Week →'}</td>{IDX.map((i) => <td key={i} className="in sm">{d.monthly ? MON[Number(wk[i].slice(5, 7)) - 1].toUpperCase() : `${Number(wk[i].slice(8))}-${MON[Number(wk[i].slice(5, 7)) - 1]}`}</td>)}</tr>
           <tr><td className="lb">Date →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.date || ''}</td>)}</tr>
         </thead>
         <tbody>
           {d.rows.map((r) => (
             <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt" style={{ fontSize: '9px' }}>{r.text}</td>
               {IDX.map((i) => { const v = cell(wk[i])?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
-              <td className="nn" /></tr>))}
-          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>{M.signoff}</td>{IDX.map((i) => <td key={i} />)}<td /></tr>
+              <td className="nn">{M.notes?.[r.item] || ''}</td></tr>))}
+          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>{M.signoff}</td>{IDX.map((i) => <td key={i} className="sg">{d.signoffs?.[wk[i]] ? <>{d.signoffs[wk[i]].name}<small>{d.signoffs[wk[i]].at}</small></> : null}</td>)}<td /></tr>
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
@@ -186,6 +186,7 @@ function Inner() {
         .qfs { background: #fff; color: #000; width: 1100px; padding: 14px 18px 10px; font-family: Arial, Helvetica, sans-serif; font-size: 9px; box-sizing: border-box }
         .qfs-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 4px } .qfs-top h1 { font-size: 18px; text-decoration: underline; margin: 0; font-weight: 700 } .qfs-top img { height: 30px; justify-self: end }
         .ultra { background: #111; color: #fff; display: inline-block; padding: 4px 8px 2px; width: 118px; justify-self: start } .ultra b { font-size: 22px; letter-spacing: -1px } .ultra i { font-style: normal; color: #e0301e; font-size: 14px } .ultra span { display: block; font-size: 6px; letter-spacing: 1.6px }
+        .qfs-t td.sg { font-size: 6.5px; line-height: 1.1; text-align: center; color: #12328f; font-weight: 700 } .qfs-t td.sg small { display: block; font-weight: 400; font-size: 6px }
         .qfs-ins { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin: 6px 0 6px; font-size: 8px } .qfs-ins p { margin: 2px 0 } .qfs-ins .r u { display: block; text-align: center; font-weight: 700; font-size: 10px; margin-bottom: 3px }
         .cd { border: 1px solid #000; width: 180px; height: 14px; text-align: center; margin-bottom: 4px; font-size: 10px; line-height: 14px }
         .qfs-t { border-collapse: collapse; width: 100%; table-layout: fixed } .qfs-t th, .qfs-t td { border: 1px solid #000; padding: 1px 3px; overflow: hidden }

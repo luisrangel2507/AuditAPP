@@ -10,15 +10,21 @@ export const GET = route(async (req, ctx, user) => {
   const sp = new URL(req.url).searchParams, d = sp.get('date');
   // Solo auditorías normales (LPA); las de proceso no llenan formato. Por defecto, la plantilla de los QEs.
   const { rows: tpls } = await q(
-    `SELECT DISTINCT t.id,t.name FROM templates t WHERE EXISTS (SELECT 1 FROM audits a JOIN users u ON u.id=a.user_id WHERE a.template_id=t.id AND a.kind='lpa' AND ($1::int IS NULL OR u.site_id=$1)) OR t.name IN ('Quality Engineer','QA Layer 2 Audit') ORDER BY t.name`, [await siteScope(user)]);
+    `SELECT DISTINCT t.id,t.name FROM templates t WHERE EXISTS (SELECT 1 FROM audits a JOIN users u ON u.id=a.user_id WHERE a.template_id=t.id AND a.kind='lpa' AND ($1::int IS NULL OR u.site_id=$1)) OR t.name IN ('Quality Engineer','QA Layer 2 Audit') OR EXISTS (SELECT 1 FROM users uu WHERE uu.template_id=t.id AND uu.active AND ($1::int IS NULL OR uu.site_id=$1)) ORDER BY t.name`, [await siteScope(user)]);
   const tpl = Number(sp.get('tpl')) || tpls.find((t) => t.name === 'Quality Engineer')?.id || tpls[0]?.id || null;
   let monday = mondayOf(/^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : mxToday());
   const scope = await siteScope(user);
 
-  const isL2 = (await q(`SELECT 1 FROM users WHERE template_id=$1 AND layer=2 LIMIT 1`, [tpl])).rowCount > 0;
+  const isL2 = (await q(`SELECT 1 FROM users WHERE template_id=$1 AND layer>=2 LIMIT 1`, [tpl])).rowCount > 0;
+  const isL3 = (await q(`SELECT 1 FROM users WHERE template_id=$1 AND layer=3 LIMIT 1`, [tpl])).rowCount > 0;
   // Layer 2: formato mensual con una columna por semana (Week 1 … Week 4/5); lunes dentro del mes
   let sunday = addDays(monday, 6), weeks = null;
-  if (isL2) {
+  if (isL3) { // Layer 3: formato mensual, columnas por mes del semestre (Jul–Dic o Ene–Jun)
+    const y = Number(monday.slice(0, 4)), h = Number(monday.slice(5, 7)) > 6 ? 7 : 1;
+    weeks = [...Array(6)].map((_, i) => `${y}-${String(h + i).padStart(2, '0')}-01`);
+    monday = weeks[0];
+    if (h === 7) sunday = `${y}-12-31`; else sunday = `${y}-06-30`;
+  } else if (isL2) {
     const first = monday.slice(0, 8) + '01';
     let m = mondayOf(first); if (m < first) m = addDays(m, 7);
     weeks = []; for (let x = m; x.slice(0, 7) === first.slice(0, 7); x = addDays(x, 7)) weeks.push(x);
@@ -46,8 +52,10 @@ export const GET = route(async (req, ctx, user) => {
   const by = {}; for (const r of rs) (by[r.audit_id] ||= {})[r.question_id] = r.result;
   const ini = (n) => String(n).split(/\s+/).filter(Boolean).map((w) => w[0].toUpperCase()).slice(0, 3).join('.');
   const tplName = tpls.find((t) => t.id === tpl)?.name || 'LPA', layer = au[0]?.layer || 1;
+  const { rows: sg } = await q(`SELECT period::text AS p, user_name, to_char(signed_at AT TIME ZONE 'America/Mexico_City','DD/MM HH24:MI') AS at FROM signoffs WHERE template_id=$1 AND period BETWEEN $2 AND $3`, [tpl, monday, sunday]);
+  const signoffs = Object.fromEntries(sg.map((x) => [x.p, { name: x.user_name, at: x.at }]));
   return json({
-    monday, sunday, weeks, tpl, tplName, layer, templates: tpls, rows,
+    signoffs, monday, sunday, weeks, monthly: isL3, tpl, tplName, layer, templates: tpls, rows,
     columns: au.map((a) => ({ id: a.id, date: a.day, slot: a.slot, name: a.name, initials: ini(a.name), status: a.status, late: a.late, zone: a.zone, machine: a.machine, area: a.area, part: a.part_number, score: a.score_pct, answers: by[a.id] || {} })),
     findings: fi.map((f) => ({ id: f.id, audit_id: f.audit_id, item: f.item_no, area: f.area, result: f.result, notes: f.notes, date: f.created_at, status: f.status, closed_at: f.closed_at, action: f.action || f.corrective, question: String(f.question || '').split('\n')[0] })),
   });

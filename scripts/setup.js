@@ -539,6 +539,14 @@ async function main() {
     console.log(`[setup] máquina 920B renombrada en ${r.rowCount} auditoría(s)`);
   }
 
+  await pool.query(`UPDATE templates SET name='Customer Service Layer 1 Audit' WHERE name='Shipping Layer 1 Audit (Customer Service)'`);
+  await pool.query(`UPDATE users SET template_id=template_id WHERE FALSE`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS signoffs (
+    template_id INT NOT NULL REFERENCES templates(id) ON DELETE CASCADE, period DATE NOT NULL,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL, user_name TEXT NOT NULL, signed_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (template_id, period))`);
+  // Las notas fijas van en el formato impreso, no como parte de la pregunta
+  await pool.query(`UPDATE questions SET text=REPLACE(REPLACE(text, ' Notificar inmediatamente si no fue realizada por correo al Supervisor e Ingeniero de calidad.', ''), ' Notify the Supervisor and Quality Engineer by email immediately if it was not done.', '') WHERE item_no=2106 AND text LIKE '%Notificar inmediatamente%'`);
   // Formatos corporativos (MGMT-015-C): plantillas con preguntas fijas y asignación por nombre
   const corp = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'corp-forms.json'), 'utf8'));
   const norm = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();

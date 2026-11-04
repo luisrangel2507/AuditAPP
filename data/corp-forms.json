@@ -170,7 +170,7 @@
     [271, "El molde se encuentra limpio o se notifica a Tool Shop.", "The mold is clean or Tool Shop is notified."],
     [256, "¿Los controles hot runner están trabajando adecuadamente?", "Are the hot runner controls working properly?"],
     [2105, "Revisar trazabilidad de la resina de lote, tolva y gaylor.", "Check resin traceability of lot, hopper and gaylord."],
-    [2106, "Se ha realizado la prueba de secado de humedad de la resina (cambio de lote, molde, paro programado o no programado). Notificar inmediatamente si no fue realizada por correo al Supervisor e Ingeniero de calidad.", "The resin moisture drying test has been performed (change of lot, mold, scheduled or unscheduled stop). Notify the Supervisor and Quality Engineer by email immediately if it was not done."],
+    [2106, "Se ha realizado la prueba de secado de humedad de la resina (cambio de lote, molde, paro programado o no programado).", "The resin moisture drying test has been performed (change of lot, mold, scheduled or unscheduled stop)."],
     [2107, "Revisar formato de verificación de la prueba de humedad de la resina.", "Check the resin moisture test verification form."]
   ]},
   { "name": "Shipping Layer 1 Audit", "zone": "Logística", "users": [], "questions": [
@@ -186,7 +186,7 @@
     [702, "Ingrese a eBinder y busque una de las sustancias químicas que utilice en el área. ¿Se encuentra disponible?", "Enter eBinder and search for one of the chemicals used in the area. Is it available?"],
     [1043, "Realizar check list H&S-019-I-MPQ Inspección de Racks.", "Perform checklist H&S-019-I-MPQ Rack Inspection."]
   ]},
-  { "name": "Shipping Layer 1 Audit (Customer Service)", "zone": "Logística", "users": [], "questions": [
+  { "name": "Customer Service Layer 1 Audit", "zone": "Logística", "users": [], "questions": [
     [602, "¿Se almacena el producto contra las paredes, se gira semanalmente para asegurar FIFO?", "Is product stored against the walls, rotated weekly to ensure FIFO?"],
     [86, "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)", "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"],
     [1049, "¿La estiba de materiales no rebasa el límite máximo?", "Does material stacking stay within the maximum limit?"],

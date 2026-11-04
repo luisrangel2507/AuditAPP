@@ -61,6 +61,7 @@ function MyHome() {
     <>
       <div className="row"><h1 className="title grow">Mis auditorías</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{data ? fmtDate(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</div>
+      <SignOffs />
       {Number(user.layer) >= 2 && <a href="/tv" target="_blank" rel="noreferrer" className="btn alt" style={{ display: 'block', textAlign: 'center', margin: '8px 0 4px' }}>📺 Pantalla TV de mi equipo</a>}
       {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={newProcess}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
       {!data ? <div className="empty">Cargando…</div> : (
@@ -79,6 +80,21 @@ function MyHome() {
 }
 
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
+// Sign-off pendiente: el encargado firma los formatos de su gente
+function SignOffs() {
+  const user = useUser(), [list, setList] = useState(null), [busy, setBusy] = useState('');
+  const can = isAdmin(user) || Number(user.layer) >= 2;
+  const load = () => api('/api/signoff').then((d) => setList(d.pending)).catch(() => setList([]));
+  useEffect(() => { if (can) load(); /* eslint-disable-next-line */ }, []);
+  if (!can || !list || !list.length) return null;
+  const lbl = (o) => (o.layer >= 3 ? 'mes de ' : o.layer === 2 ? 'semana del ' : '') + fmtDate(o.period, o.layer >= 3 ? { month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' });
+  async function sign(o) { setBusy(`${o.template_id}|${o.period}`); try { await api('/api/signoff', { method: 'POST', body: { template_id: o.template_id, period: o.period } }); await load(); } finally { setBusy(''); } }
+  return <><div className="sect">Sign-off pendiente ({list.length})</div>{list.slice(0, 10).map((o) => (
+    <div key={`${o.template_id}|${o.period}`} className="card" style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+      <div className="grow"><b>{o.template}</b><div className="sub" style={{ margin: 0 }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''}</div></div>
+      <button className="btn sm" disabled={busy === `${o.template_id}|${o.period}`} onClick={() => sign(o)}>✍ Firmar</button></div>))}</>;
+}
+
 // Admin que también audita (interruptor "Hace LPA" en su perfil): sus pendientes de hoy aparecen arriba
 function MyAuditsForAdmin() {
   const [d, setD] = useState(null);
@@ -147,6 +163,7 @@ function AdminHome() {
         <div className="sub" style={{ margin: 0 }}>{cap(fmtDate(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</div></div>
         <Link href="/week" className="ahn-date">{I.calendar(20)}<b>{`${cap(fmtDate(today, { weekday: 'short' }).replace('.', ''))} ${Number(today.slice(8))} ${fmtDate(today, { month: 'short' }).replace('.', '')} ${today.slice(0, 4)}`}</b><i>›</i></Link></div>
       <MyAuditsForAdmin />
+      <SignOffs />
       {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
