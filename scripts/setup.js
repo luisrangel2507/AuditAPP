@@ -566,6 +566,19 @@ async function main() {
     console.log(`[setup] ${f.name} asignada a ${ids.length} de ${f.users.length} usuario(s)`);
   }
 
+  // QEs: sus LPA pendientes (sin empezar) pasan a llevar las preguntas activas de la auditoría de proceso + sus temas fijos
+  const flagQe = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_lpa_uses_process_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagQe.rowCount) {
+    const r = await pool.query(
+      `UPDATE audits a SET question_ids = (
+          SELECT array_agg(x.id ORDER BY x.sort_order,x.id) FROM questions x
+           WHERE x.active AND (x.template_id=(SELECT id FROM templates WHERE name='QE Process Audit') OR (x.template_id=a.template_id AND x.required)))
+        FROM users u, templates t
+        WHERE a.user_id=u.id AND t.id=a.template_id AND t.name='Quality Engineer' AND u.dept='quality' AND u.layer=1
+          AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date >= $1`, [mxToday]);
+    console.log(`[setup] LPA de QEs con las preguntas de la auditoría de proceso: ${r.rowCount}`);
+  }
+
   // Temas específicos de la LPA de los QEs: se agregan a la plantilla "Quality Engineer" y van en cada auditoría
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'qe-specific.json'), 'utf8'));
   const flagSpec = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_specific_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
