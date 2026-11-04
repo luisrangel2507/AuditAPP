@@ -39,8 +39,11 @@ function Setup({ audit, onSaved, onExit }) {
     const m = /^ZONA ([A-E](?:-[A-E])?)$/i.exec(hint.trim());
     return m ? ZONES.filter((z) => m[1].toUpperCase().replace('-', '').includes(z[0]) && !NO_MACHINE.includes(z)) : [];
   })();
+  // Línea asignada (no es una zona de la lista, p. ej. "780B Door Trim"): se pregunta si está corriendo
+  const lineHint = full && hint && !pre && !assigned.length && !ZONES.includes(String(hint).split(' · ')[0]) && !/^ZONA /i.test(hint) ? hint : '';
+  const [auto, setAuto] = useState(false), [asked, setAsked] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const start1 = pre ? 'part' : assigned.length === 1 ? (NO_MACHINE.includes(assigned[0]) ? 'part' : 'machine') : 'zone';
+  const start1 = lineHint ? 'run' : pre ? 'part' : assigned.length === 1 ? (NO_MACHINE.includes(assigned[0]) ? 'part' : 'machine') : 'zone';
   const [step, setStep] = useState(start1);
   const [zone, setZone] = useState(pre?.z || (assigned.length === 1 ? assigned[0] : (!full && ZONES.includes(hint) ? hint : ''))), [machine, setMachine] = useState(pre?.m || ''), [nps, setNps] = useState(['']);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [scan, setScan] = useState('');
@@ -48,26 +51,32 @@ function Setup({ audit, onSaved, onExit }) {
   const list = (audit.machines && audit.machines[zone]) || [];
   const noPart = audit.template === 'QE Proveedores (LPA)'; // auditoría especial: solo zona
   const partOk = noPart || (nps.length > 0 && nps.every((x) => x.trim()));
-  const sub = step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
+  const sub = step === 'run' ? 'Confirma si la línea asignada está corriendo' : step === 'zone' ? (full ? 'Selecciona la zona donde realizarás la auditoría' : 'Selecciona el área que vas a auditar')
     : step === 'machine' ? `Zona ${zone}: selecciona la máquina` : `Zona ${zone}${machine ? ' · ' + machine : ''}: captura el número de parte`;
   async function go() {
     setBusy(true); setErr('');
-    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
+    try { const r = await api(`/api/audits/${audit.id}/setup`, { method: 'POST', body: { zone, assigned: auto || undefined, machine: noMach ? '' : machine, part_numbers: nps.map((x) => x.trim()).filter(Boolean) } }); onSaved(r); }
     catch (e) { setErr(e.message); setBusy(false); }
   }
   const pickZone = (z) => { setZone(z); setMachine(''); if (!full) return; setStep(noPart || NO_MACHINE.includes(z) ? 'part' : 'machine'); };
-  const back = () => { if (step === 'part') setStep(noMach ? 'zone' : 'machine'); else if (step === 'machine') setStep('zone'); };
+  const back = () => { if (step === 'part' && auto) { setAuto(false); setStep('run'); } else if (step === 'part') setStep(noMach ? 'zone' : 'machine'); else if (step === 'machine') setStep('zone'); };
   return (
     <div className="exec setup">
       <div className="setup-hero">
         <img src="/app-hero.webp" alt="" />
         <div className="setup-top">
-          <button className="setup-pill" onClick={step === 'zone' ? onExit : back}>{step === 'zone' ? '✕ Salir' : '‹ Atrás'}</button>
-          {step !== 'zone' && <button className="setup-pill" onClick={onExit}>✕</button>}
+          <button className="setup-pill" onClick={step === 'zone' || step === 'run' ? onExit : back}>{step === 'zone' || step === 'run' ? '✕ Salir' : '‹ Atrás'}</button>
+          {step !== 'zone' && step !== 'run' && <button className="setup-pill" onClick={onExit}>✕</button>}
         </div>
         <h2>Antes de empezar</h2><p>{sub}</p>
       </div>
       <div className="setup-body">
+        {step === 'run' && <>
+          <div className="setup-h"><i />Auditoría asignada</div>
+          <div className="card" style={{ textAlign: 'center' }}><div className="sub" style={{ margin: 0 }}>Te toca auditar</div><b style={{ fontSize: 24 }}>{lineHint}</b><div className="sub" style={{ margin: '4px 0 0' }}>¿Está corriendo?</div></div>
+          <button type="button" className="setup-go" style={{ position: 'static', width: '100%', marginTop: 12 }} onClick={() => { setAuto(true); setZone(lineHint); setStep('part'); }}><span>▶</span><b>Sí está corriendo · iniciar</b></button>
+          <button type="button" className="btn alt block" style={{ marginTop: 10 }} onClick={() => { setAuto(false); setStep('zone'); }}>✕ No está corriendo · auditar otra zona</button>
+        </>}
         {hint && step === 'zone' && <div className="sub" style={{ margin: '0 0 6px' }}>Zona asignada por el administrador: <b>{hint}</b></div>}
         {step === 'zone' && <>
           <div className="setup-h"><i />1. Zona</div>
@@ -602,7 +611,7 @@ export default function AuditPage() {
             <div><i className="o">{G.clock}</i><span>{audit.date === audit.due_date ? 'Solo disponible' : 'Disponible'}</span>
               <b className="when">{audit.date === audit.due_date ? fmtDate(audit.date, { weekday: 'short', day: 'numeric', month: 'short' }) : `${fmtDate(audit.date, { day: 'numeric', month: 'short' })} – ${fmtDate(audit.closes_on, { day: 'numeric', month: 'short' })}`}</b>
               {audit.window === 'last_day' && <span className="warnx">hoy es el último día</span>}</div>
-            <div><i className="v">{G.layers}</i><b>{audit.layer === 1 || audit.kind === 'process' ? (audit.zone ? audit.area : 'Zona y máquina') : audit.area}</b><span>{audit.layer === 1 || audit.kind === 'process' ? 'se escoge al iniciar' : 'Área de evaluación'}</span></div>
+            <div><i className="v">{G.layers}</i><b>{audit.layer === 1 || audit.kind === 'process' ? (audit.zone ? audit.area : audit.area && audit.area !== 'All Areas' && !ZONES.includes(String(audit.area).split(' · ')[0]) ? audit.area : 'Zona y máquina') : audit.area}</b><span>{audit.layer === 1 || audit.kind === 'process' ? (audit.area && audit.area !== 'All Areas' && !audit.zone && !ZONES.includes(String(audit.area).split(' · ')[0]) ? 'asignada · confirmas si corre' : 'se escoge al iniciar') : 'Área de evaluación'}</span></div>
             <div><i className="g">{G.shield}</i><b>{audit.kind === 'process' ? 'Proceso' : LAYER[audit.layer]}</b><span>Tipo de auditoría</span></div>
           </div>
         </>
