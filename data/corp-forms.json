@@ -619,7 +619,10 @@
  {
   "name": "Production Cells Layer 1 Audit",
   "zone": "Producción",
-  "users": [],
+  "users": [
+   "Perla González",
+   "Ricardo Suarez"
+  ],
   "questions": [
    [
     1,
