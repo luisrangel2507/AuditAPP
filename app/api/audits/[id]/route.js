@@ -10,7 +10,7 @@ import { resetEnsured } from '@/lib/schedule';
 
 async function load(id) {
   const { rows } = await q(
-    `SELECT a.*, u.name AS auditor, u.dept, u.layer, u.site_id, t.name AS template
+    `SELECT a.*, u.name AS auditor, u.dept, u.layer, u.site_id, u.manager_id, t.name AS template
        FROM audits a JOIN users u ON u.id=a.user_id LEFT JOIN templates t ON t.id=a.template_id WHERE a.id=$1`, [id]);
   return rows[0];
 }

@@ -25,7 +25,7 @@ export const GET = route(async (req, ctx, user) => {
     if (isTeamLead(user) && user.site_id != null) {
       vals.push(Number(user.layer), user.dept || '', user.site_id);
       const L = `$${vals.length - 2}::int`, D = `$${vals.length - 1}`, S = `$${vals.length}::int`;
-      team = ` OR (u.layer < ${L} AND (${L} >= 3 OR u.dept = ${D}) AND u.site_id = ${S}) OR EXISTS (SELECT 1 FROM finding_owners o3 JOIN users ou3 ON ou3.id=o3.user_id WHERE o3.finding_id=f.id AND ou3.layer < ${L} AND (${L} >= 3 OR ou3.dept = ${D}) AND ou3.site_id = ${S})`;
+      team = ` OR u.manager_id=$${me} OR EXISTS (SELECT 1 FROM finding_owners o4 JOIN users ou4 ON ou4.id=o4.user_id WHERE o4.finding_id=f.id AND ou4.manager_id=$${me}) OR (u.layer < ${L} AND (${L} >= 3 OR u.dept = ${D}) AND u.site_id = ${S}) OR EXISTS (SELECT 1 FROM finding_owners o3 JOIN users ou3 ON ou3.id=o3.user_id WHERE o3.finding_id=f.id AND ou3.layer < ${L} AND (${L} >= 3 OR ou3.dept = ${D}) AND ou3.site_id = ${S})`;
     }
     cond.push(`(a.user_id=$${me} OR EXISTS (SELECT 1 FROM finding_owners o2 WHERE o2.finding_id=f.id AND o2.user_id=$${me})${team})`);
   }

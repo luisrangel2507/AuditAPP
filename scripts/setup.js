@@ -598,6 +598,29 @@ async function main() {
     console.log(`[setup] días fijos del programa aplicados a ${n} de ${P.length} personas`);
   }
 
+  // Supervisores que no auditan: ven a su gente (auditorías, open issues, avisos) y firman sus sign-offs. Andrés Cerecedo reporta a Fabiola Marina y ya no hace LPA
+  {
+    const nrm3 = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const { rows: all } = await pool.query(`SELECT id,name,username FROM users`);
+    for (const [nm, un0] of [['Ana Serrat', 'ana.serrat'], ['Carlos Robles', 'carlos.robles'], ['Rogelio Sánchez', 'rogelio.sanchez']]) {
+      if (all.some((x) => nrm3(x.name) === nrm3(nm))) continue;
+      let un = un0, n = 2;
+      while ((await pool.query('SELECT 1 FROM users WHERE username=$1', [un])).rowCount) un = un0 + n++;
+      const hash = await bcrypt.hash(process.env.SEED_PASSWORD || require('crypto').randomBytes(24).toString('hex'), 10);
+      await pool.query(`INSERT INTO users(name,username,pin_hash,dept,layer,access,days,pool,lpa_override,site_id) VALUES($1,$2,$3,'supervision',2,'lead','{}','{}',FALSE,(SELECT id FROM sites WHERE code='MPQ'))`, [nm, un, hash]);
+      console.log(`[setup] supervisor ${nm} creado (${un}); asigna su contraseña en Admin → Usuarios`);
+    }
+    const fAnd = await pool.query(`INSERT INTO settings(key,value) VALUES('andres_supervisor_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+    if (fAnd.rowCount) {
+      const { rows: [an] } = await pool.query(`SELECT id FROM users WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'andres cerecedo%' LIMIT 1`);
+      if (an) {
+        await pool.query(`UPDATE users SET dept='supervision', layer=2, access='lead', days='{}', lpa_override=FALSE, manager_id=(SELECT id FROM users WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'fabiola marina%' LIMIT 1) WHERE id=$1`, [an.id]);
+        await pool.query(`DELETE FROM audits WHERE user_id=$1 AND kind='lpa' AND status='pending' AND started_at IS NULL AND date >= $2`, [an.id, mxToday]);
+        console.log('[setup] Andrés Cerecedo: supervisor de shippers, reporta a Fabiola, sin LPA');
+      }
+    }
+  }
+
   // Quién firma a OJT y a los shippers (no reportan a un Layer 2)
   {
     const nrm2 = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
