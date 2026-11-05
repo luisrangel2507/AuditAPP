@@ -606,7 +606,9 @@ async function main() {
     for (const [boss, team] of [['Ana Serrat', ['Celina Zamora José', 'Ma. Engracia Hernández', 'Carmen Hernández']], ['Andres Cerecedo', ['Marco Polo López M', 'Marco Polo López', 'Edgar Galván', 'Francisco Javier Padilla']],
       ['Hugo Arriaga', ['Julia Olguin', 'Hugo Martinez', 'Ricardo Suarez', 'Conrado Garcia', 'Perla González']],
       ['Mario Cupich', ['Martin Sanchez', 'Luis Medina Lopez', 'Carlos Puga']],
-      ['Emmanuel Delgado', ['Sonia Romero', 'Adolfo Francisco', 'Roberto Rodriguez']]]) {
+      ['Emmanuel Delgado', ['Sonia Romero', 'Adolfo Francisco', 'Roberto Rodriguez']],
+      ['Carlos Robles', ['Jesus Sánchez', 'Eder Hernández']],
+      ['Rogelio Sánchez', ['Oscar Álvaro Pérez', 'Saúl Granados', 'José Cruz Elias']]]) {
       const b = find(boss);
       if (!b) { console.log(`[setup] gerente ${boss} no existe en Usuarios: créalo y asígnalo en Admin → Usuarios (Reporta a)`); continue; }
       const ids = team.map(find).filter(Boolean).map((x) => x.id);
