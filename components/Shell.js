@@ -125,6 +125,7 @@ export default function Shell({ children, need }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 17h12l-1.6-2.3V10a4.4 4.4 0 0 0-8.8 0v4.7zM10 20a2 2 0 0 0 4 0" /></svg>
               {notif?.unread > 0 && <b className="bell-dot">{notif.unread > 9 ? '9+' : notif.unread}</b>}</button>
             <ThemeToggle className="helpbtn" />
+            <Link href="/layout-planta" className="helpbtn" aria-label="Layout de planta" title="Layout de planta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg></Link>
             <button className="helpbtn" onClick={() => setGuide(true)} aria-label="Guía de uso" title="Guía de uso">?</button>
             <span className="avatar">{initials}</span>
             <button className="logout" onClick={logout}>{I.logout(18)}<span>Salir</span></button>

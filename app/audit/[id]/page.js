@@ -87,6 +87,7 @@ function Setup({ audit, onSaved, onExit }) {
               <span className="zi">{z.startsWith('PL') || z === 'Shipping' || z === 'Receiving' ? wh : fac}</span><b className={z.length > 4 ? 'zlong' : ''}>{z}</b><span className="zc">{chev}</span>
             </button>))}</div>
           {assigned.length > 0 && !showAll && <button type="button" className="linkbtn" style={{ marginTop: 10 }} onClick={() => setShowAll(true)}>Otra zona…</button>}
+          <a className="linkbtn" style={{ display: 'block', marginTop: 8 }} href="/layout-planta" target="_blank" rel="noreferrer">Ver layout de planta</a>
           {!full && zone && <div className="setup-note">Área elegida: <b>{zone}</b></div>}
         </>}
         {step === 'machine' && <>
