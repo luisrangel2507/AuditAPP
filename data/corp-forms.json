@@ -1,203 +1,1006 @@
 [
-  { "name": "Matl / Logistics Layer 2 Audit", "zone": "Logística", "users": ["Fabiola Marina"], "questions": [
-    [1352, "¿Se registran y archivan las órdenes de compra de los clientes?", "Are customer purchase orders logged and filed?"],
-    [1354, "¿Los avisos de clientes se turnan al personal correspondiente?", "Are customer notices forwarded to appropriate staff?"],
-    [1355, "¿Las auditorías de sitio web de clientes se completan a tiempo?", "Are customer website audits completed in a timely manner?"],
-    [1356, "¿Las solicitudes de embarque se procesaron en 24 horas y se asignaron para aprobación secundaria si es necesario?", "Have ship requests been processed within 24 hours and assigned for secondary approval if necessary?"],
-    [1357, "¿Los ECN están cerrados/firmados antes de las fechas límite?", "Are ECNs closed/signed off before due dates?"],
-    [1358, "¿Los inventarios físicos están programados y organizados como se requiere?", "Are physical inventories scheduled and organized as required?"],
-    [1360, "¿El almacén está distribuido para acomodar todos los productos terminados?", "Is warehouse laid out to accommodate all finished goods?"],
-    [1361, "¿Las puertas, muelles y placas de embarque están en buen estado de funcionamiento?", "Are the shipping doors, docks and plates in good working order?"],
-    [1363, "¿La gráfica semanal de entregas a clientes está completa?", "Is the weekly customer delivery chart complete?"],
-    [1364, "¿La gráfica semanal de entregas de proveedores (stock out) está completa?", "Is the weekly supplier delivery (stock out) chart complete?"],
-    [1365, "¿La lista de faltantes se comunica a tiempo todos los días?", "Is the shortage list communicated on time every day?"],
-    [1367, "¿Están completas las auditorías de Shipping Layer 1 (LPA)? Acciones tomadas.", "Are the shipping Layer 1 (LPA) audits complete? Actions Taken?"],
-    [1372, "¿Las listas de surtido son del mismo color que la alerta de calidad para los primeros tres embarques?", "Are pick lists the same color of the quality alert for the 1st three shipments?"]
-  ]},
-  { "name": "GM Layer 3 Audit", "zone": "Gerencia", "users": ["Juventino Morales"], "questions": [
-    [1600, "¿Las juntas de gerencia se realizan según lo programado?", "Are Management Meetings happening on schedule?"],
-    [1602, "¿La planta está limpia y organizada?", "Is the plant clean and organized?"],
-    [1609, "¿La liberación de tarjetas KANBAN coincide con las columnas actuales de los clientes?", "Does the KANBAN card release match the customers current columns"],
-    [1610, "¿Se sigue 5S en el área de producción?", "Is 5s being followed in the production area?"],
-    [1611, "¿Se sigue 5S en el área de oficinas?", "Is 5s being followed in the office area?"],
-    [2150, "¿Se siguen las reglas de seguridad?", "Are safety rules followed?"],
-    [2153, "¿Se sigue el sistema EMS?", "Is EMS system being followed?"],
-    [2154, "¿Las salidas están libres y despejadas?", "Are exits free and clear of obstruction?"],
-    [1623, "¿Hay alertas activas y están firmadas por el OP y el CL (celda y 4D)?", "Are active alerts present & signed by the OP and CL (cell and 4D)?"],
-    [1619, "¿Los CAR se cierran en 3 semanas y hay acciones permanentes?", "Are CARs closed within 3 weeks and permanent actions in place ?"],
-    [1624, "Validación del análisis de riesgos específicos locales a nivel planta.", "Validation local specific risks analysis at plant level"],
-    [1551, "¿Las órdenes de trabajo se revisan y cierran correctamente al completarse el trabajo?", "Are Work Orders being checked and closed properly when work is completed?"],
-    [1625, "¿Los riesgos específicos y la mitigación pertinente están completos y al día?", "Are the specific risks and any pertinent mitigation complete and up to date?"],
-    [1626, "¿Hay cambios internos o externos que puedan impactar el Sistema de Gestión de Calidad?", "Are there any changes internally or externally that may impact the Quality Management System?"],
-    [1627, "¿Los nuevos riesgos identificados en el FMEA pueden aumentar las fallas en campo?", "Do any new risks identified in the FMEA have the potential to increase field failures?"]
-  ]},
-  { "name": "Tool Shop Layer 2 Audit", "zone": "Toolroom", "users": ["Scott Coulter", "Omar Sánchez"], "questions": [
-    [252, "¿Se entregaron todas las hojas de inspección de grúas?", "Are all Crane inspection sheets submitted?"],
-    [253, "¿Se están usando los bump caps?", "Are bump Caps being worn?"],
-    [852, "¿Los archivos de ingeniería/programación se guardan correctamente?", "Are Engineer/Programming files being properly stored away?"],
-    [856, "¿Las áreas de trabajo se limpian al final de cada turno?", "Are work areas being cleaned at the end of each shift?"],
-    [909, "¿Se identifican los peligros de seguridad?", "Are safety hazards identified?"],
-    [1200, "¿Los PM de la maquinaria están al día?", "Are machinery PM's up to date?"],
-    [1204, "¿Todas las botellas del departamento de Tooling están identificadas con etiqueta WHMIS?", "Are all bottles in the Tooling dept clearly identified with a WHIMIS label?"],
-    [1205, "¿Todas las pistolas de aire del departamento de Tooling están en condición original y sin modificaciones?", "Are all air guns in the Tooling dept in original condition and without modification?"],
-    [1209, "¿Hay EPP apropiado en la estación de carga de baterías y está en buenas condiciones?", "Is there appropriate PPE at the battery charging station and ensure it is in good working condition"],
-    [1250, "¿Los PM de herramientas están al día?", "Are tool PM's up to date?"],
-    [1550, "¿Las órdenes de trabajo se revisan correctamente con los Tool Makers involucrados?", "Are Work Orders being properly reviewed with the Tool Makers that are involved?"],
-    [1553, "¿El stock/suministros del Tool room se monitorean y reponen según se necesite?", "Are Tool room stock/supplies being monitored and replaced as needed?"],
-    [1554, "¿Las latas de aerosol y tanques de propano se colocan correctamente en el contenedor de reciclaje?", "Are aerosol cans and propane tanks being properly place in the recycle bin provided?"],
-    [1555, "¿Los artículos comprados al recibirse se registran electrónicamente y se archivan para revisión?", "As purchased items are received are they being recorded electronic and placed in proper file for review?"],
-    [1557, "¿Se mantienen las refacciones críticas (documentado en órdenes de trabajo y repuesto según se requiera)?", "Are critical spares being maintained (documented on work orders & replenished as required)?"]
-  ]},
-  { "name": "Maint Layer 2 Audit", "zone": "Mantenimiento", "users": ["Juan Olalde"], "questions": [
-    [1200, "¿Están al día los mantenimientos preventivos de la maquinaria (PLEX)?", "Are the machinery preventive maintenance tasks up to date (PLEX)?"],
-    [1203, "¿Se supervisan y reponen los suministros de mantenimiento según sea necesario?", "Are maintenance supplies monitored and replaced as needed?"],
-    [352, "¿Se suministra y utiliza PPE cuando es necesario?", "Is PPE provided and used when necessary?"],
-    [353, "¿Se han enviado a disposición adecuadamente los residuos del departamento?", "Has the department's waste been properly sent for disposal?"],
-    [354, "¿Se han realizado los PM en TODAS las máquinas de la zona programada? (Ver PLEX)", "Have PMs been performed on ALL machines in the scheduled zone? (See PLEX)"],
-    [697, "¿Los productos químicos/solventes y otros productos utilizados por su departamento se ingresan en el sistema eBinder SDS?", "Are the chemicals/solvents and other products used by the department entered in the eBinder SDS system?"],
-    [1204, "¿Están todas las botellas del departamento de mantenimiento claramente identificadas con una etiqueta SGA?", "Are all maintenance department bottles clearly identified with a GHS label?"],
-    [1205, "¿Están todas las pistolas de aire comprimido del departamento de mantenimiento en condiciones originales y sin modificaciones?", "Are all compressed air guns in the maintenance department in original condition and unmodified?"],
-    [1206, "¿Está el almacén de repuestos en buen estado y limpio?", "Is the spare parts warehouse in good condition and clean?"],
-    [1207, "¿Las entregas, equipos y refacciones del departamento de mantenimiento se almacenan de forma organizada?", "Are the maintenance department's deliveries, equipment and spare parts stored in an organized way?"],
-    [1209, "¿Se cierran las OT de mantenimiento dentro de las 3 semanas posteriores a su emisión?", "Are maintenance work orders closed within 3 weeks of issue?"]
-  ]},
-  { "name": "PE Layer 2 Audit", "zone": "Procesos", "users": ["Jonathan Kebick", "Eduardo Pinto"], "questions": [
-    [1153, "¿Están completas las auditorías PE Layer 1 (LPA)? Acciones tomadas.", "Are the PE Layer 1 (LPA) audits complete? Actions Taken?"],
-    [1154, "¿Las acciones correctivas se completan a tiempo?", "Are corrective actions being completed on time"],
-    [1155, "¿Los procesos siguen el layout diseñado?", "Are the processes following the designed layout"],
-    [1159, "¿Todos los ECN están vigentes y al día?", "All ECN are current and up to date?"],
-    [1160, "¿Todas las alertas publicadas están vigentes?", "All posted alerts are current?"],
-    [2295, "(Elige un proceso detenido) ¿Los paquetes de Operación-60 e Instrucciones de Trabajo están completos y disponibles en el proceso?", "(Choose a process that is down) Are Operation-60 and WI packages complete & available at the process?"],
-    [2296, "(Elige un proceso detenido) ¿El área del proceso cumple con el layout de 5S/Seguridad (Operación-60)?", "(Choose a process that is down) Does the process area meet the 5S/Safety layout requirement (Operation-60)?"],
-    [2303, "(Elige un proceso detenido) Si hay fixture, ¿los red rabbits están disponibles, etiquetados, en buenas condiciones y cumplen con el PFMEA?", "(Choose a process that is down) If there is a fixture, are red rabbits available, labeled, & in good condition - and meet the PFEMA?"],
-    [2309, "(Elige un proceso detenido) ¿El PFMEA está al día?", "(Choose a process that is down) PFEMA up to date?"],
-    [2294, "(Una vez al mes) Realizar un 60CA, OWA y CI Open issues de un proceso de tu elección (cualquier día, 1.ª semana del mes).", "(Once per month) Conduct a 60CA, OWA, & CI Open issues of a process of your choosing (any day, 1st week of the month)."],
-    [2297, "(Una vez al mes) ¿El CT de la prensa coincide con el SWC? (riesgo de sobrecarga)", "(Once per month) Does the CT of the press match the SWC, (risk of over burden)?"],
-    [2298, "(Una vez al mes) ¿El OP firmó el SWC? (aplica la etiqueta en esta hoja o escribe el OP#)", "(Once per month) Has the OP signed the SWC? (apply label to this sheet or write OP#)"],
-    [2299, "(Una vez al mes) ¿El OP sigue el orden de trabajo? Si no, ¿este método es mejor que el indicado en el SWC?", "(Once per month) Is the OP following the order of work? If not, is this method better than what is called out on the SWC?"],
-    [2300, "(Una vez al mes) ¿El OP respeta el tiempo de inspección indicado en el SWC?", "(Once per month) Is the amount of time for inspection on the SWC being honored by the OP?"],
-    [2302, "(Una vez al mes) Si hay fixture, monitorea cualquier problema funcional o interrupción durante su uso (10 ciclos).", "(Once per month) If there is a fixture, monitor any functional issues or interruptions during its use (10 cycles)."]
-  ]},
-  { "name": "HR Layer 1 Audit", "zone": "Recursos Humanos", "users": ["Arturo González", "Dulce Nieves", "Dulce Sánchez", "Patricia Carrillo"], "questions": [
-    [1435, "Seleccionar 2 operadores del área auditada y preguntar: Política Ambiental / Objetivos Ambientales.", "Select 2 operators from the audited area and ask: Environmental Policy / Environmental Objectives."],
-    [1436, "El supervisor/líder conoce las Políticas de Calidad, Seguridad y Medio Ambiente.", "The supervisor/leader knows the Quality, Safety and Environmental Policies."],
-    [1437, "Audit and review. Si se usan sustancias químicas en el área auditada, verificar que se encuentren identificadas.", "Audit and review. If chemicals are used in the audited area, verify they are identified."],
-    [1438, "Audit and review. ¿Las sustancias químicas que se usan en las áreas de producción se encuentran disponibles en el sistema eBinder?", "Audit and review. Are the chemicals used in production areas available in the eBinder system?"],
-    [1439, "¿Los supervisores y líderes tienen acceso a eBinder y conocen cómo acceder a la información requerida?", "Do supervisors and leaders have access to eBinder and know how to access the required information?"],
-    [1448, "La separación de residuos es correcta (madera, plástico, cartón, etc.).", "Waste segregation is correct (wood, plastic, cardboard, etc.)."],
-    [1034, "La matriz de versatilidad se encuentra disponible y actualizada en Tablero 4D.", "The versatility matrix is available and up to date on the 4D board."],
-    [1033, "Entrevista. Todos los operadores han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).", "Interview. All operators have been trained in the work instructions and know the process deviations (quality alerts)."],
-    [2283, "¿La Instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?", "Is the work instruction up to date in Ripple and does it match the physical version?"],
-    [453, "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX.", "Verify control of current documents. Use of current internal and PLEX forms."],
-    [8, "Los operadores cuentan con los lentes y guantes de seguridad asignados al trabajo realizado.", "Operators have the safety glasses and gloves assigned to the work performed."],
-    [1030, "Se cuenta con Instrucción de trabajo/TTE/HET firmada.", "Work instruction/TTE/HET signed is available."],
-    [1031, "El número de parte cuenta con Verificación de arranque de proceso con los datos correctos y firmada por los responsables.", "The part number has a process start-up verification with correct data signed by those responsible."]
-  ]},
-  { "name": "HR Layer 2 Audit", "zone": "Recursos Humanos", "users": ["Paloma Herrera"], "questions": [
-    [85, "Revisar uso correcto del EPP en Líneas de Producción Pintura (cofia, guantes limpios, sin uso de joyería).", "Check correct use of PPE in Paint Production Lines (hair net, clean gloves, no jewelry)."],
-    [1437, "El supervisor/líder conoce las Políticas de Calidad, Seguridad y Ambiente.", "The supervisor/leader knows the Quality, Safety and Environmental Policies."],
-    [1428, "¿Los extintores e hidrantes se encuentran sin obstrucciones y limpios?", "Are extinguishers and hydrants unobstructed and clean?"],
-    [1448, "La separación de residuos es correcta (madera, plástico, cartón, etc.).", "Waste segregation is correct (wood, plastic, cardboard, etc.)."],
-    [1440, "Verificar: ¿se han realizado los mantenimientos preventivos de los equipos de servicio cocina? (trampa de grasas, filtros de agua, máquina de hielo, etc.)", "Verify: have preventive maintenance tasks been done on the kitchen service equipment? (grease trap, water filters, ice machine, etc.)"],
-    [1408, "¿Están actualizados los tableros (4D) de celdas de trabajo?", "Are the work cell (4D) boards up to date?"],
-    [1417, "¿Está actualizada la capacitación obligatoria por ley?", "Is the legally required training up to date?"],
-    [1412, "¿Están limpios el comedor y los baños?", "Are the cafeteria and restrooms clean?"],
-    [1424, "¿Están actualizadas las evaluaciones anuales de desempeño de los empleados?", "Are the annual employee performance reviews up to date?"],
-    [1446, "El personal de comedor cuenta con cabello recogido, uñas limpias y recortadas.", "Cafeteria staff have hair tied back and clean, trimmed nails."],
-    [1306, "¿Están completas las auditorías de Layer 1 (LPA)?", "Are the Layer 1 (LPA) audits complete?"]
-  ]},
-  { "name": "Project Layer 2 Audit", "zone": "Programas", "users": ["Diego Mandujano", "Anahi Aguilar"], "questions": [
-    [1450, "¿Los resúmenes de programa están al día? Revisión correcta y todos los campos llenos.", "Are program summaries up to date? Proper Rev and all boxes filled in?"],
-    [1451, "¿Se da seguimiento y se cierran los ECN?", "Are ECN's being tracked and closed?"],
-    [1452, "¿Se realizan juntas APQP regulares? ¿Hay minutas disponibles?", "Are regular APQP meetings being held? Are Minutes Available?"],
-    [1453, "Jaula de ingeniería limpia y partes identificadas con etiqueta de ingeniería o TSR.", "Eng cage clean and parts identified with eng label or TSR?"],
-    [1454, "¿Las hojas de balance de programa están al día?", "Are program balanced sheets up to date?"],
-    [1460, "¿Los PCR en QIMS tienen seguimiento y se cierran según las fechas límite? (Solo Toyota)", "Are PCR in QIMS tracking, close according due dates (Only Toyota)?"],
-    [1461, "Verificar registros de inventario de acuerdo con QA-006-I MPQ.", "Verify inventory records according to QA-006-I MPQ."]
-  ]},
-  { "name": "Production Layer 2 Audit (Short)", "zone": "Producción", "users": ["Trevor Peers"], "questions": [
-    [1101, "¿Se mantienen las expectativas de 5S / orden y limpieza? Sin material sobre o detrás de la máquina.", "Are 5s / housekeeping expectations being maintained? No material on or behind the machine?"],
-    [1146, "¿Todos los problemas de seguridad abiertos están completos y cerrados en el sistema?", "Are all open safety issues complete and closed in the system?"],
-    [1111, "¿Está limpia el área de retención? ¿Los DMR tienen menos de 24 horas? ¿Los operadores de selección están certificados?", "Is the hold area clean? Are the DMRs less the 24 hours old? Are sort operators certified?"],
-    [1117, "¿Todos los parciales de producción en el área de retención tienen la etiqueta naranja?", "Do all production partials in the Hold area have the proper orange tag applied"],
-    [1100, "¿Se usa el EPP correcto? Lentes, protectores de anillos y zapato cerrado.", "Is proper PPE in use? Glasses, ring protectors, closed toe shoes."],
-    [1603, "¿Se investigó el MUV y hay planes de acción?", "Is the MUV investigated, action plans put in place?"]
-  ]},
-  { "name": "Production Cells Layer 1 Audit", "zone": "Producción", "users": [], "questions": [
-    [1, "¿Están todas las partes etiquetadas correctamente?", "Are all parts labeled correctly?"],
-    [2, "¿Está el área limpia y ordenada? Se mantienen 5S.", "Is the area clean and organized? Are 5S maintained?"],
-    [100, "¿Están los QIR / PIR completos y actualizados? Validar en PLEX.", "Are the QIR / PIR complete and up to date? Validate in PLEX."],
-    [102, "¿Están los operadores entrenados y se cuenta con el registro en la matriz de versatilidad?", "Are operators trained and is there a record in the versatility matrix?"],
-    [103, "¿Se ha completado la Verificación de primera pieza?", "Has the first piece verification been completed?"],
-    [104, "¿Se cuenta y está actualizado el DMR interno o externo de la pieza auditada?", "Is the internal or external DMR of the audited part available and up to date?"],
-    [105, "¿Se ha entrenado a la persona en proceso de contención?", "Has the person been trained in the containment process?"],
-    [908, "¿Se encuentran todas las incidencias aprobadas en DayForce?", "Are all approved incidents in DayForce?"],
-    [909, "¿Se encuentran HID abiertos/pendientes de completar?", "Are there open/pending HIDs to complete?"],
-    [920, "¿Están todos los DMR registrados en el log? ¿Han sido firmados los reportes?", "Are all DMRs recorded in the log? Have the reports been signed?"],
-    [930, "¿El trabajo actual se está ejecutando de acuerdo a lo que indica PLEX?", "Is the current work being executed as PLEX indicates?"],
-    [85, "Revisar uso correcto del EPP en Líneas de Producción (Pintura Cofia, guantes limpios, sin uso de joyería).", "Check correct use of PPE in Production Lines (Paint hair net, clean gloves, no jewelry)."],
-    [86, "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)", "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"],
-    [699, "Todas las sustancias químicas que se usan en la zona están correctamente identificadas con H&S-013-I-MPQ Etiqueta de Sustancias químicas.", "All chemicals used in the area are correctly identified with H&S-013-I-MPQ chemical substance label."],
-    [112, "Verificar que los residuos peligrosos generados en el área estén identificados correctamente.", "Verify that hazardous waste generated in the area is correctly identified."],
-    [88, "Los extintores de toda la zona están libres de obstrucciones.", "Fire extinguishers throughout the zone are free of obstructions."],
-    [2102, "¿Están los Red/Green rabbits disponibles para probar los Poka-Yokes?", "Are the Red/Green rabbits available to test the Poka-Yokes?"],
-    [1448, "La separación de residuos es correcta (madera, plástico, cartón, etc.).", "Waste segregation is correct (wood, plastic, cardboard, etc.)."],
-    [2283, "¿La instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?", "Is the work instruction up to date in Ripple and does it match the physical version?"],
-    [1551, "¿Las OT órdenes de mantenimiento han sido revisadas y cerradas cuando están completas?", "Have maintenance work orders been reviewed and closed when completed?"],
-    [1449, "Se requieren colocar otros contenedores de residuos para mejorar la separación.", "Other waste containers are required to improve segregation."]
-  ]},
-  { "name": "OJT Layer 1 Audit", "zone": "Producción", "users": [], "questions": [
-    [2, "Está el área limpia y ordenada. Se mantienen 5S.", "Is the area clean and organized? 5S maintained."],
-    [2282, "El operador está siguiendo la secuencia y flujo de proceso como lo muestra la Instrucción de Trabajo.", "The operator is following the process sequence and flow as shown in the Work Instruction."],
-    [2283, "¿La Instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?", "Is the work instruction up to date in Ripple and does it match the physical version?"],
-    [2284, "El operador está logueado en Plex y Poka Yoke.", "The operator is logged in to Plex and Poka Yoke."],
-    [2285, "La matriz de Versatilidad está actualizada con base a la información del Sistema de Contención.", "The versatility matrix is updated based on the Containment System information."],
-    [2290, "El operador está portando el EPP requerido.", "The operator is wearing the required PPE."],
-    [2291, "¿El Scrap se encuentra registrado y dentro del contenedor rojo?", "Is the scrap recorded and inside the red container?"],
-    [2292, "Está completada la Hoja de Verificación de Arranque.", "The Start-up Verification Sheet is completed."],
-    [2293, "Está completada la etiqueta First-Off de arranque.", "The start-up First-Off label is completed."],
-    [2419, "El líder de celda ha verificado que el operador ha leído y entendido la Instrucción de Trabajo.", "The cell leader has verified that the operator has read and understood the Work Instruction."],
-    [2408, "La línea se encuentra despejada de todos los números de parte previos.", "The line is cleared of all previous part numbers."],
-    [86, "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)", "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"],
-    [453, "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX.", "Verify control of current documents. Use of current internal and PLEX forms."],
-    [2471, "Está la última alerta de calidad del producto actual firmada y se entiende.", "The latest quality alert for the current product is signed and understood."]
-  ]},
-  { "name": "Process Tech Layer 1 Audit", "zone": "Procesos", "users": [], "questions": [
-    [259, "Revisar todas las máquinas para Master en amarillo y asegurar que están firmados.", "Check all machines for yellow Master and ensure they are signed."],
-    [261, "Verificar que los clamps de los moldes estén en buenas condiciones.", "Verify that the mold clamps are in good condition."],
-    [262, "¿Están las coladas siendo removidas y segregadas adecuadamente? (¿Están las coladas bajo la máquina?)", "Are the runners being removed and segregated properly? (Are runners under the machine?)"],
-    [270, "Se encuentra el check list de arranque llenado y firmado por todas las áreas.", "The start-up checklist is filled out and signed by all areas."],
-    [271, "El molde se encuentra limpio o se notifica a Tool Shop.", "The mold is clean or Tool Shop is notified."],
-    [256, "¿Los controles hot runner están trabajando adecuadamente?", "Are the hot runner controls working properly?"],
-    [2105, "Revisar trazabilidad de la resina de lote, tolva y gaylor.", "Check resin traceability of lot, hopper and gaylord."],
-    [2106, "Se ha realizado la prueba de secado de humedad de la resina (cambio de lote, molde, paro programado o no programado).", "The resin moisture drying test has been performed (change of lot, mold, scheduled or unscheduled stop)."],
-    [2107, "Revisar formato de verificación de la prueba de humedad de la resina.", "Check the resin moisture test verification form."]
-  ]},
-  { "name": "Shipping Layer 1 Audit", "zone": "Logística", "users": [], "questions": [
-    [602, "¿Se almacena el producto contra las paredes, se gira semanalmente para asegurar FIFO?", "Is product stored against the walls, rotated weekly to ensure FIFO?"],
-    [701, "El sistema contra incendios está libre de obstrucciones, cuenta con su señalamiento (extintor, hidrantes, estaciones manuales, equipo brigadas).", "The fire system is free of obstructions and has its signage (extinguisher, hydrants, manual stations, brigade equipment)."],
-    [1053, "¿El área de rampas / recepción y área de residuos están limpios?", "Are the ramp / receiving area and waste area clean?"],
-    [1049, "¿La estiba de materiales no rebasa el límite máximo? Se cuenta con señalética.", "Does material stacking stay within the maximum limit? Signage is available."],
-    [1075, "¿El FIFO se está siguiendo en el envío?", "Is FIFO being followed in shipping?"],
-    [1064, "¿Los montacargas están limpios y funcionando correctamente?", "Are the forklifts clean and working correctly?"],
-    [1065, "¿Todos los números de parte se han recibido en el sistema y cuentan con etiquetas adecuadas?", "Have all part numbers been received in the system and have proper labels?"],
-    [1067, "¿Se está siguiendo el estándar 5S en todas las áreas de almacén?", "Is the 5S standard being followed in all warehouse areas?"],
-    [1326, "Las alertas en Tablero Embarques se encuentran disponibles y firmadas por supervisor/líder.", "Alerts on the Shipping board are available and signed by supervisor/leader."],
-    [702, "Ingrese a eBinder y busque una de las sustancias químicas que utilice en el área. ¿Se encuentra disponible?", "Enter eBinder and search for one of the chemicals used in the area. Is it available?"],
-    [1043, "Realizar check list H&S-019-I-MPQ Inspección de Racks.", "Perform checklist H&S-019-I-MPQ Rack Inspection."]
-  ]},
-  { "name": "Customer Service Layer 1 Audit", "zone": "Logística", "users": [], "questions": [
-    [602, "¿Se almacena el producto contra las paredes, se gira semanalmente para asegurar FIFO?", "Is product stored against the walls, rotated weekly to ensure FIFO?"],
-    [86, "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)", "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"],
-    [1049, "¿La estiba de materiales no rebasa el límite máximo?", "Does material stacking stay within the maximum limit?"],
-    [1075, "¿El FIFO se está siguiendo en el envío?", "Is FIFO being followed in shipping?"],
-    [1064, "¿Los montacargas están limpios y funcionando correctamente?", "Are the forklifts clean and working correctly?"],
-    [1326, "Las alertas en Tablero Embarques se encuentran disponibles y firmadas por el personal, supervisor/líder.", "Alerts on the Shipping board are available and signed by personnel, supervisor/leader."],
-    [702, "¿El personal de embarques conoce qué es el sistema eBinder?", "Does the shipping staff know what the eBinder system is?"],
-    [1448, "La separación de residuos es correcta (madera, plástico, cartón, etc.).", "Waste segregation is correct (wood, plastic, cardboard, etc.)."],
-    [1449, "Se requieren colocar otros contenedores de residuos para mejorar la separación.", "Other waste containers are required to improve segregation."],
-    [457, "FIFO. Confirmar que se respete la rotación de materiales y no existan materiales obsoletos o vencidos.", "FIFO. Confirm material rotation is respected and there are no obsolete or expired materials."],
-    [1045, "Verificar si en exterior de rampas se encuentran manchas o derrames de aceites (u otro líquido) ocasionado por los transportistas.", "Check whether there are oil (or other liquid) stains or spills outside the ramps caused by carriers."],
-    [1046, "Verificar área carga de baterías de montacargas en rampas. (Se encuentra limpio, sin derrames, se cuenta con kit de atención a derrames y lava ojos.)", "Check the forklift battery charging area at the ramps. (Clean, no spills, spill kit and eye wash available.)"]
-  ]}
+ {
+  "name": "Matl / Logistics Layer 2 Audit",
+  "zone": "Logística",
+  "users": [
+   "Fabiola Marina"
+  ],
+  "questions": [
+   [
+    1352,
+    "¿Se registran y archivan las órdenes de compra de los clientes?",
+    "Are customer purchase orders logged and filed?"
+   ],
+   [
+    1354,
+    "¿Los avisos de clientes se turnan al personal correspondiente?",
+    "Are customer notices forwarded to appropriate staff?"
+   ],
+   [
+    1355,
+    "¿Las auditorías de sitio web de clientes se completan a tiempo?",
+    "Are customer website audits completed in a timely manner?"
+   ],
+   [
+    1356,
+    "¿Las solicitudes de embarque se procesaron en 24 horas y se asignaron para aprobación secundaria si es necesario?",
+    "Have ship requests been processed within 24 hours and assigned for secondary approval if necessary?"
+   ],
+   [
+    1357,
+    "¿Los ECN están cerrados/firmados antes de las fechas límite?",
+    "Are ECNs closed/signed off before due dates?"
+   ],
+   [
+    1358,
+    "¿Los inventarios físicos están programados y organizados como se requiere?",
+    "Are physical inventories scheduled and organized as required?"
+   ],
+   [
+    1360,
+    "¿El almacén está distribuido para acomodar todos los productos terminados?",
+    "Is warehouse laid out to accommodate all finished goods?"
+   ],
+   [
+    1361,
+    "¿Las puertas, muelles y placas de embarque están en buen estado de funcionamiento?",
+    "Are the shipping doors, docks and plates in good working order?"
+   ],
+   [
+    1363,
+    "¿La gráfica semanal de entregas a clientes está completa?",
+    "Is the weekly customer delivery chart complete?"
+   ],
+   [
+    1364,
+    "¿La gráfica semanal de entregas de proveedores (stock out) está completa?",
+    "Is the weekly supplier delivery (stock out) chart complete?"
+   ],
+   [
+    1365,
+    "¿La lista de faltantes se comunica a tiempo todos los días?",
+    "Is the shortage list communicated on time every day?"
+   ],
+   [
+    1367,
+    "¿Están completas las auditorías de Shipping Layer 1 (LPA)? Acciones tomadas.",
+    "Are the shipping Layer 1 (LPA) audits complete? Actions Taken?"
+   ],
+   [
+    1372,
+    "¿Las listas de surtido son del mismo color que la alerta de calidad para los primeros tres embarques?",
+    "Are pick lists the same color of the quality alert for the 1st three shipments?"
+   ]
+  ]
+ },
+ {
+  "name": "GM Layer 3 Audit",
+  "zone": "Gerencia",
+  "users": [
+   "Juventino Morales"
+  ],
+  "questions": [
+   [
+    1600,
+    "¿Las juntas de gerencia se realizan según lo programado?",
+    "Are Management Meetings happening on schedule?"
+   ],
+   [
+    1602,
+    "¿La planta está limpia y organizada?",
+    "Is the plant clean and organized?"
+   ],
+   [
+    1609,
+    "¿La liberación de tarjetas KANBAN coincide con las columnas actuales de los clientes?",
+    "Does the KANBAN card release match the customers current columns"
+   ],
+   [
+    1610,
+    "¿Se sigue 5S en el área de producción?",
+    "Is 5s being followed in the production area?"
+   ],
+   [
+    1611,
+    "¿Se sigue 5S en el área de oficinas?",
+    "Is 5s being followed in the office area?"
+   ],
+   [
+    2150,
+    "¿Se siguen las reglas de seguridad?",
+    "Are safety rules followed?"
+   ],
+   [
+    2153,
+    "¿Se sigue el sistema EMS?",
+    "Is EMS system being followed?"
+   ],
+   [
+    2154,
+    "¿Las salidas están libres y despejadas?",
+    "Are exits free and clear of obstruction?"
+   ],
+   [
+    1623,
+    "¿Hay alertas activas y están firmadas por el OP y el CL (celda y 4D)?",
+    "Are active alerts present & signed by the OP and CL (cell and 4D)?"
+   ],
+   [
+    1619,
+    "¿Los CAR se cierran en 3 semanas y hay acciones permanentes?",
+    "Are CARs closed within 3 weeks and permanent actions in place ?"
+   ],
+   [
+    1624,
+    "Validación del análisis de riesgos específicos locales a nivel planta.",
+    "Validation local specific risks analysis at plant level"
+   ],
+   [
+    1551,
+    "¿Las órdenes de trabajo se revisan y cierran correctamente al completarse el trabajo?",
+    "Are Work Orders being checked and closed properly when work is completed?"
+   ],
+   [
+    1625,
+    "¿Los riesgos específicos y la mitigación pertinente están completos y al día?",
+    "Are the specific risks and any pertinent mitigation complete and up to date?"
+   ],
+   [
+    1626,
+    "¿Hay cambios internos o externos que puedan impactar el Sistema de Gestión de Calidad?",
+    "Are there any changes internally or externally that may impact the Quality Management System?"
+   ],
+   [
+    1627,
+    "¿Los nuevos riesgos identificados en el FMEA pueden aumentar las fallas en campo?",
+    "Do any new risks identified in the FMEA have the potential to increase field failures?"
+   ]
+  ]
+ },
+ {
+  "name": "Tool Shop Layer 2 Audit",
+  "zone": "Toolroom",
+  "users": [
+   "Scott Coulter",
+   "Omar Sánchez"
+  ],
+  "questions": [
+   [
+    252,
+    "¿Se entregaron todas las hojas de inspección de grúas?",
+    "Are all Crane inspection sheets submitted?"
+   ],
+   [
+    253,
+    "¿Se están usando los bump caps?",
+    "Are bump Caps being worn?"
+   ],
+   [
+    852,
+    "¿Los archivos de ingeniería/programación se guardan correctamente?",
+    "Are Engineer/Programming files being properly stored away?"
+   ],
+   [
+    856,
+    "¿Las áreas de trabajo se limpian al final de cada turno?",
+    "Are work areas being cleaned at the end of each shift?"
+   ],
+   [
+    909,
+    "¿Se identifican los peligros de seguridad?",
+    "Are safety hazards identified?"
+   ],
+   [
+    1200,
+    "¿Los PM de la maquinaria están al día?",
+    "Are machinery PM's up to date?"
+   ],
+   [
+    1204,
+    "¿Todas las botellas del departamento de Tooling están identificadas con etiqueta WHMIS?",
+    "Are all bottles in the Tooling dept clearly identified with a WHIMIS label?"
+   ],
+   [
+    1205,
+    "¿Todas las pistolas de aire del departamento de Tooling están en condición original y sin modificaciones?",
+    "Are all air guns in the Tooling dept in original condition and without modification?"
+   ],
+   [
+    1209,
+    "¿Hay EPP apropiado en la estación de carga de baterías y está en buenas condiciones?",
+    "Is there appropriate PPE at the battery charging station and ensure it is in good working condition"
+   ],
+   [
+    1250,
+    "¿Los PM de herramientas están al día?",
+    "Are tool PM's up to date?"
+   ],
+   [
+    1550,
+    "¿Las órdenes de trabajo se revisan correctamente con los Tool Makers involucrados?",
+    "Are Work Orders being properly reviewed with the Tool Makers that are involved?"
+   ],
+   [
+    1553,
+    "¿El stock/suministros del Tool room se monitorean y reponen según se necesite?",
+    "Are Tool room stock/supplies being monitored and replaced as needed?"
+   ],
+   [
+    1554,
+    "¿Las latas de aerosol y tanques de propano se colocan correctamente en el contenedor de reciclaje?",
+    "Are aerosol cans and propane tanks being properly place in the recycle bin provided?"
+   ],
+   [
+    1555,
+    "¿Los artículos comprados al recibirse se registran electrónicamente y se archivan para revisión?",
+    "As purchased items are received are they being recorded electronic and placed in proper file for review?"
+   ],
+   [
+    1557,
+    "¿Se mantienen las refacciones críticas (documentado en órdenes de trabajo y repuesto según se requiera)?",
+    "Are critical spares being maintained (documented on work orders & replenished as required)?"
+   ]
+  ]
+ },
+ {
+  "name": "Maint Layer 2 Audit",
+  "zone": "Mantenimiento",
+  "users": [
+   "Juan Olalde"
+  ],
+  "questions": [
+   [
+    1200,
+    "¿Están al día los mantenimientos preventivos de la maquinaria (PLEX)?",
+    "Are the machinery preventive maintenance tasks up to date (PLEX)?"
+   ],
+   [
+    1203,
+    "¿Se supervisan y reponen los suministros de mantenimiento según sea necesario?",
+    "Are maintenance supplies monitored and replaced as needed?"
+   ],
+   [
+    352,
+    "¿Se suministra y utiliza PPE cuando es necesario?",
+    "Is PPE provided and used when necessary?"
+   ],
+   [
+    353,
+    "¿Se han enviado a disposición adecuadamente los residuos del departamento?",
+    "Has the department's waste been properly sent for disposal?"
+   ],
+   [
+    354,
+    "¿Se han realizado los PM en TODAS las máquinas de la zona programada? (Ver PLEX)",
+    "Have PMs been performed on ALL machines in the scheduled zone? (See PLEX)"
+   ],
+   [
+    697,
+    "¿Los productos químicos/solventes y otros productos utilizados por su departamento se ingresan en el sistema eBinder SDS?",
+    "Are the chemicals/solvents and other products used by the department entered in the eBinder SDS system?"
+   ],
+   [
+    1204,
+    "¿Están todas las botellas del departamento de mantenimiento claramente identificadas con una etiqueta SGA?",
+    "Are all maintenance department bottles clearly identified with a GHS label?"
+   ],
+   [
+    1205,
+    "¿Están todas las pistolas de aire comprimido del departamento de mantenimiento en condiciones originales y sin modificaciones?",
+    "Are all compressed air guns in the maintenance department in original condition and unmodified?"
+   ],
+   [
+    1206,
+    "¿Está el almacén de repuestos en buen estado y limpio?",
+    "Is the spare parts warehouse in good condition and clean?"
+   ],
+   [
+    1207,
+    "¿Las entregas, equipos y refacciones del departamento de mantenimiento se almacenan de forma organizada?",
+    "Are the maintenance department's deliveries, equipment and spare parts stored in an organized way?"
+   ],
+   [
+    1209,
+    "¿Se cierran las OT de mantenimiento dentro de las 3 semanas posteriores a su emisión?",
+    "Are maintenance work orders closed within 3 weeks of issue?"
+   ]
+  ]
+ },
+ {
+  "name": "PE Layer 2 Audit",
+  "zone": "Procesos",
+  "users": [
+   "Jonathan Kebick",
+   "Eduardo Pinto"
+  ],
+  "questions": [
+   [
+    1153,
+    "¿Están completas las auditorías PE Layer 1 (LPA)? Acciones tomadas.",
+    "Are the PE Layer 1 (LPA) audits complete? Actions Taken?"
+   ],
+   [
+    1154,
+    "¿Las acciones correctivas se completan a tiempo?",
+    "Are corrective actions being completed on time"
+   ],
+   [
+    1155,
+    "¿Los procesos siguen el layout diseñado?",
+    "Are the processes following the designed layout"
+   ],
+   [
+    1159,
+    "¿Todos los ECN están vigentes y al día?",
+    "All ECN are current and up to date?"
+   ],
+   [
+    1160,
+    "¿Todas las alertas publicadas están vigentes?",
+    "All posted alerts are current?"
+   ],
+   [
+    2295,
+    "(Elige un proceso detenido) ¿Los paquetes de Operación-60 e Instrucciones de Trabajo están completos y disponibles en el proceso?",
+    "(Choose a process that is down) Are Operation-60 and WI packages complete & available at the process?"
+   ],
+   [
+    2296,
+    "(Elige un proceso detenido) ¿El área del proceso cumple con el layout de 5S/Seguridad (Operación-60)?",
+    "(Choose a process that is down) Does the process area meet the 5S/Safety layout requirement (Operation-60)?"
+   ],
+   [
+    2303,
+    "(Elige un proceso detenido) Si hay fixture, ¿los red rabbits están disponibles, etiquetados, en buenas condiciones y cumplen con el PFMEA?",
+    "(Choose a process that is down) If there is a fixture, are red rabbits available, labeled, & in good condition - and meet the PFEMA?"
+   ],
+   [
+    2309,
+    "(Elige un proceso detenido) ¿El PFMEA está al día?",
+    "(Choose a process that is down) PFEMA up to date?"
+   ],
+   [
+    2294,
+    "(Una vez al mes) Realizar un 60CA, OWA y CI Open issues de un proceso de tu elección (cualquier día, 1.ª semana del mes).",
+    "(Once per month) Conduct a 60CA, OWA, & CI Open issues of a process of your choosing (any day, 1st week of the month)."
+   ],
+   [
+    2297,
+    "(Una vez al mes) ¿El CT de la prensa coincide con el SWC? (riesgo de sobrecarga)",
+    "(Once per month) Does the CT of the press match the SWC, (risk of over burden)?"
+   ],
+   [
+    2298,
+    "(Una vez al mes) ¿El OP firmó el SWC? (aplica la etiqueta en esta hoja o escribe el OP#)",
+    "(Once per month) Has the OP signed the SWC? (apply label to this sheet or write OP#)"
+   ],
+   [
+    2299,
+    "(Una vez al mes) ¿El OP sigue el orden de trabajo? Si no, ¿este método es mejor que el indicado en el SWC?",
+    "(Once per month) Is the OP following the order of work? If not, is this method better than what is called out on the SWC?"
+   ],
+   [
+    2300,
+    "(Una vez al mes) ¿El OP respeta el tiempo de inspección indicado en el SWC?",
+    "(Once per month) Is the amount of time for inspection on the SWC being honored by the OP?"
+   ],
+   [
+    2302,
+    "(Una vez al mes) Si hay fixture, monitorea cualquier problema funcional o interrupción durante su uso (10 ciclos).",
+    "(Once per month) If there is a fixture, monitor any functional issues or interruptions during its use (10 cycles)."
+   ]
+  ]
+ },
+ {
+  "name": "HR Layer 1 Audit",
+  "zone": "Recursos Humanos",
+  "users": [
+   "Arturo González",
+   "Dulce Nieves",
+   "Dulce Sánchez",
+   "Patricia Carrillo"
+  ],
+  "questions": [
+   [
+    1435,
+    "Seleccionar 2 operadores del área auditada y preguntar: Política Ambiental / Objetivos Ambientales.",
+    "Select 2 operators from the audited area and ask: Environmental Policy / Environmental Objectives."
+   ],
+   [
+    1436,
+    "El supervisor/líder conoce las Políticas de Calidad, Seguridad y Medio Ambiente.",
+    "The supervisor/leader knows the Quality, Safety and Environmental Policies."
+   ],
+   [
+    1437,
+    "Audit and review. Si se usan sustancias químicas en el área auditada, verificar que se encuentren identificadas.",
+    "Audit and review. If chemicals are used in the audited area, verify they are identified."
+   ],
+   [
+    1438,
+    "Audit and review. ¿Las sustancias químicas que se usan en las áreas de producción se encuentran disponibles en el sistema eBinder?",
+    "Audit and review. Are the chemicals used in production areas available in the eBinder system?"
+   ],
+   [
+    1439,
+    "¿Los supervisores y líderes tienen acceso a eBinder y conocen cómo acceder a la información requerida?",
+    "Do supervisors and leaders have access to eBinder and know how to access the required information?"
+   ],
+   [
+    1448,
+    "La separación de residuos es correcta (madera, plástico, cartón, etc.).",
+    "Waste segregation is correct (wood, plastic, cardboard, etc.)."
+   ],
+   [
+    1034,
+    "La matriz de versatilidad se encuentra disponible y actualizada en Tablero 4D.",
+    "The versatility matrix is available and up to date on the 4D board."
+   ],
+   [
+    1033,
+    "Entrevista. Todos los operadores han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso (alertas de calidad).",
+    "Interview. All operators have been trained in the work instructions and know the process deviations (quality alerts)."
+   ],
+   [
+    2283,
+    "¿La Instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?",
+    "Is the work instruction up to date in Ripple and does it match the physical version?"
+   ],
+   [
+    453,
+    "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX.",
+    "Verify control of current documents. Use of current internal and PLEX forms."
+   ],
+   [
+    8,
+    "Los operadores cuentan con los lentes y guantes de seguridad asignados al trabajo realizado.",
+    "Operators have the safety glasses and gloves assigned to the work performed."
+   ],
+   [
+    1030,
+    "Se cuenta con Instrucción de trabajo/TTE/HET firmada.",
+    "Work instruction/TTE/HET signed is available."
+   ],
+   [
+    1031,
+    "El número de parte cuenta con Verificación de arranque de proceso con los datos correctos y firmada por los responsables.",
+    "The part number has a process start-up verification with correct data signed by those responsible."
+   ]
+  ]
+ },
+ {
+  "name": "HR Layer 2 Audit",
+  "zone": "Recursos Humanos",
+  "users": [
+   "Paloma Herrera"
+  ],
+  "questions": [
+   [
+    85,
+    "Revisar uso correcto del EPP en Líneas de Producción Pintura (cofia, guantes limpios, sin uso de joyería).",
+    "Check correct use of PPE in Paint Production Lines (hair net, clean gloves, no jewelry)."
+   ],
+   [
+    1437,
+    "El supervisor/líder conoce las Políticas de Calidad, Seguridad y Ambiente.",
+    "The supervisor/leader knows the Quality, Safety and Environmental Policies."
+   ],
+   [
+    1428,
+    "¿Los extintores e hidrantes se encuentran sin obstrucciones y limpios?",
+    "Are extinguishers and hydrants unobstructed and clean?"
+   ],
+   [
+    1448,
+    "La separación de residuos es correcta (madera, plástico, cartón, etc.).",
+    "Waste segregation is correct (wood, plastic, cardboard, etc.)."
+   ],
+   [
+    1440,
+    "Verificar: ¿se han realizado los mantenimientos preventivos de los equipos de servicio cocina? (trampa de grasas, filtros de agua, máquina de hielo, etc.)",
+    "Verify: have preventive maintenance tasks been done on the kitchen service equipment? (grease trap, water filters, ice machine, etc.)"
+   ],
+   [
+    1408,
+    "¿Están actualizados los tableros (4D) de celdas de trabajo?",
+    "Are the work cell (4D) boards up to date?"
+   ],
+   [
+    1417,
+    "¿Está actualizada la capacitación obligatoria por ley?",
+    "Is the legally required training up to date?"
+   ],
+   [
+    1412,
+    "¿Están limpios el comedor y los baños?",
+    "Are the cafeteria and restrooms clean?"
+   ],
+   [
+    1424,
+    "¿Están actualizadas las evaluaciones anuales de desempeño de los empleados?",
+    "Are the annual employee performance reviews up to date?"
+   ],
+   [
+    1446,
+    "El personal de comedor cuenta con cabello recogido, uñas limpias y recortadas.",
+    "Cafeteria staff have hair tied back and clean, trimmed nails."
+   ],
+   [
+    1306,
+    "¿Están completas las auditorías de Layer 1 (LPA)?",
+    "Are the Layer 1 (LPA) audits complete?"
+   ]
+  ]
+ },
+ {
+  "name": "Project Layer 2 Audit",
+  "zone": "Programas",
+  "users": [
+   "Diego Mandujano",
+   "Anahi Aguilar"
+  ],
+  "questions": [
+   [
+    1450,
+    "¿Los resúmenes de programa están al día? Revisión correcta y todos los campos llenos.",
+    "Are program summaries up to date? Proper Rev and all boxes filled in?"
+   ],
+   [
+    1451,
+    "¿Se da seguimiento y se cierran los ECN?",
+    "Are ECN's being tracked and closed?"
+   ],
+   [
+    1452,
+    "¿Se realizan juntas APQP regulares? ¿Hay minutas disponibles?",
+    "Are regular APQP meetings being held? Are Minutes Available?"
+   ],
+   [
+    1453,
+    "Jaula de ingeniería limpia y partes identificadas con etiqueta de ingeniería o TSR.",
+    "Eng cage clean and parts identified with eng label or TSR?"
+   ],
+   [
+    1454,
+    "¿Las hojas de balance de programa están al día?",
+    "Are program balanced sheets up to date?"
+   ],
+   [
+    1460,
+    "¿Los PCR en QIMS tienen seguimiento y se cierran según las fechas límite? (Solo Toyota)",
+    "Are PCR in QIMS tracking, close according due dates (Only Toyota)?"
+   ],
+   [
+    1461,
+    "Verificar registros de inventario de acuerdo con QA-006-I MPQ.",
+    "Verify inventory records according to QA-006-I MPQ."
+   ]
+  ]
+ },
+ {
+  "name": "Production Layer 2 Audit (Short)",
+  "zone": "Producción",
+  "users": [
+   "Trevor Peers"
+  ],
+  "questions": [
+   [
+    1101,
+    "¿Se mantienen las expectativas de 5S / orden y limpieza? Sin material sobre o detrás de la máquina.",
+    "Are 5s / housekeeping expectations being maintained? No material on or behind the machine?"
+   ],
+   [
+    1146,
+    "¿Todos los problemas de seguridad abiertos están completos y cerrados en el sistema?",
+    "Are all open safety issues complete and closed in the system?"
+   ],
+   [
+    1111,
+    "¿Está limpia el área de retención? ¿Los DMR tienen menos de 24 horas? ¿Los operadores de selección están certificados?",
+    "Is the hold area clean? Are the DMRs less the 24 hours old? Are sort operators certified?"
+   ],
+   [
+    1117,
+    "¿Todos los parciales de producción en el área de retención tienen la etiqueta naranja?",
+    "Do all production partials in the Hold area have the proper orange tag applied"
+   ],
+   [
+    1100,
+    "¿Se usa el EPP correcto? Lentes, protectores de anillos y zapato cerrado.",
+    "Is proper PPE in use? Glasses, ring protectors, closed toe shoes."
+   ],
+   [
+    1603,
+    "¿Se investigó el MUV y hay planes de acción?",
+    "Is the MUV investigated, action plans put in place?"
+   ]
+  ]
+ },
+ {
+  "name": "Production Cells Layer 1 Audit",
+  "zone": "Producción",
+  "users": [],
+  "questions": [
+   [
+    1,
+    "¿Están todas las partes etiquetadas correctamente?",
+    "Are all parts labeled correctly?"
+   ],
+   [
+    2,
+    "¿Está el área limpia y ordenada? Se mantienen 5S.",
+    "Is the area clean and organized? Are 5S maintained?"
+   ],
+   [
+    100,
+    "¿Están los QIR / PIR completos y actualizados? Validar en PLEX.",
+    "Are the QIR / PIR complete and up to date? Validate in PLEX."
+   ],
+   [
+    102,
+    "¿Están los operadores entrenados y se cuenta con el registro en la matriz de versatilidad?",
+    "Are operators trained and is there a record in the versatility matrix?"
+   ],
+   [
+    103,
+    "¿Se ha completado la Verificación de primera pieza?",
+    "Has the first piece verification been completed?"
+   ],
+   [
+    104,
+    "¿Se cuenta y está actualizado el DMR interno o externo de la pieza auditada?",
+    "Is the internal or external DMR of the audited part available and up to date?"
+   ],
+   [
+    105,
+    "¿Se ha entrenado a la persona en proceso de contención?",
+    "Has the person been trained in the containment process?"
+   ],
+   [
+    908,
+    "¿Se encuentran todas las incidencias aprobadas en DayForce?",
+    "Are all approved incidents in DayForce?"
+   ],
+   [
+    909,
+    "¿Se encuentran HID abiertos/pendientes de completar?",
+    "Are there open/pending HIDs to complete?"
+   ],
+   [
+    920,
+    "¿Están todos los DMR registrados en el log? ¿Han sido firmados los reportes?",
+    "Are all DMRs recorded in the log? Have the reports been signed?"
+   ],
+   [
+    930,
+    "¿El trabajo actual se está ejecutando de acuerdo a lo que indica PLEX?",
+    "Is the current work being executed as PLEX indicates?"
+   ],
+   [
+    85,
+    "Revisar uso correcto del EPP en Líneas de Producción (Pintura Cofia, guantes limpios, sin uso de joyería).",
+    "Check correct use of PPE in Production Lines (Paint hair net, clean gloves, no jewelry)."
+   ],
+   [
+    86,
+    "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)",
+    "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"
+   ],
+   [
+    699,
+    "Todas las sustancias químicas que se usan en la zona están correctamente identificadas con H&S-013-I-MPQ Etiqueta de Sustancias químicas.",
+    "All chemicals used in the area are correctly identified with H&S-013-I-MPQ chemical substance label."
+   ],
+   [
+    112,
+    "Verificar que los residuos peligrosos generados en el área estén identificados correctamente.",
+    "Verify that hazardous waste generated in the area is correctly identified."
+   ],
+   [
+    88,
+    "Los extintores de toda la zona están libres de obstrucciones.",
+    "Fire extinguishers throughout the zone are free of obstructions."
+   ],
+   [
+    2102,
+    "¿Están los Red/Green rabbits disponibles para probar los Poka-Yokes?",
+    "Are the Red/Green rabbits available to test the Poka-Yokes?"
+   ],
+   [
+    1448,
+    "La separación de residuos es correcta (madera, plástico, cartón, etc.).",
+    "Waste segregation is correct (wood, plastic, cardboard, etc.)."
+   ],
+   [
+    2283,
+    "¿La instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?",
+    "Is the work instruction up to date in Ripple and does it match the physical version?"
+   ],
+   [
+    1551,
+    "¿Las OT órdenes de mantenimiento han sido revisadas y cerradas cuando están completas?",
+    "Have maintenance work orders been reviewed and closed when completed?"
+   ],
+   [
+    1449,
+    "Se requieren colocar otros contenedores de residuos para mejorar la separación.",
+    "Other waste containers are required to improve segregation."
+   ]
+  ]
+ },
+ {
+  "name": "OJT Layer 1 Audit",
+  "zone": "Producción",
+  "users": [
+   "Celina Zamora José",
+   "Ma. Engracia Hernández",
+   "Carmen Hernández"
+  ],
+  "questions": [
+   [
+    2,
+    "Está el área limpia y ordenada. Se mantienen 5S.",
+    "Is the area clean and organized? 5S maintained."
+   ],
+   [
+    2282,
+    "El operador está siguiendo la secuencia y flujo de proceso como lo muestra la Instrucción de Trabajo.",
+    "The operator is following the process sequence and flow as shown in the Work Instruction."
+   ],
+   [
+    2283,
+    "¿La Instrucción de trabajo está actualizada en Ripple y coincide con la versión en físico?",
+    "Is the work instruction up to date in Ripple and does it match the physical version?"
+   ],
+   [
+    2284,
+    "El operador está logueado en Plex y Poka Yoke.",
+    "The operator is logged in to Plex and Poka Yoke."
+   ],
+   [
+    2285,
+    "La matriz de Versatilidad está actualizada con base a la información del Sistema de Contención.",
+    "The versatility matrix is updated based on the Containment System information."
+   ],
+   [
+    2290,
+    "El operador está portando el EPP requerido.",
+    "The operator is wearing the required PPE."
+   ],
+   [
+    2291,
+    "¿El Scrap se encuentra registrado y dentro del contenedor rojo?",
+    "Is the scrap recorded and inside the red container?"
+   ],
+   [
+    2292,
+    "Está completada la Hoja de Verificación de Arranque.",
+    "The Start-up Verification Sheet is completed."
+   ],
+   [
+    2293,
+    "Está completada la etiqueta First-Off de arranque.",
+    "The start-up First-Off label is completed."
+   ],
+   [
+    2419,
+    "El líder de celda ha verificado que el operador ha leído y entendido la Instrucción de Trabajo.",
+    "The cell leader has verified that the operator has read and understood the Work Instruction."
+   ],
+   [
+    2408,
+    "La línea se encuentra despejada de todos los números de parte previos.",
+    "The line is cleared of all previous part numbers."
+   ],
+   [
+    86,
+    "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)",
+    "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"
+   ],
+   [
+    453,
+    "Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX.",
+    "Verify control of current documents. Use of current internal and PLEX forms."
+   ],
+   [
+    2471,
+    "Está la última alerta de calidad del producto actual firmada y se entiende.",
+    "The latest quality alert for the current product is signed and understood."
+   ]
+  ]
+ },
+ {
+  "name": "Process Tech Layer 1 Audit",
+  "zone": "Procesos",
+  "users": [
+   "José Cruz Elias",
+   "Oscar Álvaro Pérez",
+   "Jesus Sánchez",
+   "Saúl Granados",
+   "Eder Hernández"
+  ],
+  "questions": [
+   [
+    259,
+    "Revisar todas las máquinas para Master en amarillo y asegurar que están firmados.",
+    "Check all machines for yellow Master and ensure they are signed."
+   ],
+   [
+    261,
+    "Verificar que los clamps de los moldes estén en buenas condiciones.",
+    "Verify that the mold clamps are in good condition."
+   ],
+   [
+    262,
+    "¿Están las coladas siendo removidas y segregadas adecuadamente? (¿Están las coladas bajo la máquina?)",
+    "Are the runners being removed and segregated properly? (Are runners under the machine?)"
+   ],
+   [
+    270,
+    "Se encuentra el check list de arranque llenado y firmado por todas las áreas.",
+    "The start-up checklist is filled out and signed by all areas."
+   ],
+   [
+    271,
+    "El molde se encuentra limpio o se notifica a Tool Shop.",
+    "The mold is clean or Tool Shop is notified."
+   ],
+   [
+    256,
+    "¿Los controles hot runner están trabajando adecuadamente?",
+    "Are the hot runner controls working properly?"
+   ],
+   [
+    2105,
+    "Revisar trazabilidad de la resina de lote, tolva y gaylor.",
+    "Check resin traceability of lot, hopper and gaylord."
+   ],
+   [
+    2106,
+    "Se ha realizado la prueba de secado de humedad de la resina (cambio de lote, molde, paro programado o no programado).",
+    "The resin moisture drying test has been performed (change of lot, mold, scheduled or unscheduled stop)."
+   ],
+   [
+    2107,
+    "Revisar formato de verificación de la prueba de humedad de la resina.",
+    "Check the resin moisture test verification form."
+   ]
+  ]
+ },
+ {
+  "name": "Shipping Layer 1 Audit",
+  "zone": "Logística",
+  "users": [
+   "Fernanda Gutierrez",
+   "Marco Polo López M",
+   "Marco Polo López",
+   "Andres Cerecedo",
+   "Edgar Galván",
+   "Francisco Javier Padilla"
+  ],
+  "questions": [
+   [
+    602,
+    "¿Se almacena el producto contra las paredes, se gira semanalmente para asegurar FIFO?",
+    "Is product stored against the walls, rotated weekly to ensure FIFO?"
+   ],
+   [
+    701,
+    "El sistema contra incendios está libre de obstrucciones, cuenta con su señalamiento (extintor, hidrantes, estaciones manuales, equipo brigadas).",
+    "The fire system is free of obstructions and has its signage (extinguisher, hydrants, manual stations, brigade equipment)."
+   ],
+   [
+    1053,
+    "¿El área de rampas / recepción y área de residuos están limpios?",
+    "Are the ramp / receiving area and waste area clean?"
+   ],
+   [
+    1049,
+    "¿La estiba de materiales no rebasa el límite máximo? Se cuenta con señalética.",
+    "Does material stacking stay within the maximum limit? Signage is available."
+   ],
+   [
+    1075,
+    "¿El FIFO se está siguiendo en el envío?",
+    "Is FIFO being followed in shipping?"
+   ],
+   [
+    1064,
+    "¿Los montacargas están limpios y funcionando correctamente?",
+    "Are the forklifts clean and working correctly?"
+   ],
+   [
+    1065,
+    "¿Todos los números de parte se han recibido en el sistema y cuentan con etiquetas adecuadas?",
+    "Have all part numbers been received in the system and have proper labels?"
+   ],
+   [
+    1067,
+    "¿Se está siguiendo el estándar 5S en todas las áreas de almacén?",
+    "Is the 5S standard being followed in all warehouse areas?"
+   ],
+   [
+    1326,
+    "Las alertas en Tablero Embarques se encuentran disponibles y firmadas por supervisor/líder.",
+    "Alerts on the Shipping board are available and signed by supervisor/leader."
+   ],
+   [
+    702,
+    "Ingrese a eBinder y busque una de las sustancias químicas que utilice en el área. ¿Se encuentra disponible?",
+    "Enter eBinder and search for one of the chemicals used in the area. Is it available?"
+   ],
+   [
+    1043,
+    "Realizar check list H&S-019-I-MPQ Inspección de Racks.",
+    "Perform checklist H&S-019-I-MPQ Rack Inspection."
+   ]
+  ]
+ },
+ {
+  "name": "Customer Service Layer 1 Audit",
+  "zone": "Logística",
+  "users": [],
+  "questions": [
+   [
+    602,
+    "¿Se almacena el producto contra las paredes, se gira semanalmente para asegurar FIFO?",
+    "Is product stored against the walls, rotated weekly to ensure FIFO?"
+   ],
+   [
+    86,
+    "Las gavetas amarillas del área no almacenan otros materiales que no son sustancias inflamables. (No se permite almacenamiento de cartón, epp, bolsas, trapos, etc.)",
+    "The yellow cabinets in the area do not store materials other than flammable substances. (No storage of cardboard, PPE, bags, rags, etc.)"
+   ],
+   [
+    1049,
+    "¿La estiba de materiales no rebasa el límite máximo?",
+    "Does material stacking stay within the maximum limit?"
+   ],
+   [
+    1075,
+    "¿El FIFO se está siguiendo en el envío?",
+    "Is FIFO being followed in shipping?"
+   ],
+   [
+    1064,
+    "¿Los montacargas están limpios y funcionando correctamente?",
+    "Are the forklifts clean and working correctly?"
+   ],
+   [
+    1326,
+    "Las alertas en Tablero Embarques se encuentran disponibles y firmadas por el personal, supervisor/líder.",
+    "Alerts on the Shipping board are available and signed by personnel, supervisor/leader."
+   ],
+   [
+    702,
+    "¿El personal de embarques conoce qué es el sistema eBinder?",
+    "Does the shipping staff know what the eBinder system is?"
+   ],
+   [
+    1448,
+    "La separación de residuos es correcta (madera, plástico, cartón, etc.).",
+    "Waste segregation is correct (wood, plastic, cardboard, etc.)."
+   ],
+   [
+    1449,
+    "Se requieren colocar otros contenedores de residuos para mejorar la separación.",
+    "Other waste containers are required to improve segregation."
+   ],
+   [
+    457,
+    "FIFO. Confirmar que se respete la rotación de materiales y no existan materiales obsoletos o vencidos.",
+    "FIFO. Confirm material rotation is respected and there are no obsolete or expired materials."
+   ],
+   [
+    1045,
+    "Verificar si en exterior de rampas se encuentran manchas o derrames de aceites (u otro líquido) ocasionado por los transportistas.",
+    "Check whether there are oil (or other liquid) stains or spills outside the ramps caused by carriers."
+   ],
+   [
+    1046,
+    "Verificar área carga de baterías de montacargas en rampas. (Se encuentra limpio, sin derrames, se cuenta con kit de atención a derrames y lava ojos.)",
+    "Check the forklift battery charging area at the ramps. (Clean, no spills, spill kit and eye wash available.)"
+   ]
+  ]
+ }
 ]
