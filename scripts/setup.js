@@ -603,7 +603,10 @@ async function main() {
     const nrm2 = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     const { rows: us } = await pool.query(`SELECT id,name FROM users WHERE active AND access NOT IN ('admin','master')`);
     const find = (n) => us.find((x) => nrm2(x.name) === nrm2(n));
-    for (const [boss, team] of [['Ana Serrat', ['Celina Zamora José', 'Ma. Engracia Hernández', 'Carmen Hernández']], ['Andres Cerecedo', ['Marco Polo López M', 'Marco Polo López', 'Edgar Galván', 'Francisco Javier Padilla']]]) {
+    for (const [boss, team] of [['Ana Serrat', ['Celina Zamora José', 'Ma. Engracia Hernández', 'Carmen Hernández']], ['Andres Cerecedo', ['Marco Polo López M', 'Marco Polo López', 'Edgar Galván', 'Francisco Javier Padilla']],
+      ['Hugo Arriaga', ['Julia Olguin', 'Hugo Martinez', 'Ricardo Suarez', 'Conrado Garcia', 'Perla González']],
+      ['Mario Cupich', ['Martin Sanchez', 'Luis Medina Lopez', 'Carlos Puga', 'Roberto Rodriguez']],
+      ['Emmanuel Delgado', ['Sonia Romero', 'Adolfo Francisco']]]) {
       const b = find(boss);
       if (!b) { console.log(`[setup] gerente ${boss} no existe en Usuarios: créalo y asígnalo en Admin → Usuarios (Reporta a)`); continue; }
       const ids = team.map(find).filter(Boolean).map((x) => x.id);
