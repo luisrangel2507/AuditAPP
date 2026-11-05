@@ -874,7 +874,6 @@
   "name": "Shipping Layer 1 Audit",
   "zone": "Logística",
   "users": [
-   "Fernanda Gutierrez",
    "Marco Polo López M",
    "Marco Polo López",
    "Andres Cerecedo",
@@ -942,7 +941,9 @@
  {
   "name": "Customer Service Layer 1 Audit",
   "zone": "Logística",
-  "users": [],
+  "users": [
+   "Fernanda Gutierrez"
+  ],
   "questions": [
    [
     602,
