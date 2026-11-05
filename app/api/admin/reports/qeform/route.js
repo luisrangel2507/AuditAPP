@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { q } from '@/lib/db';
 import { route, json } from '@/lib/api';
 import { siteScope } from '@/lib/site';
-import { mxToday, mondayOf, addDays } from '@/lib/dates';
+import { mxToday, mondayOf, addDays, shiftOf } from '@/lib/dates';
 
 // Formato impreso de la semana (MGMT-015-C): sin `tpl` = auditoría de proceso de los QEs; con `tpl` = LPA normal de esa plantilla.
 // Todas las auditorías de la semana se juntan en el mismo formato, una columna por día.
@@ -32,7 +32,7 @@ export const GET = route(async (req, ctx, user) => {
   }
   const day = `COALESCE((a.completed_at AT TIME ZONE 'America/Mexico_City')::date, a.date)`;
   const { rows: au } = await q(
-    `SELECT a.id,${day}::text AS day,a.date,a.slot,a.status,a.late,a.zone,a.machine,a.area,a.part_number,a.score_pct,a.question_ids,u.name,u.layer
+    `SELECT a.id,${day}::text AS day,a.date,a.slot,a.status,a.late,a.zone,a.machine,a.area,a.part_number,a.score_pct,a.question_ids,a.shift,a.completed_at,u.name,u.layer
        FROM audits a JOIN users u ON u.id=a.user_id
       WHERE a.kind='lpa' AND a.template_id=$4
         AND ${day} BETWEEN $1 AND $2 AND ($3::int IS NULL OR u.site_id=$3)
@@ -56,7 +56,7 @@ export const GET = route(async (req, ctx, user) => {
   const signoffs = Object.fromEntries(sg.map((x) => [x.p, { name: x.user_name, at: x.at }]));
   return json({
     signoffs, monday, sunday, weeks, monthly: isL3, tpl, tplName, layer, templates: tpls, rows,
-    columns: au.map((a) => ({ id: a.id, date: a.day, slot: a.slot, name: a.name, initials: ini(a.name), status: a.status, late: a.late, zone: a.zone, machine: a.machine, area: a.area, part: a.part_number, score: a.score_pct, answers: by[a.id] || {} })),
+    columns: au.map((a) => ({ id: a.id, date: a.day, slot: a.slot, name: a.name, initials: ini(a.name), shift: a.layer >= 3 || !a.shift ? (a.completed_at ? shiftOf(new Date(a.completed_at)) : a.shift) : a.shift, status: a.status, late: a.late, zone: a.zone, machine: a.machine, area: a.area, part: a.part_number, score: a.score_pct, answers: by[a.id] || {} })),
     findings: fi.map((f) => ({ id: f.id, audit_id: f.audit_id, item: f.item_no, area: f.area, result: f.result, notes: f.notes, date: f.created_at, status: f.status, closed_at: f.closed_at, action: f.action || f.corrective, question: String(f.question || '').split('\n')[0] })),
   });
 }, { need: 'admin' });

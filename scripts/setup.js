@@ -370,6 +370,7 @@ async function main() {
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excuse_reason TEXT');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_at TIMESTAMPTZ');
   await pool.query('ALTER TABLE audits ADD COLUMN IF NOT EXISTS excused_by INT');
+  await pool.query(`CREATE TABLE IF NOT EXISTS holidays (date DATE PRIMARY KEY, name TEXT NOT NULL DEFAULT 'Día festivo', created_by INT, created_at TIMESTAMPTZ DEFAULT NOW())`);
   await pool.query(`CREATE TABLE IF NOT EXISTS absences (
     id SERIAL PRIMARY KEY, user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     date_from DATE NOT NULL, date_to DATE NOT NULL, kind TEXT NOT NULL, note TEXT DEFAULT '', reason TEXT NOT NULL,
@@ -573,6 +574,28 @@ async function main() {
           WHERE a.user_id = ANY($2::int[]) AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date >= $3`, [ct.id, ids, mxToday]);
     }
     console.log(`[setup] ${f.name} asignada a ${ids.length} de ${f.users.length} usuario(s)`);
+  }
+
+  // Días fijos y áreas por persona según el cartel "Programa Auditoría LPA" (semana 2-nov-2026); se corrige luego en Admin → Usuarios
+  const flagDays = await pool.query(`INSERT INTO settings(key,value) VALUES('program_days_nov26','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (flagDays.rowCount) {
+    const P = [
+      ['Celina Zamora José', [3, 5], ['B2-2', '780B Armrest']], ['Ma. Engracia Hernández', [2, 4], ['B2-3', '780B Cluster']], ['Carmen Hernández', [2, 4], ['B2-5', 'DJ MCA, TFP']],
+      ['José Cruz Elias', [3, 5], ['B1-15', 'B2-7']], ['Oscar Álvaro Pérez', [2, 4], ['B1-14', 'B1-16']], ['Jesus Sánchez', [3, 5], ['B1-6', 'B1-5']], ['Saúl Granados', [2, 4], ['B1-7', 'B1-8']], ['Eder Hernández', [3, 5], ['B1-9', 'B1-10']],
+      ['Pablo García', [2, 4], ['PL', 'Mix Room']], ['Vania Rosas', [3, 5], ['PL', 'Mix Room']], ['Luis Hernández', [3, 5], ['Mix Room', 'PL']],
+      ['Fernanda Gutierrez', [3, 5], ['Shipping']], ['Marco Polo López M', [5], ['Shipping + Docks']], ['Andres Cerecedo', [2], ['Shipping + Docks']], ['Edgar Galván', [3], ['Shipping + Docks']], ['Francisco Javier Padilla', [4], ['Shipping + Docks']],
+      ['Dulce Sánchez', [2, 3], ['PL3', 'Racks']], ['Arturo González', [2, 3], ['Racks', 'PL1']], ['Dulce Nieves', [3, 4], ['Racks', 'PL3']], ['Patricia Carrillo', [4, 5], ['Racks', 'PL4']]];
+    const nrm = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const { rows: us } = await pool.query(`SELECT id,name FROM users WHERE active AND layer=1 AND access NOT IN ('admin','master')`);
+    let n = 0; const ids = [];
+    for (const [nm, days, areas] of P) {
+      const u = us.find((x) => nrm(x.name) === nrm(nm) || nrm(x.name) === nrm(nm.replace(/ M$/, '')));
+      if (!u) { console.log(`[setup] programa: no encontré a ${nm}`); continue; }
+      await pool.query('UPDATE users SET days=$2, pool=$3, start_idx=0, rotate_daily=$4 WHERE id=$1', [u.id, days, areas, areas.length > 1]);
+      ids.push(u.id); n++;
+    }
+    if (ids.length) await pool.query(`DELETE FROM audits WHERE user_id = ANY($1::int[]) AND kind='lpa' AND status='pending' AND started_at IS NULL AND date >= $2`, [ids, mxToday]);
+    console.log(`[setup] días fijos del programa aplicados a ${n} de ${P.length} personas`);
   }
 
   // QEs: sus LPA pendientes (sin empezar) pasan a llevar las preguntas activas de la auditoría de proceso + sus temas fijos

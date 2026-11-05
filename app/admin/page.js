@@ -719,6 +719,26 @@ function QEs() {
 }
 
 // Ausencias justificadas (vacaciones, permisos…): no penalizan el cumplimiento
+function Holidays() {
+  const [h, setH] = useState(null), [date, setDate] = useState(''), [name, setName] = useState(''), [msg, setMsg] = useState('');
+  const load = () => api('/api/admin/holidays').then((r) => setH(r.rows)).catch((e) => setMsg(e.message));
+  useEffect(() => { load(); }, []);
+  async function add() { setMsg(''); try { const r = await api('/api/admin/holidays', { method: 'POST', body: { date, name } }); setMsg(`Guardado. Se quitaron ${r.removed} auditoría(s) pendientes de ese día.`); setDate(''); setName(''); load(); } catch (e) { setMsg(e.message); } }
+  async function del(d) { if (!confirm('¿Quitar este día festivo? Las auditorías de ese día se generan de nuevo.')) return; await api(`/api/admin/holidays?date=${d}`, { method: 'DELETE' }); load(); }
+  return (
+    <div className="card" style={{ marginBottom: 14 }}>
+      <h3 style={{ margin: '0 0 4px' }}>Días festivos</h3>
+      <p className="sub" style={{ margin: '0 0 8px' }}>En un día festivo <b>no se programan ni se exigen auditorías</b> (no penaliza). Las semanales/mensuales que vencían ese día vencen el día hábil anterior.</p>
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <input className="inp" type="date" style={{ maxWidth: 170 }} value={date} onChange={(e) => setDate(e.target.value)} />
+        <input className="inp grow" placeholder="Nombre (ej. Día de la Constitución)" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
+        <button className="btn sm" disabled={!date} onClick={add}>Agregar festivo</button></div>
+      {msg && <div className="sub" style={{ marginTop: 6 }}>{msg}</div>}
+      {h && h.length > 0 && <div style={{ marginTop: 8, display: 'grid', gap: 4 }}>{h.map((x) => (
+        <div key={x.date} className="row"><span className="grow"><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b> · {x.name}</span><button className="btn-ghost" onClick={() => del(x.date)}>Quitar</button></div>))}</div>}
+    </div>);
+}
+
 function Absences() {
   const [d, setD] = useState(null), [users, setUsers] = useState([]), [f, setF] = useState({ user_id: '', date_from: '', date_to: '', kind: 'Vacaciones', note: '' }), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [qs, setQs] = useState('');
   const load = () => api('/api/admin/absences').then(setD).catch((e) => setMsg(e.message));
@@ -740,6 +760,7 @@ function Absences() {
   const rows = (d?.rows || []).filter((r) => !qs || `${r.name} ${r.kind} ${r.note}`.toLowerCase().includes(qs.toLowerCase()));
   return (
     <>
+      <Holidays />
       <p className="sub" style={{ margin: '4px 0 12px' }}>Justifica a una persona por <b>vacaciones, permiso, incapacidad</b>, etc. Sus auditorías de ese rango <b>no cuentan como no realizadas</b> ni bajan el cumplimiento, y ya no le salen como pendientes. Se puede justificar hasta <b>3 días después</b> de que termina la ausencia.</p>
       <div className="card abs-form">
         <div className="abs-grid">

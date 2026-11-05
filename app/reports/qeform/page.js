@@ -35,7 +35,9 @@ const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
 function Sheet({ d, k, cols, finds, total }) {
   const qe = d.tplName === 'Quality Engineer';
   const M = metaFor(qe ? 'QE Layer 1 Audit' : d.tplName);
-  const days = [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
+  const SH = !qe && d.layer === 1 && !d.weeks; // formatos con Shift 1·2·3 por día (lunes a viernes)
+  const days = SH ? [...Array(5)].map((_, i) => addD(d.monday, i)) : [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
+  const units = SH ? days.flatMap((x) => [1, 2, 3].map((s) => ({ x, s }))) : days.map((x) => ({ x, s: 0 }));
   // Todas las auditorías del día se juntan en la misma columna (el peor resultado de cada pregunta)
   const cell = (day) => {
     const L = cols.filter((c) => c.date === day); if (!L.length) return undefined;
@@ -43,6 +45,12 @@ function Sheet({ d, k, cols, finds, total }) {
     for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
     const u = (f) => [...new Set(L.map(f).filter(Boolean))];
     return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), part: u((c) => c.status === 'completed' && c.part).join(' / '), area: u((c) => c.status === 'completed' && c.area).join(' / '), answers, status: L.some((c) => c.status === 'completed') ? 'completed' : 'pending' };
+  };
+  // En los formatos por shift, cada auditoría va en la columna de su turno; si ya está ocupada, pasa a la siguiente hoja
+  const ucell = (u) => {
+    if (!SH) return cell(u.x);
+    const c = cols.filter((z) => z.date === u.x && z.shift === u.s && z.status === 'completed')[k - 1];
+    return c ? { initials: c.initials, part: c.part, area: c.area, answers: c.answers, status: 'completed' } : undefined;
   };
   const wm = new Date(d.monday + 'T12:00:00Z');
   return (
@@ -59,23 +67,24 @@ function Sheet({ d, k, cols, finds, total }) {
           {M.right.map(([r, t], i) => <p key={i}><b>{(M.left ? 4 : 1) + i}. {r}:</b> {t}</p>)}</div>
       </div>
       <table className="qfs-t">
-        <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{days.map((x) => <col key={x} style={{ width: '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
+        <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{units.map((u, i) => <col key={i} style={{ width: SH ? '4.3%' : '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
         <thead>
           <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{qe ? 'QE Layer 1 Audit' : d.tplName}</div></div></th>
-            <th colSpan={8} className="sh">{qe ? 'Layer 1 – Daily by QE' : (M.hdr || `Layer ${d.layer} – Daily by Supervisor`)} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
-          <tr><th colSpan={8} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
-          <tr><th className="sh" />{days.map((x, i) => <th key={x} className="sh dn">{DAYS[i]}</th>)}</tr>
-          <tr><td className="lb">Initials →</td>{days.map((x) => <td key={x} className="in">{cell(x)?.initials || ''}</td>)}</tr>
-          <tr><td className="lb">Part Number →</td>{days.map((x) => <td key={x} className="in sm">{cell(x)?.part || ''}</td>)}</tr>
-          <tr><td className="lb">AREA →</td>{days.map((x) => <td key={x} className="in sm">{cell(x)?.status === 'completed' ? cell(x).area : ''}</td>)}</tr>
-          <tr><td className="lb">Audit Date →</td>{days.map((x, i) => <td key={x} className="in sm">{i === 0 ? '' : dmy(x)}</td>)}</tr>
+            <th colSpan={units.length + 1} className="sh">{qe ? 'Layer 1 – Daily by QE' : (M.hdr || `Layer ${d.layer} – Daily by Supervisor`)} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={units.length + 1} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
+          <tr><th className="sh" />{days.map((x, i) => <th key={x} colSpan={SH ? 3 : 1} className="sh dn">{DAYS[SH ? i + 1 : i]}</th>)}</tr>
+          <tr><td className="lb">Initials →</td>{units.map((u, i) => <td key={i} className="in">{ucell(u)?.initials || ''}</td>)}</tr>
+          {!SH && <tr><td className="lb">Part Number →</td>{days.map((x) => <td key={x} className="in sm">{cell(x)?.part || ''}</td>)}</tr>}
+          <tr><td className="lb">AREA →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.status === 'completed' ? ucell(u).area : ''}</td>)}</tr>
+          {SH && <tr><td className="lb">Shift →</td>{units.map((u, i) => <td key={i} className="in">{u.s}</td>)}</tr>}
+          <tr><td className="lb">Audit Date →</td>{days.map((x, i) => <td key={x} colSpan={SH ? 3 : 1} className="in sm">{SH || i > 0 ? dmy(x) : ''}</td>)}</tr>
         </thead>
         <tbody>
           {d.rows.map((r, i) => (
             <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt">{(qe && TXT[r.item]) || r.text}</td>
-              {days.map((x) => { const v = cell(x)?.answers[r.id]; return <td key={x} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
+              {units.map((u, i) => { const v = ucell(u)?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
               <td className="nn">{qe ? NOTES[r.item] || '' : M.notes?.[r.item] || ''}</td></tr>))}
-          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} className="sg">{d.signoffs?.[x] ? <>{d.signoffs[x].name}<small>{d.signoffs[x].at}</small></> : null}</td>)}<td /></tr>
+          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} colSpan={SH ? 3 : 1} className="sg">{d.signoffs?.[x] ? <>{d.signoffs[x].name}<small>{d.signoffs[x].at}</small></> : null}</td>)}<td /></tr>
         </tbody>
       </table>
       <table className="qfs-t qfs-f">
@@ -85,7 +94,7 @@ function Sheet({ d, k, cols, finds, total }) {
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
             <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? `${dmy(mx(f.closed_at))}` : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
       </table>
-      <div className="qfs-ft"><div>{qe ? <>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></> : null}</div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
+      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
     </div>
   );
 }
@@ -101,7 +110,7 @@ function Sheet2({ d, finds }) {
     const answers = {};
     for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
     const u = (f) => [...new Set(L.map(f).filter(Boolean))];
-    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
+    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), shift: u((c) => c.status === 'completed' && c.shift).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
   };
   const mo = new Date(wk[0] + 'T12:00:00Z');
   return (
@@ -120,13 +129,14 @@ function Sheet2({ d, finds }) {
       <table className="qfs-t">
         <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '38.4%' }} /><col style={{ width: '5.4%' }} />{IDX.map((i) => <col key={i} style={{ width: `${33 / N}%` }} />)}<col style={{ width: '13.2%' }} /></colgroup>
         <thead>
-          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
-            <th colSpan={N + 1} className="sh">{M.hdr || 'Layer 2 – Weekly by Dept. Manager'} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={2} rowSpan={d.monthly ? 8 : 7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
+            <th colSpan={N + 1} className="sh">{M.hdr || 'Layer 2 – Weekly by Dept. Manager'} <small>(initials)</small></th><th rowSpan={d.monthly ? 8 : 7} className="sh nt">Notes</th></tr>
           <tr><th colSpan={N + 1} className="sh">{d.monthly ? 'Year: ' : 'Month of: '}&nbsp; <b>{d.monthly ? wk[0].slice(0, 4) : MONTHS[mo.getUTCMonth()]}</b></th></tr>
           <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">{d.monthly ? `Month ${Number(wk[i].slice(5, 7))}` : `Week ${i + 1}`}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.initials || ''}</td>)}</tr>
           <tr><td className="lb">Area →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.area || ''}</td>)}</tr>
           <tr><td className="lb">{d.monthly ? 'Month →' : 'Week →'}</td>{IDX.map((i) => <td key={i} className="in sm">{d.monthly ? MON[Number(wk[i].slice(5, 7)) - 1].toUpperCase() : `${Number(wk[i].slice(8))}-${MON[Number(wk[i].slice(5, 7)) - 1]}`}</td>)}</tr>
+          {d.monthly && <tr><td className="lb">Shift →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.shift || ''}</td>)}</tr>}
           <tr><td className="lb">Date →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.date || ''}</td>)}</tr>
         </thead>
         <tbody>
@@ -155,6 +165,11 @@ function Inner() {
   useEffect(() => { setD(null); api(`/api/admin/reports/qeform?${new URLSearchParams({ ...(date ? { date } : {}), ...(tpl ? { tpl } : {}) })}`).then(setD).catch((e) => setErr(e.message)); }, [date, tpl]);
   if (err) return <div className="err">{err}</div>;
   if (!d) return <div className="empty">Cargando…</div>;
+  // Hojas por shift: si un día/turno ya tiene su auditoría, la siguiente va en otra hoja (el formato no se extiende)
+  const SHEETS = d.tplName !== 'Quality Engineer' && d.layer === 1 && !d.weeks;
+  const laneOf = (k) => { const seen = {}, out = []; for (const c of d.columns) { if (c.status !== 'completed') continue; const key = `${c.date}|${c.shift}`; seen[key] = (seen[key] || 0) + 1; if (seen[key] === k) out.push(c); } return out; };
+  const nSheets = SHEETS ? Math.max(1, ...Object.values(d.columns.filter((c) => c.status === 'completed').reduce((m, c) => { const key = `${c.date}|${c.shift}`; m[key] = (m[key] || 0) + 1; return m; }, {}))) : 1;
+  const sheets = [...Array(nSheets)].map((_, i) => i + 1);
   const shift = (n) => { if (d.weeks) { const t = new Date(d.weeks[0] + 'T12:00:00Z'); t.setUTCDate(1); t.setUTCMonth(t.getUTCMonth() + n); setDate(t.toISOString().slice(0, 10)); } else setDate(addD(d.monday, n * 7)); };
   const csv = () => {
     const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -179,7 +194,10 @@ function Inner() {
       <div className="row qf-bar"><select className="inp grow" value={tpl || d.tpl || ''} onChange={(e) => setTpl(e.target.value)}>
         {d.templates.map((t) => <option key={t.id} value={t.id}>{t.name === 'Quality Engineer' ? 'QEs · Layer 1 (LPA)' : t.name === 'QA Layer 2 Audit' ? 'Gerente de Calidad · Layer 2' : t.name}</option>)}</select></div>
       <p className="sub qf-hint">Solo auditorías normales (LPA); las de proceso no llenan formato. Cada día es una columna con las iniciales de quien auditó; si dos personas coinciden en un día, comparten columna (cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
-      <div className="qf-wrap">{d.weeks ? <Sheet2 d={d} finds={d.findings} /> : <Sheet d={d} k={1} total={1} cols={d.columns} finds={d.findings} />}</div>
+      {d.weeks ? <div className="qf-wrap"><Sheet2 d={d} finds={d.findings} /></div> : sheets.map((k) => {
+        const ids = SHEETS ? new Set(laneOf(k).map((c) => c.id)) : null;
+        return <div className="qf-wrap" key={k}><Sheet d={d} k={k} total={sheets.length} cols={d.columns} finds={ids ? d.findings.filter((f) => ids.has(f.audit_id)) : d.findings} /></div>;
+      })}
       <style>{`
         .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }
         .qf-wrap { overflow-x: auto; margin-bottom: 18px } 
