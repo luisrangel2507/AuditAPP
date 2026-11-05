@@ -640,6 +640,13 @@ async function main() {
     }
   }
 
+  // Roberto Rodriguez audita zona D-E fija
+  const fRz = await pool.query(`INSERT INTO settings(key,value) VALUES('roberto_zona_de','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fRz.rowCount) {
+    const r = await pool.query(`UPDATE users SET pool='{"ZONA D-E"}', start_idx=0, rotate_daily=FALSE WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'roberto rodriguez%' AND layer=1 RETURNING id`);
+    if (r.rowCount) await pool.query(`DELETE FROM audits WHERE user_id = ANY($1::int[]) AND kind='lpa' AND status='pending' AND started_at IS NULL AND date >= $2`, [r.rows.map((x) => x.id), mxToday]);
+    console.log(`[setup] Roberto Rodriguez → ZONA D-E (${r.rowCount})`);
+  }
   // Corrección: Roberto Rodriguez es de D-E (Emmanuel Delgado)
   const fRob = await pool.query(`INSERT INTO settings(key,value) VALUES('mgr_roberto_de','1') ON CONFLICT DO NOTHING RETURNING key`);
   if (fRob.rowCount) await pool.query(`UPDATE users SET manager_id=(SELECT id FROM users WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'emmanuel delgado%' AND active LIMIT 1) WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'roberto rodriguez%' AND layer=1`);
