@@ -95,14 +95,14 @@ function SignOffs() {
       <div key={k} className="card" style={{ marginBottom: 8 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button type="button" className="grow" style={{ border: 0, background: 'none', textAlign: 'left', padding: 0, color: 'inherit', cursor: 'pointer' }} onClick={() => setOpenK(open ? '' : k)} aria-expanded={open}>
-            <b>{o.template}</b><div className="sub" style={{ margin: 0 }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''} · <u>{open ? 'ocultar resultados' : 'ver resultados'}</u></div>
+            <b>{o.template}</b><div className="sub" style={{ margin: 0 }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''} · <u>{open ? 'ocultar' : 'entrar a ver resultados y firmar'}</u></div>
           </button>
-          <button className="btn sm" disabled={busy === k} onClick={() => sign(o)}>✍ Firmar</button></div>
+          <span className="chev" aria-hidden="true">{open ? '⌄' : '›'}</span></div>
         {open && <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>{o.audits.map((x) => (
           <Link key={x.id} href={`/audit/${x.id}`} className="ticket s-open" style={{ padding: '8px 12px' }}>
             <div className="main"><b>{x.name}</b><div className="sub" style={{ margin: 0 }}>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })} · {x.score == null ? '—' : `${x.score}%`} · {x.findings ? `${x.findings} hallazgo(s)` : 'sin hallazgos'}</div></div>
             <div className="stub"><span className="chev">›</span></div></Link>))}
-          <div className="sub" style={{ margin: 0 }}>Toca una auditoría para ver sus resultados completos y regresa para firmar.</div></div>}
+          <div className="sub" style={{ margin: 0 }}>Entra a una auditoría para ver sus resultados completos. Ahí mismo haces el sign-off.</div></div>}
       </div>);
   })}</>;
 }

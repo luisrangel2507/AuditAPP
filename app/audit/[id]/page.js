@@ -566,7 +566,7 @@ function ResetAudit({ audit, onDone }) {
 
 export default function AuditPage() {
   const { id } = useParams();
-  const router = useRouter();
+  const router = useRouter(), [signing, setSigning] = useState(false);
   const [audit, setAudit] = useState(null), [err, setErr] = useState(''), [running, setRunning] = useState(false), [done, setDone] = useState(null);
   const load = () => api(`/api/audits/${id}`).then(setAudit).catch((e) => setErr(e.message));
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
@@ -609,6 +609,11 @@ export default function AuditPage() {
     <Shell>
       {header}
       {audit.status === 'completed' && audit.kind === 'process' && <Link href={`/audit/${audit.id}/report`} className="rep-link">{G.doc}<b>Descargar reporte</b>{G.arrow}</Link>}
+      {audit.signoff && <div className="card" style={{ marginTop: 12, borderColor: '#1f6bf0' }}>
+        <b>Sign-off pendiente</b>
+        <div className="sub" style={{ margin: '2px 0 8px' }}>{audit.signoff.template} · {audit.signoff.n} auditoría(s) del periodo. Revisa este resultado y firma.</div>
+        <button type="button" className="btn block" disabled={signing} onClick={async () => { setSigning(true); try { await api('/api/signoff', { method: 'POST', body: { template_id: audit.signoff.template_id, period: audit.signoff.period } }); router.push('/'); } catch (e) { alert(e.message); setSigning(false); } }}>✍ Hacer sign-off</button>
+      </div>}
       {audit.status === 'completed' && <ResetAudit audit={audit} onDone={() => router.push('/admin')} />}
       {audit.status === 'completed' ? <Result audit={audit} /> : (
         <>

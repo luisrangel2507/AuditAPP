@@ -3,6 +3,7 @@ import { route, json, err, isLead } from '@/lib/api';
 import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
 import { canSeeTeamUser } from '@/lib/team';
+import { pending as pendingSignoffs } from '@/lib/signoff';
 import { SEED_MACHINES } from '@/lib/zones';
 import { mxToday, windowState, closesOn, mondayOf, isoWeekday } from '@/lib/dates';
 import { resetEnsured } from '@/lib/schedule';
@@ -21,6 +22,8 @@ export const GET = route(async (req, { params }, user) => {
   const today = mxToday();
   if (!isAdmin(user)) { delete a.started_at; delete a.active_sec; }
   const base = { ...a, today, editable: a.user_id === user.id, window: windowState(a, today), closes_on: closesOn(a) };
+  // ¿Este resultado es de un formato pendiente de tu sign-off?
+  if (a.status === 'completed' && a.user_id !== user.id) { const o = (await pendingSignoffs(user).catch(() => [])).find((x) => x.audits.some((y) => y.id === a.id)); if (o) base.signoff = { template_id: o.template_id, period: o.period, template: o.template, n: o.n }; }
   let machines = {};
   if (a.layer === 1 || a.kind === 'process') {
     const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
