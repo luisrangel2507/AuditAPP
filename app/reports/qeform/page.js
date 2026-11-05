@@ -56,7 +56,7 @@ function Sheet({ d, k, cols, finds, total }) {
   return (
     <div className="qfs">
       <div className="qfs-top">
-        <div className="ultra"><b>Ultr<i>▲</i></b><span>MANUFACTURING</span></div>
+        <img className="ultra-img" src="/ultra-logo.jpg" alt="Ultra Manufacturing" />
         <h1>Layered Process Audit</h1>
         <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
       </div>
@@ -116,7 +116,7 @@ function Sheet2({ d, finds }) {
   return (
     <div className="qfs">
       <div className="qfs-top">
-        <div className="ultra"><b>Ultr<i>▲</i></b><span>MANUFACTURING</span></div>
+        <img className="ultra-img" src="/ultra-logo.jpg" alt="Ultra Manufacturing" />
         <h1>Layered Process Audit</h1>
         <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
       </div>

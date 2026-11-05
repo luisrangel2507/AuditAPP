@@ -1495,3 +1495,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 
 .so-go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:linear-gradient(135deg,#f26a1b,#d11d2a);color:#fff;font-weight:800;font-size:15px;text-decoration:none;cursor:pointer;box-shadow:0 4px 12px rgba(209,29,42,.28)}
 .so-go:active{transform:scale(.98)}
+.ultra-img{height:40px;width:auto;justify-self:start;display:block}
