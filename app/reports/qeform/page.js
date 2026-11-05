@@ -75,7 +75,8 @@ function Sheet({ d, k, cols, finds, total }) {
           <tr><th className="sh" />{days.map((x, i) => <th key={x} colSpan={SH ? 3 : 1} className="sh dn">{DAYS[SH ? i + 1 : i]}</th>)}</tr>
           <tr><td className="lb">Initials →</td>{units.map((u, i) => <td key={i} className="in">{ucell(u)?.initials || ''}</td>)}</tr>
           {!SH && <tr><td className="lb">Part Number →</td>{days.map((x) => <td key={x} className="in sm">{cell(x)?.part || ''}</td>)}</tr>}
-          <tr><td className="lb">AREA →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.status === 'completed' ? ucell(u).area : ''}</td>)}</tr>
+          {SH && M.part && <tr><td className="lb">Part # →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.part || ''}</td>)}</tr>}
+          {!(SH && M.part) && <tr><td className="lb">AREA →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.status === 'completed' ? ucell(u).area : ''}</td>)}</tr>}
           {SH && <tr><td className="lb">Shift →</td>{units.map((u, i) => <td key={i} className="in">{u.s}</td>)}</tr>}
           <tr><td className="lb">Audit Date →</td>{days.map((x, i) => <td key={x} colSpan={SH ? 3 : 1} className="in sm">{SH || i > 0 ? dmy(x) : ''}</td>)}</tr>
         </thead>
@@ -94,6 +95,7 @@ function Sheet({ d, k, cols, finds, total }) {
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
             <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? `${dmy(mx(f.closed_at))}` : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
       </table>
+      {M.back && <div style={{ fontSize: 8, fontStyle: 'italic', textDecoration: 'underline', margin: '8px 0 0 6%' }}>Use the back of this sheet if more space is needed</div>}
       <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
     </div>
   );
