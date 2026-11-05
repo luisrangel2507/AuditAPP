@@ -95,8 +95,8 @@ function SignOffs() {
       <div key={k} className="card" style={{ marginBottom: 8 }}>
         <b>{o.template}</b><div className="sub" style={{ margin: '2px 0 10px' }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''}</div>
         {o.audits.length === 1
-          ? <Link href={`/audit/${o.audits[0].id}`} className="so-go">👁 Ver resultados y firmar <span aria-hidden="true">→</span></Link>
-          : <button type="button" className="so-go" onClick={() => setOpenK(open ? '' : k)} aria-expanded={open}>{open ? 'Ocultar auditorías' : `👁 Ver resultados (${o.audits.length} auditorías) y firmar`} <span aria-hidden="true">{open ? '⌃' : '→'}</span></button>}
+          ? <Link href={`/audit/${o.audits[0].id}`} className="so-go">Ver resultados y firmar <span aria-hidden="true">→</span></Link>
+          : <button type="button" className="so-go" onClick={() => setOpenK(open ? '' : k)} aria-expanded={open}>{open ? 'Ocultar auditorías' : `Ver resultados (${o.audits.length} auditorías) y firmar`} <span aria-hidden="true">{open ? '⌃' : '→'}</span></button>}
         {open && o.audits.length > 1 && <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>{o.audits.map((x) => (
           <Link key={x.id} href={`/audit/${x.id}`} className="ticket s-open" style={{ padding: '8px 12px' }}>
             <div className="main"><b>{x.name}</b><div className="sub" style={{ margin: 0 }}>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })} · {x.score == null ? '—' : `${x.score}%`} · {x.findings ? `${x.findings} hallazgo(s)` : 'sin hallazgos'}</div></div>
