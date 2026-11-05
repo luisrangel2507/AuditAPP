@@ -83,7 +83,7 @@ function MyHome() {
 // Sign-off pendiente: el encargado firma los formatos de su gente
 function SignOffs() {
   const user = useUser(), [list, setList] = useState(null), [busy, setBusy] = useState(''), [openK, setOpenK] = useState('');
-  const can = isAdmin(user) || Number(user.layer) >= 2;
+  const can = true; // el servidor responde vacío a quien no tiene gente a su cargo
   const load = () => api('/api/signoff').then((d) => setList(d.pending)).catch(() => setList([]));
   useEffect(() => { if (can) load(); /* eslint-disable-next-line */ }, []);
   if (!can || !list || !list.length) return null;
