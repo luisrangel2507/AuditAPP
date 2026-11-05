@@ -22,7 +22,7 @@ function Inner() {
         <button className="btn alt sm" onClick={() => setDate(addD(d.monday, 7))}>›</button>
         <button className="btn sm" onClick={() => window.print()}>Imprimir / PDF</button></div>
       <div className="q76">
-        <div className="q76-top"><img className="ultra-img" src="/ultra-logo.jpg" alt="Ultra Manufacturing" /><h1>Dock Audit Findings</h1><img src="/mitchell-logo.png" alt="Mitchell Plastics" /></div>
+        <div className="q76-top"><img className="ultra-img" src="/ultra-logo.png" alt="Ultra Manufacturing" /><h1>Dock Audit Findings</h1><img src="/mitchell-logo.png" alt="Mitchell Plastics" /></div>
         <div className="q76-mid">
           <div className="l"><div>Auditor: <span>QE</span></div><div>Date: <span>{Number(wk[1])}/{Number(wk[2])}/{wk[0]}</span></div><div>Shift: <span /></div></div>
           <div className="lg"><div>Legend</div><div><b>O</b> &nbsp; Good, no issues</div><div><b>X</b> &nbsp; No Good, issues found</div></div>
