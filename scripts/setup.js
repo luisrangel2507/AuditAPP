@@ -605,8 +605,8 @@ async function main() {
     const find = (n) => us.find((x) => nrm2(x.name) === nrm2(n));
     for (const [boss, team] of [['Ana Serrat', ['Celina Zamora José', 'Ma. Engracia Hernández', 'Carmen Hernández']], ['Andres Cerecedo', ['Marco Polo López M', 'Marco Polo López', 'Edgar Galván', 'Francisco Javier Padilla']],
       ['Hugo Arriaga', ['Julia Olguin', 'Hugo Martinez', 'Ricardo Suarez', 'Conrado Garcia', 'Perla González']],
-      ['Mario Cupich', ['Martin Sanchez', 'Luis Medina Lopez', 'Carlos Puga', 'Roberto Rodriguez']],
-      ['Emmanuel Delgado', ['Sonia Romero', 'Adolfo Francisco']]]) {
+      ['Mario Cupich', ['Martin Sanchez', 'Luis Medina Lopez', 'Carlos Puga']],
+      ['Emmanuel Delgado', ['Sonia Romero', 'Adolfo Francisco', 'Roberto Rodriguez']]]) {
       const b = find(boss);
       if (!b) { console.log(`[setup] gerente ${boss} no existe en Usuarios: créalo y asígnalo en Admin → Usuarios (Reporta a)`); continue; }
       const ids = team.map(find).filter(Boolean).map((x) => x.id);
@@ -614,6 +614,10 @@ async function main() {
       if (r) console.log(`[setup] ${boss} firma a ${r.rowCount} persona(s)`);
     }
   }
+
+  // Corrección: Roberto Rodriguez es de D-E (Emmanuel Delgado)
+  const fRob = await pool.query(`INSERT INTO settings(key,value) VALUES('mgr_roberto_de','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fRob.rowCount) await pool.query(`UPDATE users SET manager_id=(SELECT id FROM users WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'emmanuel delgado%' AND active LIMIT 1) WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'roberto rodriguez%' AND layer=1`);
 
   // QEs: sus LPA pendientes (sin empezar) pasan a llevar las preguntas activas de la auditoría de proceso + sus temas fijos
   const flagQe = await pool.query(`INSERT INTO settings(key,value) VALUES('qe_lpa_uses_process_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
