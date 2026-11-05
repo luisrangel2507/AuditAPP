@@ -82,17 +82,29 @@ function MyHome() {
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
 // Sign-off pendiente: el encargado firma los formatos de su gente
 function SignOffs() {
-  const user = useUser(), [list, setList] = useState(null), [busy, setBusy] = useState('');
+  const user = useUser(), [list, setList] = useState(null), [busy, setBusy] = useState(''), [openK, setOpenK] = useState('');
   const can = isAdmin(user) || Number(user.layer) >= 2;
   const load = () => api('/api/signoff').then((d) => setList(d.pending)).catch(() => setList([]));
   useEffect(() => { if (can) load(); /* eslint-disable-next-line */ }, []);
   if (!can || !list || !list.length) return null;
   const lbl = (o) => (o.layer >= 3 ? 'mes de ' : o.layer === 2 ? 'semana del ' : '') + fmtDate(o.period, o.layer >= 3 ? { month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' });
   async function sign(o) { setBusy(`${o.template_id}|${o.period}`); try { await api('/api/signoff', { method: 'POST', body: { template_id: o.template_id, period: o.period } }); await load(); } finally { setBusy(''); } }
-  return <><div className="sect">Sign-off pendiente ({list.length})</div>{list.slice(0, 10).map((o) => (
-    <div key={`${o.template_id}|${o.period}`} className="card" style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
-      <div className="grow"><b>{o.template}</b><div className="sub" style={{ margin: 0 }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''}</div></div>
-      <button className="btn sm" disabled={busy === `${o.template_id}|${o.period}`} onClick={() => sign(o)}>✍ Firmar</button></div>))}</>;
+  return <><div className="sect">Sign-off pendiente ({list.length})</div>{list.slice(0, 10).map((o) => {
+    const k = `${o.template_id}|${o.period}`, open = openK === k;
+    return (
+      <div key={k} className="card" style={{ marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button type="button" className="grow" style={{ border: 0, background: 'none', textAlign: 'left', padding: 0, color: 'inherit', cursor: 'pointer' }} onClick={() => setOpenK(open ? '' : k)} aria-expanded={open}>
+            <b>{o.template}</b><div className="sub" style={{ margin: 0 }}>{lbl(o)} · {o.people.slice(0, 3).join(', ')}{o.people.length > 3 ? ` y ${o.people.length - 3} más` : ''} · <u>{open ? 'ocultar resultados' : 'ver resultados'}</u></div>
+          </button>
+          <button className="btn sm" disabled={busy === k} onClick={() => sign(o)}>✍ Firmar</button></div>
+        {open && <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>{o.audits.map((x) => (
+          <Link key={x.id} href={`/audit/${x.id}`} className="ticket s-open" style={{ padding: '8px 12px' }}>
+            <div className="main"><b>{x.name}</b><div className="sub" style={{ margin: 0 }}>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })} · {x.score == null ? '—' : `${x.score}%`} · {x.findings ? `${x.findings} hallazgo(s)` : 'sin hallazgos'}</div></div>
+            <div className="stub"><span className="chev">›</span></div></Link>))}
+          <div className="sub" style={{ margin: 0 }}>Toca una auditoría para ver sus resultados completos y regresa para firmar.</div></div>}
+      </div>);
+  })}</>;
 }
 
 // Admin que también audita (interruptor "Hace LPA" en su perfil): sus pendientes de hoy aparecen arriba
