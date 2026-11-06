@@ -1512,3 +1512,4 @@ body.print-report { --bg: #fff; --panel: #fff; --panel2: #f6f8fc; --line: rgba(3
 .cal-d { aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; color: inherit }
 .cal-d.we { opacity: .5 } .cal-d.fe { background: #d11d2a; color: #fff; border-color: #d11d2a }
 .cal-d.td { box-shadow: inset 0 0 0 2px var(--brand2) }
+.cal-d.sl { box-shadow: inset 0 0 0 3px var(--brand2); background: rgba(34,64,127,.14) } .cal-d.fe.sl { background: #d11d2a; color: #fff }

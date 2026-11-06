@@ -736,34 +736,58 @@ function QEs() {
 
 // Ausencias justificadas (vacaciones, permisos…): no penalizan el cumplimiento
 function Holidays() {
-  const [h, setH] = useState(null), [msg, setMsg] = useState('');
-  const [ym, setYm] = useState(() => { const t = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date()); return t.slice(0, 7); });
+  const [h, setH] = useState(null), [msg, setMsg] = useState(''), [sel, setSel] = useState([]), [desc, setDesc] = useState(''), [busy, setBusy] = useState(false);
+  const [ym, setYm] = useState(() => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date()).slice(0, 7));
   const load = () => api('/api/admin/holidays').then((r) => setH(r.rows)).catch((e) => setMsg(e.message));
   useEffect(() => { load(); }, []);
   const map = Object.fromEntries((h || []).map((x) => [x.date, x.name]));
   const [Y, M] = ym.split('-').map(Number);
   const first = new Date(Date.UTC(Y, M - 1, 1)), days = new Date(Date.UTC(Y, M, 0)).getUTCDate(), off = (first.getUTCDay() + 6) % 7;
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
-  const go = (n) => { const t = new Date(Date.UTC(Y, M - 1 + n, 1)); setYm(t.toISOString().slice(0, 7)); };
-  async function toggle(date) {
+  const go = (n) => setYm(new Date(Date.UTC(Y, M - 1 + n, 1)).toISOString().slice(0, 7));
+  const tap = (d) => {
     setMsg('');
-    try {
-      if (map[date] !== undefined) { if (!confirm(`¿Quitar el festivo "${map[date]}"? Las auditorías de ese día se generan de nuevo.`)) return; await api(`/api/admin/holidays?date=${date}`, { method: 'DELETE' }); }
-      else { const name = prompt('Nombre del día festivo (opcional)', '') ; if (name === null) return; const r = await api('/api/admin/holidays', { method: 'POST', body: { date, name } }); setMsg(`Festivo guardado. Se quitaron ${r.removed} auditoría(s) pendientes de ese día.`); }
-      load();
-    } catch (e) { setMsg(e.message); }
+    const on = sel.includes(d);
+    const next = on ? sel.filter((x) => x !== d) : [...sel, d].sort();
+    setSel(next);
+    // al elegir un festivo ya guardado se muestra su descripción para editarla
+    if (!on && map[d] !== undefined && !next.some((x) => x !== d)) setDesc(map[d]);
+    if (!next.length) setDesc('');
+  };
+  async function save() {
+    setBusy(true); setMsg('');
+    try { let rm = 0; for (const date of sel) { const r = await api('/api/admin/holidays', { method: 'POST', body: { date, name: desc } }); rm += r.removed || 0; }
+      setMsg(`Guardado: ${sel.length} día(s) festivo(s). Se quitaron ${rm} auditoría(s) pendientes de esos días.`); setSel([]); setDesc(''); load(); }
+    catch (e) { setMsg(e.message); } finally { setBusy(false); }
+  }
+  async function remove() {
+    const del = sel.filter((d) => map[d] !== undefined);
+    if (!del.length || !confirm(`¿Quitar ${del.length} día(s) festivo(s)? Las auditorías de esos días se generan de nuevo.`)) return;
+    setBusy(true); setMsg('');
+    try { for (const date of del) await api(`/api/admin/holidays?date=${date}`, { method: 'DELETE' }); setMsg('Festivo(s) quitado(s).'); setSel([]); setDesc(''); load(); }
+    catch (e) { setMsg(e.message); } finally { setBusy(false); }
   }
   const cells = [...Array(off).fill(null), ...Array.from({ length: days }, (_, i) => `${ym}-${String(i + 1).padStart(2, '0')}`)];
   const MES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const month = (h || []).filter((x) => x.date.startsWith(ym));
   return (
-    <div className="card" style={{ marginBottom: 14 }}>
+    <div className="card">
       <h3 style={{ margin: '0 0 4px' }}>Calendario de días festivos</h3>
-      <p className="sub" style={{ margin: '0 0 8px' }}>Toca un día para marcarlo como festivo (rojo) y vuelve a tocarlo para quitarlo. En un día festivo <b>no se programan ni se exigen auditorías</b> y no penaliza. Las semanales y mensuales que vencían ese día vencen el día hábil anterior.</p>
+      <p className="sub" style={{ margin: '0 0 8px' }}>Toca uno o varios días, escribe la descripción y pulsa <b>Guardar</b>. Los festivos ya guardados se ven en rojo; tócalos para editar su descripción o quitarlos. En un día festivo <b>no se programan ni se exigen auditorías</b> y no penaliza. Las semanales y mensuales que vencían ese día vencen el día hábil anterior.</p>
       <div className="row" style={{ marginBottom: 8 }}><button type="button" className="btn alt sm" onClick={() => go(-1)}>‹</button><b className="grow" style={{ textAlign: 'center' }}>{MES[M - 1]} {Y}</b><button type="button" className="btn alt sm" onClick={() => go(1)}>›</button></div>
       <div className="cal-g">{['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => <div key={i} className="cal-h">{d}</div>)}
-        {cells.map((d, i) => d ? <button type="button" key={d} className={`cal-d ${map[d] !== undefined ? 'fe' : ''} ${(i % 7) > 4 ? 'we' : ''} ${d === today ? 'td' : ''}`} title={map[d] || ''} onClick={() => toggle(d)}>{Number(d.slice(8))}</button> : <div key={`e${i}`} />)}</div>
-      {msg && <div className="sub" style={{ marginTop: 6 }}>{msg}</div>}
-      {h && h.filter((x) => x.date.startsWith(ym)).length > 0 && <div style={{ marginTop: 8, display: 'grid', gap: 2 }}>{h.filter((x) => x.date.startsWith(ym)).map((x) => <div key={x.date} className="sub" style={{ margin: 0 }}><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b> · {x.name}</div>)}</div>}
+        {cells.map((d, i) => d ? <button type="button" key={d} className={`cal-d ${map[d] !== undefined ? 'fe' : ''} ${sel.includes(d) ? 'sl' : ''} ${(i % 7) > 4 ? 'we' : ''} ${d === today ? 'td' : ''}`} title={map[d] || ''} onClick={() => tap(d)}>{Number(d.slice(8))}</button> : <div key={`e${i}`} />)}</div>
+      {sel.length > 0 && <div style={{ marginTop: 10 }}>
+        <div className="sub" style={{ margin: '0 0 4px' }}>{sel.length} día(s) seleccionado(s): {sel.map((d) => fmtDate(d, { day: 'numeric', month: 'short' })).join(', ')}</div>
+        <label className="lbl">Descripción del día festivo</label>
+        <input className="inp" maxLength={80} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Ej. Día de la Revolución Mexicana" />
+        <div className="row" style={{ marginTop: 10, gap: 8 }}>
+          <button type="button" className="btn grow" disabled={busy} onClick={save}>{busy ? 'Guardando…' : 'Guardar'}</button>
+          {sel.some((d) => map[d] !== undefined) && <button type="button" className="btn alt" disabled={busy} onClick={remove}>Quitar festivo</button>}
+          <button type="button" className="btn alt" disabled={busy} onClick={() => { setSel([]); setDesc(''); }}>Cancelar</button></div>
+      </div>}
+      {msg && <div className="sub" style={{ marginTop: 8 }}>{msg}</div>}
+      {month.length > 0 && <div style={{ marginTop: 10, display: 'grid', gap: 2 }}>{month.map((x) => <div key={x.date} className="sub" style={{ margin: 0 }}><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b> · {x.name}</div>)}</div>}
     </div>);
 }
 
@@ -788,7 +812,6 @@ function Absences() {
   const rows = (d?.rows || []).filter((r) => !qs || `${r.name} ${r.kind} ${r.note}`.toLowerCase().includes(qs.toLowerCase()));
   return (
     <>
-      <Holidays />
       <p className="sub" style={{ margin: '4px 0 12px' }}>Justifica a una persona por <b>vacaciones, permiso, incapacidad</b>, etc. Sus auditorías de ese rango <b>no cuentan como no realizadas</b> ni bajan el cumplimiento, y ya no le salen como pendientes. Se puede justificar hasta <b>3 días después</b> de que termina la ausencia.</p>
       <div className="card abs-form">
         <div className="abs-grid">
@@ -813,6 +836,7 @@ function Absences() {
               <div className="sub" style={{ margin: '2px 0 0', fontSize: 11 }}>Registró {r.created_by_name || '—'}</div></div>
             <button className="btn-ghost" onClick={() => del(r.id)}>Quitar</button>
           </div>))}</div>)}
+      <div style={{ marginTop: 22 }}><Holidays /></div>
     </>
   );
 }
