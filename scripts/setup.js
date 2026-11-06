@@ -648,6 +648,22 @@ async function main() {
     console.log(`[setup] áreas aleatorias: ${r.rowCount} auditoría(s) futuras se regeneran`);
   }
 
+  // Supervisores de Producción: solo las zonas de su Layer 2 (A y B / C / D y E)
+  const fZ = await pool.query(`INSERT INTO settings(key,value) VALUES('prod_zones_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fZ.rowCount) {
+    const nz = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const Z = [[['ZONA A', 'ZONA B'], ['Julia Olguin', 'Hugo Martinez', 'Ricardo Suarez', 'Conrado Garcia', 'Perla González']], [['ZONA C'], ['Martin Sanchez', 'Luis Medina Lopez', 'Carlos Puga']], [['ZONA D-E'], ['Sonia Romero', 'Adolfo Francisco', 'Roberto Rodriguez']]];
+    const { rows: us } = await pool.query(`SELECT id,name FROM users WHERE active AND layer=1 AND dept='production'`);
+    const ids = [];
+    for (const [zs, names] of Z) for (const n of names) {
+      const u = us.find((x) => nz(x.name).startsWith(nz(n)));
+      if (!u) { console.log(`[setup] zonas: no encontré a ${n}`); continue; }
+      await pool.query(`UPDATE users SET pool=$2, start_idx=0, rotate_daily=FALSE WHERE id=$1`, [u.id, zs]); ids.push(u.id);
+    }
+    if (ids.length) await pool.query(`DELETE FROM audits WHERE user_id = ANY($1::int[]) AND kind='lpa' AND status='pending' AND started_at IS NULL AND date > $2`, [ids, mxToday]);
+    console.log(`[setup] zonas de supervisores de Producción asignadas a ${ids.length}`);
+  }
+
   // Roberto Rodriguez audita zona D-E fija
   const fRz = await pool.query(`INSERT INTO settings(key,value) VALUES('roberto_zona_de','1') ON CONFLICT DO NOTHING RETURNING key`);
   if (fRz.rowCount) {
