@@ -146,8 +146,8 @@ function Inner() {
       <div className="rp-sec rp-skip" data-sec="respaldo">
         <Head id="respaldo" title="Respaldo" sub="No depende del periodo y no incluye contraseñas" noPdf />
         <div className="row wrap" style={{ gap: 8 }}>
-          <a className="btn alt sm" href="/api/admin/backup" download>⬇ Respaldo completo (JSON)</a>
-          <a className="btn alt sm" href="/api/admin/backup?fotos=1" download>⬇ Con fotos (pesa más)</a>
+          <a className="btn alt sm" href="/api/admin/backup" download>⬇ Completo sin fotos (JSON)</a>
+          <a className="btn alt sm" href="/api/admin/backup?fotos=1" download>⬇ Completo con fotos (para migrar)</a>
         </div>
       </div>
     </div>
