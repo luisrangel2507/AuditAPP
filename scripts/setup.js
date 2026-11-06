@@ -640,6 +640,14 @@ async function main() {
     }
   }
 
+  // Asignación aleatoria de áreas: las auditorías Layer 1 futuras sin empezar se regeneran con el sorteo; María Olguín alterna QIA y Proveedores
+  const fRnd = await pool.query(`INSERT INTO settings(key,value) VALUES('areas_random_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fRnd.rowCount) {
+    await pool.query(`UPDATE users SET pool='{"QIA","Proveedores"}', start_idx=0, rotate_daily=FALSE WHERE translate(lower(name),'áéíóú','aeiou') LIKE 'maria%olguin%' AND layer=1 AND (pool IS NULL OR cardinality(pool)=0)`);
+    const r = await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.layer=1 AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date > $1`, [mxToday]);
+    console.log(`[setup] áreas aleatorias: ${r.rowCount} auditoría(s) futuras se regeneran`);
+  }
+
   // Roberto Rodriguez audita zona D-E fija
   const fRz = await pool.query(`INSERT INTO settings(key,value) VALUES('roberto_zona_de','1') ON CONFLICT DO NOTHING RETURNING key`);
   if (fRz.rowCount) {
