@@ -37,11 +37,11 @@ function Item({ f, today, lead, user, reload, startOpen }) {
   const mine = f.owners.find((o) => o.user_id === user.id);
   const [action, setAction] = useState(mine?.action || ''), [comment, setComment] = useState(''), [evid, setEvid] = useState(''), [closeAct, setCloseAct] = useState(''), [planA, setPlanA] = useState(mine?.plan_action || ''), [planD, setPlanD] = useState(mine?.plan_date ? String(mine.plan_date).slice(0, 10) : ''), [editPlan, setEditPlan] = useState(false);
   const canClose = lead || f.auditor_id === user.id;
-  const closed = f.status === 'closed';
-  const overdue = !closed && f.due_date && f.due_date < today;
-  const soon = !closed && !overdue && f.due_date && f.due_date <= addDays(today, 2);
+  const closed = f.status === 'closed', review = f.status === 'review', [rej, setRej] = useState('');
+  const overdue = !closed && !review && f.due_date && f.due_date < today;
+  const soon = !closed && !review && !overdue && f.due_date && f.due_date <= addDays(today, 2);
   const stCls = closed ? 'ok' : overdue ? 'nok' : soon ? 'warn' : 'ok';
-  const stTxt = closed ? 'Cerrado' : overdue ? 'Vencido' : soon ? 'Por vencer' : f.status === 'in_progress' ? 'En proceso' : 'Abierto';
+  const stTxt = closed ? 'Cerrado' : review ? 'En revisión' : overdue ? 'Vencido' : soon ? 'Por vencer' : f.status === 'in_progress' ? 'En proceso' : 'Abierto';
   const canAdd = lead || f.auditor_id === user.id || !!mine;
   const loadTl = () => api(`/api/findings/${f.id}`).then((d) => setTl(d.updates)).catch(() => {});
   useEffect(() => { if (open && !tl) loadTl(); /* eslint-disable-next-line */ }, [open]);
@@ -57,7 +57,7 @@ function Item({ f, today, lead, user, reload, startOpen }) {
         <div className="oi2-l"><b className="oi-no">{no(f.id)}</b>
           {!closed && <span className={`oi2-pr ${overdue ? 'hi' : soon ? 'mid' : 'lo'}`}>{overdue ? '◆ Alta' : soon ? '● Media' : '⬢ Baja'}</span>}</div>
         <div className="oi2-m">
-          <div className="oi2-top"><span className={`oi2-st ${closed ? 'ok' : ''}`}>{closed ? 'Cerrado' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span></div>
+          <div className="oi2-top"><span className={`oi2-st ${closed ? 'ok' : ''}`}>{closed ? 'Cerrado' : review ? 'En revisión' : f.status === 'in_progress' ? 'En proceso' : 'Abierto'}</span><span className={`pill ${f.result === 'nok' ? 'nok' : 'warn'}`}>{f.result === 'nok' ? 'X' : 'Δ'}</span></div>
           <div className="oi-q">{f.item ? <b className="oi2-it">Ítem {f.item}</b> : null}<Bi text={f.question} /></div>
           <div className="oi2-chips">
             <span className="k-z"><i>Zona</i>{String(f.area || '—').split(' · ')[0]}</span>
@@ -126,7 +126,15 @@ function Item({ f, today, lead, user, reload, startOpen }) {
             <input className="inp" type="date" value={f.due_date || ''} onChange={(e) => patch({ due_date: e.target.value })} />
           </div>}
 
-          {canClose && !closed && <div className="oi-close">
+          {review && (canClose ? <div className="card" style={{ marginTop: 14, borderColor: '#e0a000' }}>
+            <b>Revisión del cierre</b>
+            <div className="sub">Todos los responsables terminaron sus acciones. Revisa la evidencia y aprueba el cierre si las acciones son correctas.</div>
+            {f.owners.filter((o) => o.action).map((o) => <div key={o.user_id} className="sub" style={{ margin: '4px 0' }}><b>{o.name}:</b> {o.action}</div>)}
+            <button type="button" className="btn sm block" style={{ marginTop: 8 }} onClick={() => patch({ approve: true })}>Aprobar cierre</button>
+            <textarea className="inp" rows={2} style={{ marginTop: 10 }} value={rej} onChange={(e) => setRej(e.target.value)} placeholder="Si no es correcto, indica qué falta…" />
+            <button type="button" className="btn alt sm block" style={{ marginTop: 8 }} disabled={rej.trim().length < 3} onClick={() => { patch({ reject: rej }); setRej(''); }}>Rechazar y regresar a los responsables</button>
+          </div> : <div className="sub" style={{ marginTop: 12 }}>Pendiente de que quien abrió el issue apruebe el cierre.</div>)}
+          {canClose && !closed && !review && <div className="oi-close">
             <div className="sect" style={{ marginTop: 14 }}>{lead ? 'Cerrar como líder' : 'Cerrar este hallazgo'}</div>
             <textarea className="inp" rows={2} value={closeAct} onChange={(e) => setCloseAct(e.target.value)} placeholder="Acción tomada para cerrar el issue…" />
             <EvidencePick value={evid} onChange={setEvid} setErr={setErr} />

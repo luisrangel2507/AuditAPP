@@ -3,7 +3,8 @@ import { route, json, err, isLead } from '@/lib/api';
 import { sameSite } from '@/lib/site';
 import { canSeeTeamUser } from '@/lib/team';
 import { mxToday } from '@/lib/dates';
-import { addOwner, logUpdate, syncFinding } from '@/lib/issues';
+import { addOwner, logUpdate, syncFinding, issueNo } from '@/lib/issues';
+import { notify } from '@/lib/notify';
 
 // Línea de tiempo del issue
 export const GET = route(async (req, { params }, user) => {
@@ -86,6 +87,24 @@ export const PATCH = route(async (req, { params }, user) => {
       await logUpdate(client, f.id, user.id, b.my_status === 'done' ? 'done' : 'progress',
         (b.my_status === 'done' ? 'Terminó su parte: ' : b.my_status === 'in_progress' ? 'En proceso: ' : 'Reabrió su parte: ') + (action || ''));
       await syncFinding(client, f.id, user.id);
+    }
+
+    // Revisión del cierre: quien abrió el issue (o un líder) aprueba que las acciones estén correctas, o las rechaza con un comentario
+    if (b.approve || b.reject) {
+      if (!(lead || f.auditor_id === user.id)) { await client.query('ROLLBACK'); return err('Solo quien abrió el issue puede aprobar el cierre', 403); }
+      if (f.status !== 'review') { await client.query('ROLLBACK'); return err('Este issue no está pendiente de aprobación'); }
+      if (b.approve) {
+        await client.query(`UPDATE findings SET status='closed',closed_at=NOW(),closed_by=$2 WHERE id=$1`, [f.id, user.id]);
+        await logUpdate(client, f.id, user.id, 'closed', `Cierre aprobado por ${user.name}`);
+      } else {
+        const why = String(b.reject || '').trim();
+        if (why.length < 3) { await client.query('ROLLBACK'); return err('Escribe por qué se rechaza el cierre'); }
+        await client.query(`UPDATE finding_owners SET status='in_progress',done_at=NULL WHERE finding_id=$1`, [f.id]);
+        await client.query(`UPDATE findings SET status='in_progress' WHERE id=$1`, [f.id]);
+        await logUpdate(client, f.id, user.id, 'reopened', `Cierre rechazado por ${user.name}: ${why}`);
+        const { rows: ows } = await client.query('SELECT user_id FROM finding_owners WHERE finding_id=$1', [f.id]);
+        for (const o of ows) await notify({ db: client, userId: o.user_id, siteId: f.site_id, type: 'issue_rejected', link: `/findings#oi-${f.id}`, message: `Se rechazó el cierre de ${issueNo(f.id)}: ${why.slice(0, 120)}`, dedupe: `rej:${f.id}:${o.user_id}:${Date.now()}` });
+      }
     }
 
     // Cierre / reapertura forzada por un líder (por ejemplo, issue sin responsables)

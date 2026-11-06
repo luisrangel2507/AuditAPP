@@ -1,7 +1,7 @@
 import { pool } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
-import { addOwner, logUpdate } from '@/lib/issues';
-import { notifyAdmins } from '@/lib/notify';
+import { addOwner, logUpdate, managersOf } from '@/lib/issues';
+import { notify } from '@/lib/notify';
 import { mxToday, addDays, closesOn } from '@/lib/dates';
 
 const MIN_SEC = 600; // duración mínima esperada de una auditoría
@@ -125,11 +125,7 @@ export const POST = route(async (req, { params }, user) => {
         const { rows: [rep] } = await client.query(
           `SELECT COUNT(*)::int n FROM findings f2 JOIN responses r2 ON r2.id=f2.response_id
             WHERE r2.question_id=$1 AND f2.area=$2 AND f2.id<>$3 AND f2.created_at > NOW() - INTERVAL '30 days'`, [qid, a.area, fin.rows[0].id]);
-        if (rep.n >= 2) {
-          const { rows: [su] } = await client.query('SELECT site_id FROM users WHERE id=$1', [a.user_id]);
-          await notifyAdmins({ db: client, siteId: su.site_id, type: 'repeat_finding', link: '/reports',
-            message: `Hallazgo repetido (${rep.n + 1} veces en 30 días) en ${a.area}: ${String(qq.text).split('\n')[0].slice(0, 80)}`, dedupe: `rep:${qid}:${a.area}:${today}` });
-        }
+        const repMsg = rep.n >= 2 ? `Hallazgo repetido (${rep.n + 1} veces en 30 días) en ${a.area}: ${String(qq.text).split('\n')[0].slice(0, 80)}` : null;
         let ids = [...new Set((Array.isArray(r.owners) ? r.owners : []).map(Number).filter(Boolean))].slice(0, 10);
         if (qq.category === 'Dock Audit') {
           // Plan de reacción (QA-076-C): el hallazgo se turna a los Gerentes de Logística de la planta
@@ -139,6 +135,13 @@ export const POST = route(async (req, { params }, user) => {
         for (const oid of ids) {
           const ok = await client.query('SELECT 1 FROM users WHERE id=$1 AND active', [oid]);
           if (ok.rowCount) await addOwner(client, fin.rows[0].id, oid, user.id);
+        }
+        // Repetido: solo se avisa a los responsables y a sus gerentes
+        if (repMsg) {
+          const { rows: [su] } = await client.query('SELECT site_id FROM users WHERE id=$1', [a.user_id]);
+          const to = new Set(ids);
+          for (const oid of ids) for (const m of await managersOf(client, oid)) to.add(m);
+          for (const uid of to) await notify({ db: client, userId: uid, siteId: su.site_id, type: 'repeat_finding', link: `/findings#oi-${fin.rows[0].id}`, message: repMsg, dedupe: `rep:${qid}:${a.area}:${today}:u${uid}` });
         }
       }
     }
