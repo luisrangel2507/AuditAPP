@@ -6,7 +6,7 @@ import { canPanel } from '@/lib/roles';
 
 // Layout de planta digitalizado: cada zona es un bloque que se pinta según los hallazgos recientes
 const BLOCKS = [
-  ['WH', 40, 110, 110, 254, 'WH'], ['Shipping', 40, 370, 110, 52, 'Shipping'], ['Receiving', 40, 428, 110, 52, 'Receiving'],
+  ['WH', 20, 110, 130, 254, 'WH'], ['Shipping', 20, 370, 64, 110, 'Shipping\nDocks'], ['Receiving', 86, 370, 64, 110, 'Receiving'],
   ['E3', 170, 0, 110, 100, 'E3'], ['Toolroom', 410, 0, 110, 40, 'Tool Shop'], ['C3', 410, 48, 110, 52, 'C3'], ['PL4', 530, 0, 110, 100, 'PL4'], ['PL3', 650, 0, 110, 100, 'PL3'],
   ['E2', 170, 110, 110, 150, 'E2'], ['D2', 290, 110, 110, 150, 'D2'], ['C2', 410, 110, 110, 150, 'C2'], ['B2', 530, 110, 110, 150, 'B2'], ['A2', 650, 110, 110, 150, 'A2'],
   ['QIA', 170, 270, 110, 210, 'QIA'], ['D1', 290, 270, 110, 210, 'D1'], ['C1', 410, 270, 110, 210, 'C1'], ['B1', 530, 270, 110, 210, 'B1'], ['A1', 650, 270, 110, 210, 'A1'], ['PL1', 770, 270, 110, 210, 'PL1'],
@@ -27,8 +27,8 @@ function Heat() {
         {BLOCKS.map(([k, x, y, w, h, label]) => { const v = d.zones[k], col = heat(v), tx = col === '#c9ced8' || col === '#e3e7ee' ? '#1b2a4a' : '#fff'; return (
           <g key={k} onClick={() => setSel(k)} style={{ cursor: 'pointer' }}>
             <rect x={x} y={y} width={w} height={h} rx="10" fill={col} stroke={sel === k ? '#0b3a8c' : '#fff'} strokeWidth={sel === k ? 4 : 2} />
-            <text x={x + w / 2} y={y + h / 2 - 2} textAnchor="middle" fontSize={w < 80 ? 13 : 17} fontWeight="700" fill={tx}>{label}</text>
-            <text x={x + w / 2} y={y + h / 2 + 18} textAnchor="middle" fontSize="12" fill={tx}>{k === 'WH' ? '' : v?.audits ? `${v.findings} hallazgo(s)` : 'sin auditar'}</text>
+            <text x={x + w / 2} y={y + h / 2 - 2 - (label.split('\n').length - 1) * 8} textAnchor="middle" fontSize={w < 80 ? 12 : 17} fontWeight="700" fill={tx}>{label.split('\n').map((t, i) => <tspan key={i} x={x + w / 2} dy={i ? 15 : 0}>{t}</tspan>)}</text>
+            <text x={x + w / 2} y={y + h / 2 + 18 + (label.split('\n').length - 1) * 8} textAnchor="middle" fontSize={w < 80 ? 10 : 12} fill={tx}>{k === 'WH' ? '' : v?.audits ? `${v.findings} hallazgo(s)` : 'sin auditar'}</text>
           </g>); })}
       </svg></div>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', fontSize: 12, margin: '8px 0' }}>
