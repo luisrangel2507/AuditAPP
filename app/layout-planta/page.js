@@ -6,13 +6,11 @@ import { canPanel } from '@/lib/roles';
 
 // Layout de planta digitalizado: cada zona es un bloque que se pinta según los hallazgos recientes
 const BLOCKS = [
-  ['WH', 0, 130, 148, 226, 'WH'], ['Shipping', 0, 360, 70, 186, 'Shipping'], ['Receiving', 76, 360, 72, 186, 'Receiving'],
-  ['E2', 159, 130, 106, 200, 'E2'], ['QIA', 159, 350, 106, 100, 'QIA'], ['E1', 159, 456, 106, 90, 'E1'],
-  ['D2', 294, 137, 106, 181, 'D2'], ['D1', 294, 325, 106, 221, 'D1'],
-  ['Toolroom', 429, 0, 100, 45, 'Tool Shop'], ['C3', 429, 52, 100, 72, 'C3'], ['C2', 429, 143, 100, 156, 'C2'], ['C1', 429, 318, 100, 228, 'C1'],
-  ['PL4', 553, 13, 112, 111, 'PL4'], ['B2', 553, 150, 112, 136, 'B2'], ['B1', 553, 305, 112, 241, 'B1'],
-  ['PL3', 712, 13, 129, 117, 'PL3'], ['A2', 712, 156, 129, 120, 'A2'], ['A1', 712, 296, 129, 250, 'A1'], ['PL1', 876, 299, 124, 247, 'PL1'],
-  ['Proveedores', 159, 556, 250, 34, 'Proveedores'],
+  ['WH', 0, 110, 150, 180, 'WH'], ['Shipping', 0, 300, 75, 180, 'Shipping'], ['Receiving', 75, 300, 75, 180, 'Receiving'],
+  ['E3', 170, 0, 110, 100, 'E3'], ['Toolroom', 410, 0, 110, 40, 'Tool Shop'], ['C3', 410, 48, 110, 52, 'C3'], ['PL4', 530, 0, 110, 100, 'PL4'], ['PL3', 650, 0, 110, 100, 'PL3'],
+  ['E2', 170, 110, 110, 150, 'E2'], ['D2', 290, 110, 110, 150, 'D2'], ['C2', 410, 110, 110, 150, 'C2'], ['B2', 530, 110, 110, 150, 'B2'], ['A2', 650, 110, 110, 150, 'A2'],
+  ['QIA', 170, 270, 110, 210, 'QIA'], ['D1', 290, 270, 110, 210, 'D1'], ['C1', 410, 270, 110, 210, 'C1'], ['B1', 530, 270, 110, 210, 'B1'], ['A1', 650, 270, 110, 210, 'A1'], ['PL1', 770, 270, 110, 210, 'PL1'],
+  ['Proveedores', 170, 490, 250, 34, 'Proveedores'],
 ];
 const heat = (z) => !z ? '#e3e7ee' : !z.audits ? '#c9ced8' : z.findings === 0 ? '#2e9e5b' : z.findings <= 2 ? '#e7c23a' : z.findings <= 5 ? '#f08a24' : '#d11d2a';
 
@@ -25,7 +23,7 @@ function Heat() {
   return (
     <>
       <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '4px 0 8px' }}>{[[7, '7 días'], [30, '30 días'], [90, '90 días']].map(([n, l]) => <button key={n} type="button" className={`btn sm ${days === n ? '' : 'alt'}`} onClick={() => setDays(n)}>{l}</button>)}</div>
-      <div className="lyt-box"><svg viewBox="0 0 1000 600" width="100%" role="img" aria-label="Mapa de calor de la planta">
+      <div className="lyt-box"><svg viewBox="0 0 890 535" width="100%" role="img" aria-label="Mapa de calor de la planta">
         {BLOCKS.map(([k, x, y, w, h, label]) => { const v = d.zones[k], col = heat(v), tx = col === '#c9ced8' || col === '#e3e7ee' ? '#1b2a4a' : '#fff'; return (
           <g key={k} onClick={() => setSel(k)} style={{ cursor: 'pointer' }}>
             <rect x={x} y={y} width={w} height={h} rx="10" fill={col} stroke={sel === k ? '#0b3a8c' : '#fff'} strokeWidth={sel === k ? 4 : 2} />

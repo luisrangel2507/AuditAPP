@@ -623,7 +623,7 @@ function Assign() {
               </tr>))}</tbody>
           </table></div>
           <div className="asg-legend">
-            {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E1 · E2'], ['pl', 'PL · Toolroom · Shipping · Receiving · QIA · Proveedores'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
+            {[['a', 'A1 · A2'], ['b', 'B1 · B2'], ['c', 'C1 · C2 · C3'], ['d', 'D1 · D2'], ['e', 'E2 · E3'], ['pl', 'PL · Toolroom · Shipping · Receiving · QIA · Proveedores'], ['none', 'Sin asignación']].map(([t, l]) => <span key={t}><i className={`lg t-${t}`} />{l}</span>)}
           </div>
           {pick && (() => {
             const { x, list } = pick, cur = val(x).area || '';

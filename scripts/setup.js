@@ -671,6 +671,14 @@ async function main() {
     console.log(`[setup] Layer 4 cada 4 meses: ${r.rowCount} auditoría(s) pendientes regeneradas`);
   }
 
+  // La zona E1 pasa a llamarse E3
+  const fE3 = await pool.query(`INSERT INTO settings(key,value) VALUES('zone_e1_to_e3','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fE3.rowCount) {
+    const r = await pool.query(`UPDATE audits SET zone='E3', area=REGEXP_REPLACE(area,'^E1','E3') WHERE zone='E1' OR area ~ '^E1( |$)'`);
+    await pool.query(`UPDATE users SET pool=array_replace(pool,'E1','E3')`);
+    console.log(`[setup] zona E1 → E3 en ${r.rowCount} auditoría(s)`);
+  }
+
   // Roberto Rodriguez audita zona D-E fija
   const fRz = await pool.query(`INSERT INTO settings(key,value) VALUES('roberto_zona_de','1') ON CONFLICT DO NOTHING RETURNING key`);
   if (fRz.rowCount) {
