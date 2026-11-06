@@ -6,7 +6,7 @@ import { canPanel } from '@/lib/roles';
 
 // Layout de planta digitalizado: cada zona es un bloque que se pinta según los hallazgos recientes
 const BLOCKS = [
-  ['WH', 0, 110, 150, 180, 'WH'], ['Shipping', 0, 300, 75, 180, 'Shipping'], ['Receiving', 75, 300, 75, 180, 'Receiving'],
+  ['WH', 40, 110, 110, 254, 'WH'], ['Shipping', 40, 370, 110, 52, 'Shipping'], ['Receiving', 40, 428, 110, 52, 'Receiving'],
   ['E3', 170, 0, 110, 100, 'E3'], ['Toolroom', 410, 0, 110, 40, 'Tool Shop'], ['C3', 410, 48, 110, 52, 'C3'], ['PL4', 530, 0, 110, 100, 'PL4'], ['PL3', 650, 0, 110, 100, 'PL3'],
   ['E2', 170, 110, 110, 150, 'E2'], ['D2', 290, 110, 110, 150, 'D2'], ['C2', 410, 110, 110, 150, 'C2'], ['B2', 530, 110, 110, 150, 'B2'], ['A2', 650, 110, 110, 150, 'A2'],
   ['QIA', 170, 270, 110, 210, 'QIA'], ['D1', 290, 270, 110, 210, 'D1'], ['C1', 410, 270, 110, 210, 'C1'], ['B1', 530, 270, 110, 210, 'B1'], ['A1', 650, 270, 110, 210, 'A1'], ['PL1', 770, 270, 110, 210, 'PL1'],
