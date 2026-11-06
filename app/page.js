@@ -62,6 +62,7 @@ function MyHome() {
       <div className="row"><h1 className="title grow">Mis auditorías</h1><Link href="/week" className="ico-btn" aria-label="Programa semanal">{I.calendar(22)}</Link></div>
       <div className="sub">{data ? fmtDate(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</div>
       <SignOffs />
+      <LeaderLinks />
       {Number(user.layer) >= 2 && <a href="/tv" target="_blank" rel="noreferrer" className="btn alt" style={{ display: 'block', textAlign: 'center', margin: '8px 0 4px' }}>📺 Pantalla TV de mi equipo</a>}
       {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={() => newProcess()}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
       {!(user.dept === 'quality' && Number(user.layer) === 1) && user.template_id && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={() => newProcess('lpa')}>{newBusy ? 'Creando…' : '＋ Realizar una auditoría adicional'}</button>}
@@ -78,6 +79,16 @@ function MyHome() {
       )}
     </>
   );
+}
+
+// Accesos para quien lidera gente: reportes semanal y mensual
+function LeaderLinks() {
+  const user = useUser();
+  if (!(user.access === 'lead' && Number(user.layer) >= 2) && !isAdmin(user)) return null;
+  const gm = Number(user.layer) >= 3 || isAdmin(user);
+  return <div className="row" style={{ gap: 8, margin: '10px 0', flexWrap: 'wrap' }}>
+    <Link href="/reports/resumen?period=week" className="btn alt sm">Reporte semanal{gm ? '' : ' de mi departamento'}</Link>
+    {gm && <Link href="/reports/resumen?period=month" className="btn alt sm">Reporte mensual</Link>}</div>;
 }
 
 // Inicio del admin: no audita, así que ve el resumen del día de la planta
@@ -176,6 +187,7 @@ function AdminHome() {
         <Link href="/week" className="ahn-date">{I.calendar(20)}<b>{`${cap(fmtDate(today, { weekday: 'short' }).replace('.', ''))} ${Number(today.slice(8))} ${fmtDate(today, { month: 'short' }).replace('.', '')} ${today.slice(0, 4)}`}</b><i>›</i></Link></div>
       <MyAuditsForAdmin />
       <SignOffs />
+      <LeaderLinks />
       {master && user.multi_site && plants && (
         <Link href="/admin" className="plants-strip">
           <div className="ps-top"><b>Plantas activas: {plants.filter((p) => p.active).length} de {plants.length}</b><span>Gestionar ›</span></div>
