@@ -664,6 +664,13 @@ async function main() {
     console.log(`[setup] zonas de supervisores de Producción asignadas a ${ids.length}`);
   }
 
+  // Layer 4: una auditoría cada 4 meses; las semanales pendientes que había se regeneran con la nueva frecuencia
+  const fL4 = await pool.query(`INSERT INTO settings(key,value) VALUES('layer4_4months_v1','1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (fL4.rowCount) {
+    const r = await pool.query(`DELETE FROM audits a USING users u WHERE a.user_id=u.id AND u.layer=4 AND a.kind='lpa' AND a.status='pending' AND a.started_at IS NULL AND a.date > $1`, [mxToday]);
+    console.log(`[setup] Layer 4 cada 4 meses: ${r.rowCount} auditoría(s) pendientes regeneradas`);
+  }
+
   // Roberto Rodriguez audita zona D-E fija
   const fRz = await pool.query(`INSERT INTO settings(key,value) VALUES('roberto_zona_de','1') ON CONFLICT DO NOTHING RETURNING key`);
   if (fRz.rowCount) {
