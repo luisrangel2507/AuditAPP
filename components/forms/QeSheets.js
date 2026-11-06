@@ -1,0 +1,203 @@
+import { metaFor } from '@/lib/formMeta';
+
+export const SYM = { ok: 'O', partial: 'Δ', nok: 'X', na: 'NA' };
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const dmy = (s) => `${Number(s.slice(8))}-${MON[Number(s.slice(5, 7)) - 1]}-${s.slice(2, 4)}`;
+const mx = (t) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+const hm = (t) => new Date(t).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });
+export const addD = (s, n) => { const t = new Date(s + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+
+// Texto exactamente como viene impreso en el formato (por orden y número de ítem)
+const FIRST = ['Conduct a Control Plan audit and specify part number audited in Notes area of this form.', 'Does the Control Plan audited align with the PFMEA and QIR/PIR? Confirm if Critical Characteristics are homologated.'];
+const TXT = {
+  1033: 'Entrevista. Todos los operadores han sido formados en las instrucciones de trabajo, conocimiento en las desviaciones del proceso  (alertas de calidad)',
+  1341: 'Revisar el fechador en la pieza moldeada. Coincide al mes en curso',
+  2290: 'Está el operador colocando las partes en el empaque adecuado de WIP y PT, así como las etiquetas?',
+  106: '¿Hay IPL impresas y adicionales en la celda?',
+  1031: 'El número de parte cuenta con Verificación de arranque de proceso con los datos correcto y firmade por los responsables.',
+  100: '*¿Están los QIR / PIR completos y actualizados?', 1032: 'Lista de defectos con nivel ok/nok. Boundary samples',
+  173: 'Se cuenta con primera pieza liberada y etiquetada correctamente', 2102: '¿Están los Red/Green Rabbits disponibles para probar los Poke-Yokes?',
+  1042: 'Los Red/Green Rabbit están correctamente identificados', 453: 'Verificar Control de documentos vigentes. Uso de formatos vigentes internos y de PLEX',
+  2304: '¿La Instrucción de trabajo está actualizada en Ripple?', 455: 'Revisar que instrumentos estén dentro de su vigencia de calibración y correctamente identificados.',
+  458: '5S. Validar condiciones de orden, limpieza, señalización en el área de trabajo.', 459: 'ECN. Asegurar que cualquier cambio de ingeniería o desviación esté autorizado, documentado y comunicado en piso.',
+  448: 'Las Instrucciones de Operación del CF están actualizadas', 449: 'Las Instrucciones de Operación del CF cuentan con la simbología de las características especiales',
+};
+const NOTES = { 0: 'Control Plan Audited :', 1: '* Registre número de nómina del operador en apartado hallazgo si no se cumple', 1341: 'Moldeo', 1032: 'Verificar PLEX', 455: 'Formato MFG-071-C vigente PLEX', 449: 'Formato MFG-006-C vigente PLEX' };
+
+// El formato no se estira: siempre 11 renglones de hallazgos; si hay más, siguen en otra hoja igual
+const ROWS = 11;
+export const chunk = (a) => { const o = []; for (let i = 0; i < Math.max(1, a.length); i += ROWS) o.push(a.slice(i, i + ROWS)); return o; };
+const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
+export function Sheet({ d, k, lane = k, cols, finds, total }) {
+  const qe = d.tplName === 'Quality Engineer';
+  const M = metaFor(qe ? 'QE Layer 1 Audit' : d.tplName);
+  const SH = !qe && d.layer === 1 && !d.weeks; // formatos con Shift 1·2·3 por día (lunes a viernes)
+  const days = SH ? [...Array(5)].map((_, i) => addD(d.monday, i)) : [...Array(7)].map((_, i) => addD(d.monday, i - 1)); // domingo … sábado
+  const units = SH ? days.flatMap((x) => [1, 2, 3].map((s) => ({ x, s }))) : days.map((x) => ({ x, s: 0 }));
+  // Todas las auditorías del día se juntan en la misma columna (el peor resultado de cada pregunta)
+  const cell = (day) => {
+    const L = cols.filter((c) => c.date === day); if (!L.length) return undefined;
+    const answers = {};
+    for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
+    const u = (f) => [...new Set(L.map(f).filter(Boolean))];
+    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), part: u((c) => c.status === 'completed' && c.part).join(' / '), area: u((c) => c.status === 'completed' && c.area).join(' / '), answers, status: L.some((c) => c.status === 'completed') ? 'completed' : 'pending' };
+  };
+  // En los formatos por shift, cada auditoría va en la columna de su turno; si ya está ocupada, pasa a la siguiente hoja
+  const ucell = (u) => {
+    if (!SH) return cell(u.x);
+    const c = cols.filter((z) => z.date === u.x && z.shift === u.s && z.status === 'completed')[lane - 1];
+    return c ? { initials: c.initials, part: c.part, area: c.area, answers: c.answers, status: 'completed' } : undefined;
+  };
+  const wm = new Date(d.monday + 'T12:00:00Z');
+  return (
+    <div className="qfs">
+      <div className="qfs-top">
+        <img className="ultra-img" src="/ultra-logo.png" alt="Ultra Manufacturing" />
+        <h1>Layered Process Audit</h1>
+        <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
+      </div>
+      <div className="qfs-ins">
+        <div className="l"><div className="cd">Content Date:</div>
+          {(M.left || []).map(([r, t], i) => <p key={i}><b>{i + 1}. {r}:</b> {t}</p>)}</div>
+        <div className="r"><u>Instructions</u>
+          {M.right.map(([r, t], i) => <p key={i}><b>{(M.left ? 4 : 1) + i}. {r}:</b> {t}</p>)}</div>
+      </div>
+      <table className="qfs-t">
+        <colgroup><col style={{ width: '2.2%' }} /><col style={{ width: '27.4%' }} /><col style={{ width: '7.2%' }} />{units.map((u, i) => <col key={i} style={{ width: SH ? '4.3%' : '6.45%' }} />)}<col style={{ width: '18.05%' }} /></colgroup>
+        <thead>
+          <tr><th colSpan={2} rowSpan={7} className="hl"><div className="hl-in"><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{qe ? 'QE Layer 1 Audit' : d.tplName}</div></div></th>
+            <th colSpan={units.length + 1} className="sh">{qe ? 'Layer 1 – Daily by QE' : (M.hdr || `Layer ${d.layer} – Daily by Supervisor`)} <small>(initials)</small></th><th rowSpan={7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={units.length + 1} className="sh">Week of: &nbsp; <b>{MONTHS[wm.getUTCMonth()]} {wm.getUTCDate()}, {wm.getUTCFullYear()}</b></th></tr>
+          <tr><th className="sh" />{days.map((x, i) => <th key={x} colSpan={SH ? 3 : 1} className="sh dn">{DAYS[SH ? i + 1 : i]}</th>)}</tr>
+          <tr><td className="lb">Initials →</td>{units.map((u, i) => <td key={i} className="in">{ucell(u)?.initials || ''}</td>)}</tr>
+          {!SH && <tr><td className="lb">Part Number →</td>{days.map((x) => <td key={x} className="in sm">{cell(x)?.part || ''}</td>)}</tr>}
+          {SH && M.part && <tr><td className="lb">Part # →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.part || ''}</td>)}</tr>}
+          {!(SH && M.part) && <tr><td className="lb">AREA →</td>{units.map((u, i) => <td key={i} className="in sm">{ucell(u)?.status === 'completed' ? ucell(u).area : ''}</td>)}</tr>}
+          {SH && <tr><td className="lb">Shift →</td>{units.map((u, i) => <td key={i} className="in">{u.s}</td>)}</tr>}
+          <tr><td className="lb">Audit Date →</td>{days.map((x, i) => <td key={x} colSpan={SH ? 3 : 1} className="in sm">{SH || i > 0 ? dmy(x) : ''}</td>)}</tr>
+        </thead>
+        <tbody>
+          {d.rows.map((r, i) => (
+            <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt">{(qe && TXT[r.item]) || r.text}</td>
+              {units.map((u, i) => { const v = ucell(u)?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
+              <td className="nn">{qe ? NOTES[r.item] || '' : M.notes?.[r.item] || ''}</td></tr>))}
+          <tr className="so"><td colSpan={3} className="qs">{M.signoff}</td>{days.map((x) => <td key={x} colSpan={SH ? 3 : 1} className="sg">{d.signoffs?.[x] ? <>{d.signoffs[x].name}<small>{d.signoffs[x].at}</small></> : null}</td>)}<td /></tr>
+        </tbody>
+      </table>
+      <table className="qfs-t qfs-f">
+        <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
+        <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
+        <tbody>{[...Array(ROWS)].map((_, i) => { const f = finds[i]; return (
+          <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
+            <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? `${dmy(mx(f.closed_at))}` : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
+      </table>
+      {M.back && <div style={{ fontSize: 8, fontStyle: 'italic', textDecoration: 'underline', margin: '8px 0 0 6%' }}>Use the back of this sheet if more space is needed</div>}
+      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div>Effective Date: 26-Jul-21{total > 1 ? <em> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
+    </div>
+  );
+}
+
+
+// Formato "QA Layer 2 Audit" (mensual, una columna por semana). Preguntas e instrucciones como en el impreso.
+const monOf = (s) => { const t = new Date(s + 'T12:00:00Z'); const w = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - w); return t.toISOString().slice(0, 10); };
+export function Sheet2({ d, finds, k = 1, total = 1 }) {
+  const M = metaFor(d.tplName);
+  const wk = d.weeks, N = wk.length, IDX = [...Array(N).keys()];
+  const cell = (w) => {
+    const L = d.columns.filter((c) => (d.monthly ? c.date.slice(0, 7) === w.slice(0, 7) : monOf(c.date) === w)); if (!L.length) return undefined;
+    const answers = {};
+    for (const c of L) for (const [qid, v] of Object.entries(c.answers)) if (!(qid in answers) || RANKR[v] > RANKR[answers[qid]]) answers[qid] = v;
+    const u = (f) => [...new Set(L.map(f).filter(Boolean))];
+    return { initials: u((c) => c.status === 'completed' && c.initials).join('/'), shift: u((c) => c.status === 'completed' && c.shift).join('/'), area: u((c) => c.status === 'completed' && c.area).join(' / '), date: u((c) => c.status === 'completed' && c.date).map(dmy).join(' / '), answers };
+  };
+  const mo = new Date(wk[0] + 'T12:00:00Z');
+  return (
+    <div className="qfs">
+      <div className="qfs-top">
+        <img className="ultra-img" src="/ultra-logo.png" alt="Ultra Manufacturing" />
+        <h1>Layered Process Audit</h1>
+        <img src="/mitchell-logo.png" alt="Mitchell Plastics" />
+      </div>
+      <div className="qfs-ins">
+        <div className="l"><div className="cd">Content Date:</div>
+          {(M.left || []).map(([r, t], i) => <p key={i}><b>{i + 1}. {r}:</b> {t}</p>)}</div>
+        <div className="r"><u>Instructions</u>
+          {M.right.map(([r, t], i) => <p key={i}><b>{(M.left ? 4 : 1) + i}. {r}:</b> {t}</p>)}</div>
+      </div>
+      <table className="qfs-t">
+        <colgroup><col style={{ width: '3.4%' }} /><col style={{ width: '38.4%' }} /><col style={{ width: '5.4%' }} />{IDX.map((i) => <col key={i} style={{ width: `${33 / N}%` }} />)}<col style={{ width: '13.2%' }} /></colgroup>
+        <thead>
+          <tr><th colSpan={2} rowSpan={d.monthly ? 8 : 7} className="hl"><div className="hl-in" style={{ gridTemplateColumns: '35% 65%' }}><div className="ai"><b><u>Audit Items</u></b><div className="lg"><div>O = Satisfactory</div><div>Δ – Needs Improvement</div><div>X = Not Satisfactory</div><div>N/A – Not Applicable</div></div></div><div className="tt">{d.tplName}</div></div></th>
+            <th colSpan={N + 1} className="sh">{M.hdr || 'Layer 2 – Weekly by Dept. Manager'} <small>(initials)</small></th><th rowSpan={d.monthly ? 8 : 7} className="sh nt">Notes</th></tr>
+          <tr><th colSpan={N + 1} className="sh">{d.monthly ? 'Year: ' : 'Month of: '}&nbsp; <b>{d.monthly ? wk[0].slice(0, 4) : MONTHS[mo.getUTCMonth()]}</b></th></tr>
+          <tr><th className="sh" />{IDX.map((i) => <th key={i} className="sh dn">{d.monthly ? `Month ${Number(wk[i].slice(5, 7))}` : `Week ${i + 1}`}</th>)}</tr>
+          <tr><td className="lb">Initials →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.initials || ''}</td>)}</tr>
+          <tr><td className="lb">Area →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.area || ''}</td>)}</tr>
+          <tr><td className="lb">{d.monthly ? 'Month →' : 'Week →'}</td>{IDX.map((i) => <td key={i} className="in sm">{d.monthly ? MON[Number(wk[i].slice(5, 7)) - 1].toUpperCase() : `${Number(wk[i].slice(8))}-${MON[Number(wk[i].slice(5, 7)) - 1]}`}</td>)}</tr>
+          {d.monthly && <tr><td className="lb">Shift →</td>{IDX.map((i) => <td key={i} className="in">{cell(wk[i])?.shift || ''}</td>)}</tr>}
+          <tr><td className="lb">Date →</td>{IDX.map((i) => <td key={i} className="in sm">{cell(wk[i])?.date || ''}</td>)}</tr>
+        </thead>
+        <tbody>
+          {d.rows.map((r) => (
+            <tr key={r.id} className="q"><td className="it">{r.item > 0 ? r.item : ''}</td><td colSpan={2} className="qt" style={{ fontSize: '9px' }}>{r.text}</td>
+              {IDX.map((i) => { const v = cell(wk[i])?.answers[r.id]; return <td key={i} className={`mk ${v ? 'r-' + v : ''}`}>{v ? SYM[v] : ''}</td>; })}
+              <td className="nn">{M.notes?.[r.item] || ''}</td></tr>))}
+          <tr className="so"><td colSpan={3} className="qs" style={{ fontSize: '12px' }}>{M.signoff}</td>{IDX.map((i) => <td key={i} className="sg">{d.signoffs?.[wk[i]] ? <>{d.signoffs[wk[i]].name}<small>{d.signoffs[wk[i]].at}</small></> : null}</td>)}<td /></tr>
+        </tbody>
+      </table>
+      <table className="qfs-t qfs-f">
+        <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
+        <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
+        <tbody>{[...Array(ROWS)].map((_, i) => { const f = finds[i]; return (
+          <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
+            <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? dmy(mx(f.closed_at)) : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
+      </table>
+      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div><i style={{ fontSize: 8 }}>Use the back of this sheet if more space is needed</i>{total > 1 ? <em style={{ fontSize: 8 }}> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
+    </div>
+  );
+}
+
+
+// Todas las hojas de un formato ya lleno (se usa en la pantalla y en el paquete de migración)
+export function QeForm({ d }) {
+  // Hojas por shift: si un día/turno ya tiene su auditoría, la siguiente va en otra hoja (el formato no se extiende)
+  const SHEETS = d.tplName !== 'Quality Engineer' && d.layer === 1 && !d.weeks;
+  const laneOf = (k) => { const seen = {}, out = []; for (const c of d.columns) { if (c.status !== 'completed') continue; const key = `${c.date}|${c.shift}`; seen[key] = (seen[key] || 0) + 1; if (seen[key] === k) out.push(c); } return out; };
+  const nSheets = SHEETS ? Math.max(1, ...Object.values(d.columns.filter((c) => c.status === 'completed').reduce((m, c) => { const key = `${c.date}|${c.shift}`; m[key] = (m[key] || 0) + 1; return m; }, {}))) : 1;
+  const sheets = [...Array(nSheets)].map((_, i) => i + 1);
+  return (
+    <>
+      {d.weeks ? (() => { const parts = chunk(d.findings); return parts.map((fs, i) => <div className="qf-wrap" key={i}><Sheet2 d={d} finds={fs} k={i + 1} total={parts.length} /></div>); })() : (() => {
+        const pages = [];
+        for (const lane of sheets) { const ids = SHEETS ? new Set(laneOf(lane).map((c) => c.id)) : null; for (const fs of chunk(ids ? d.findings.filter((f) => ids.has(f.audit_id)) : d.findings)) pages.push({ lane, fs }); }
+        return pages.map((p, i) => <div className="qf-wrap" key={i}><Sheet d={d} k={i + 1} lane={p.lane} total={pages.length} cols={d.columns} finds={p.fs} /></div>);
+      })()}
+    </>
+  );
+}
+
+export const QF_CSS = `
+        .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }
+        .qf-wrap { overflow-x: auto; margin-bottom: 18px } 
+        .qfs { background: #fff; color: #000; width: 1100px; padding: 14px 18px 10px; font-family: Arial, Helvetica, sans-serif; font-size: 9px; box-sizing: border-box }
+        .qfs-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 4px } .qfs-top h1 { font-size: 18px; text-decoration: underline; margin: 0; font-weight: 700 } .qfs-top img { height: 30px; justify-self: end }
+        .ultra { background: #111; color: #fff; display: inline-block; padding: 4px 8px 2px; width: 118px; justify-self: start } .ultra b { font-size: 22px; letter-spacing: -1px } .ultra i { font-style: normal; color: #e0301e; font-size: 14px } .ultra span { display: block; font-size: 6px; letter-spacing: 1.6px }
+        .qfs-t td.sg { font-size: 6.5px; line-height: 1.1; text-align: center; color: #12328f; font-weight: 700 } .qfs-t td.sg small { display: block; font-weight: 400; font-size: 6px }
+        .qfs-ins { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin: 6px 0 6px; font-size: 8px } .qfs-ins p { margin: 2px 0 } .qfs-ins .r u { display: block; text-align: center; font-weight: 700; font-size: 10px; margin-bottom: 3px }
+        .cd { border: 1px solid #000; width: 180px; height: 14px; text-align: center; margin-bottom: 4px; font-size: 10px; line-height: 14px }
+        .qfs-t { border-collapse: collapse; width: 100%; table-layout: fixed } .qfs-t th, .qfs-t td { border: 1px solid #000; padding: 1px 3px; overflow: hidden }
+        .qfs-t .sh, .qfs-t .hl { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; text-align: center; font-size: 9px }
+        .qfs-t .hl { padding: 0 } .hl-in { display: grid; grid-template-columns: 38% 62%; height: 100%; min-height: 100px } .ai { padding: 6px 4px; text-align: left; font-size: 9px } .ai b { font-size: 11px; display: block; text-align: center; margin-bottom: 8px }
+        .lg div { font-weight: 700; font-size: 9px; line-height: 1.5 } .tt { background: #fff; margin: 8px 0; display: grid; place-items: center; font-size: 17px; border-left: 1px solid #000; border-right: 1px solid #000; background-image: none }
+        .qfs-t .nt { font-size: 10px; vertical-align: middle } .qfs-t .dn { font-size: 7.5px; font-weight: 700 }
+        .qfs-t .lb { text-align: right; font-weight: 700; font-size: 7.5px; background: #fff; border: 1px solid #000; white-space: nowrap }
+        .qfs-t .in { text-align: center; height: 13px; font-size: 9px; color: #12328f; font-weight: 700; background: #fff } .qfs-t .in.sm { font-size: 7px; line-height: 1 } .qfs-t .in { white-space: normal; word-break: break-word; line-height: 1.05; font-size: 7.5px }
+        .qfs-t .q td { height: 16px; vertical-align: middle } .qfs-t .it { text-align: center; font-size: 8px } .qfs-t .qt { font-size: 7.5px; line-height: 1.12 }
+        .qfs-t .mk { text-align: center; color: #12328f; font-weight: 700; font-size: 13px } .qfs-t .mk.r-na { font-size: 10px } .qfs-t .mk.r-nok { color: #c00; font-size: 14px } .qfs-t .mk.r-partial { color: #b27300 }
+        .qfs-t .nn { font-size: 7px; line-height: 1.15 } .qfs-t .so td { height: 17px } .qfs-t .qs { text-align: center; font-size: 10px; border-left: 0; border-bottom: 0 } .qfs-t .so td:first-child { border: 0 }
+        .qfs-f { margin-top: 8px } .qfs-f th { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; font-size: 7.5px; height: 12px } .qfs-f td { height: 20px; max-height: 20px; font-size: 8px; color: #12328f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .qfs-f .sm { font-size: 7px; text-align: center } .qfs-f .ft { font-size: 8px }
+        .qfs-ft { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; font-size: 8px } .qfs-ft div:nth-child(2) { text-align: center } .qfs-ft div:nth-child(3) { text-align: right } .qfs-ft em { font-style: normal; color: #666 }
+        @media print { @page { size: letter landscape; margin: 6mm } body * { visibility: hidden } .qf, .qf * { visibility: visible } .qf { position: absolute; left: 0; top: 0; width: 100% } .qf-bar, .qf-hint { display: none } .qf-wrap { overflow: visible; margin: 0; page-break-after: always; break-after: page } .qf-wrap:last-of-type { page-break-after: auto } .qfs { width: 100%; padding: 0 } }
+`;

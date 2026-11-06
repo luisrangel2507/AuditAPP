@@ -5,6 +5,7 @@ import path from 'path';
 import { route } from '@/lib/api';
 import { buildBackup } from '@/lib/backup';
 import { makeZip } from '@/lib/zip';
+import { migrationExtras } from '@/lib/migration';
 
 // Paquete completo para migrar la app: datos con fotos (JSON), cada foto como archivo, imágenes de la app,
 // capturas de todas las pantallas y el código fuente. Sin contraseñas.
@@ -40,6 +41,8 @@ export const GET = route(async (req, ctx, user) => {
   }
   files.push({ name: 'fotos/indice.csv', data: csv(index) });
   files.push({ name: 'datos/lpapp_respaldo_con_fotos.json', data: JSON.stringify(data) });
+  const ex = await migrationExtras(user, data);
+  files.push(...ex.files);
   const root = process.cwd(), code = [];
   if (fs.existsSync(path.join(root, 'public'))) walk(path.join(root, 'public'), 'imagenes_app', files);
   walk(root, 'codigo', code);
@@ -53,13 +56,18 @@ Contenido:
 - fotos/auditorias/ : cada foto tomada en un hallazgo de auditoría, como archivo de imagen.
 - fotos/cierres/    : cada foto de evidencia de cierre de issue.
 - fotos/indice.csv  : a qué auditoría, issue, fecha, área y pregunta corresponde cada foto.
+- formatos/         : TODOS los formatos impresos ya llenos con las respuestas (MGMT-015-C de cada Layer y plantilla por semana/mes,
+                     QA-062-C, QA-075-C y QA-076-C). Abre formatos/index.html; cada uno se imprime o se guarda como PDF.
+- tablas/           : Excel (CSV) legibles: usuarios, calendario de auditorías, respuestas, issues y su seguimiento, firmas de sign-off,
+                     ausencias, días festivos, días movidos, notificaciones enviadas, tipos de notificaciones (quién y cuándo),
+                     preguntas por formato, configuración e historial de cambios.
 - imagenes_app/     : logos, fondos, iconos y el layout de planta que usa la app.
 - codigo/           : el código fuente completo de la app (Next.js + PostgreSQL), incluidas las capturas de pantallas en codigo/docs/pantallas.
 
 Registros por tabla:
 ${counts}
 
-Fotos: ${index.length - 1} archivo(s).
+Fotos: ${index.length - 1} archivo(s). Formatos llenos: ${ex.formats}.
 
 Para levantar la app en otro servidor: ver codigo/MIGRACION.md
 ` });
