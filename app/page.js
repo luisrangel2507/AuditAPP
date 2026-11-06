@@ -50,7 +50,7 @@ function Ticket({ a, today }) {
 
 function MyHome() {
   const user = useUser(), router = useRouter(), [newBusy, setNewBusy] = useState(false);
-  async function newProcess() { setNewBusy(true); try { const r = await api('/api/audits/extra', { method: 'POST' }); router.push(`/audit/${r.id}`); } catch (e) { setErr(e.message); setNewBusy(false); } }
+  async function newProcess(kind) { setNewBusy(true); try { const r = await api('/api/audits/extra', { method: 'POST', body: kind === 'lpa' ? { kind: 'lpa' } : {} }); router.push(`/audit/${r.id}`); } catch (e) { setErr(e.message); setNewBusy(false); } }
   const [data, setData] = useState(null), [err, setErr] = useState('');
   useEffect(() => { const c = peek('/api/my'); if (c) setData(c); api('/api/my').then(setData).catch((e) => setErr(e.message)); }, []);
   if (err) return <Shell><div className="err">{err}</div></Shell>;
@@ -63,7 +63,8 @@ function MyHome() {
       <div className="sub">{data ? fmtDate(data.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</div>
       <SignOffs />
       {Number(user.layer) >= 2 && <a href="/tv" target="_blank" rel="noreferrer" className="btn alt" style={{ display: 'block', textAlign: 'center', margin: '8px 0 4px' }}>📺 Pantalla TV de mi equipo</a>}
-      {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={newProcess}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
+      {user.dept === 'quality' && Number(user.layer) === 1 && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={() => newProcess()}>{newBusy ? 'Creando…' : '＋ Hacer una auditoría de proceso'}</button>}
+      {!(user.dept === 'quality' && Number(user.layer) === 1) && user.template_id && <button type="button" className="btn alt" style={{ width: '100%', margin: '8px 0 4px' }} disabled={newBusy} onClick={() => newProcess('lpa')}>{newBusy ? 'Creando…' : '＋ Realizar una auditoría adicional'}</button>}
       {!data ? <div className="empty">Cargando…</div> : (
         <>
           <div className="sect">Por realizar</div>

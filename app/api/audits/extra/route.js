@@ -4,6 +4,8 @@ import { mxToday } from '@/lib/dates';
 
 // Un QE puede hacer una auditoría de proceso extra aunque no la tenga programada: se crea al momento, con todas las preguntas activas
 export const POST = route(async (req, ctx, user) => {
+  const body = await req.json().catch(() => ({}));
+  if (body.kind === 'lpa') return extraLpa(user);
   const { rows: [u] } = await q('SELECT id,dept,layer,site_id,process_template_id FROM users WHERE id=$1', [user.id]);
   if (!u || u.dept !== 'quality' || u.layer !== 1) return err('Solo los QEs pueden crear auditorías de proceso', 403);
   const today = mxToday();
@@ -21,3 +23,21 @@ export const POST = route(async (req, ctx, user) => {
     [u.id, today, t.id, qs.map((x) => x.id), m.s]);
   return json({ id: a.id });
 });
+
+// Auditoría LPA adicional (no programada) de cualquier persona con formato asignado: se crea al momento con las preguntas activas de su formato.
+// La zona y el número de parte se capturan al iniciar, como en cualquier auditoría.
+async function extraLpa(user) {
+  const { rows: [u] } = await q('SELECT id,template_id,layer FROM users WHERE id=$1', [user.id]);
+  if (!u?.template_id) return err('No tienes un formato de auditoría asignado');
+  const today = mxToday();
+  await q(`DELETE FROM audits WHERE user_id=$1 AND kind='lpa' AND unscheduled AND status='pending' AND started_at IS NULL AND date < $2`, [u.id, today]);
+  const { rows: [ex] } = await q(`SELECT id FROM audits WHERE user_id=$1 AND kind='lpa' AND unscheduled AND status='pending' AND started_at IS NULL AND date=$2 LIMIT 1`, [u.id, today]);
+  if (ex) return json({ id: ex.id });
+  const { rows: qs } = await q(`SELECT id FROM questions WHERE template_id=$1 AND active ORDER BY required, sort_order, id`, [u.template_id]);
+  if (!qs.length) return err('Tu formato no tiene preguntas activas');
+  const { rows: [m] } = await q(`SELECT COALESCE(MAX(slot),0)+1 AS s FROM audits WHERE user_id=$1 AND date=$2 AND kind='lpa'`, [u.id, today]);
+  const { rows: [a] } = await q(
+    `INSERT INTO audits(user_id,date,due_date,area,template_id,question_ids,kind,slot,unscheduled) VALUES($1,$2,$2,'All Areas',$3,$4,'lpa',$5,TRUE) RETURNING id`,
+    [u.id, today, u.template_id, qs.map((x) => x.id), m.s]);
+  return json({ id: a.id });
+}
