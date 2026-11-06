@@ -4,7 +4,7 @@ import { route, json, err } from '@/lib/api';
 import { siteScope, sameSite } from '@/lib/site';
 import { ensureWeek } from '@/lib/schedule';
 import { mxToday, mondayOf, addDays } from '@/lib/dates';
-import { SEED_MACHINES, ZONES } from '@/lib/zones';
+import { SEED_MACHINES, ZONES, isActiveMachine } from '@/lib/zones';
 
 // Semana de asignaciones: por auditor y día, la zona y el número de parte a inspeccionar.
 export const GET = route(async (req, ctx, user) => {
@@ -27,7 +27,7 @@ export const GET = route(async (req, ctx, user) => {
   const machines = {};
   for (const [z, list] of Object.entries(SEED_MACHINES)) machines[z] = [...list];
   const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
-  for (const r of m) { const l = (machines[r.zone] ||= []); if (!l.includes(r.machine)) l.push(r.machine); }
+  for (const r of m) { const l = (machines[r.zone] ||= []); if (isActiveMachine(r.machine) && !l.includes(r.machine)) l.push(r.machine); }
   return json({ monday, today, days: [0, 1, 2, 3, 4].map((i) => addDays(monday, i)), audits: rows, zones, machines });
 }, { need: 'admin' });
 

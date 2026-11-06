@@ -4,7 +4,7 @@ import { isAdmin } from '@/lib/roles';
 import { sameSite } from '@/lib/site';
 import { canSeeTeamUser } from '@/lib/team';
 import { pending as pendingSignoffs } from '@/lib/signoff';
-import { SEED_MACHINES } from '@/lib/zones';
+import { SEED_MACHINES, isActiveMachine } from '@/lib/zones';
 import { mxToday, windowState, closesOn, mondayOf, isoWeekday } from '@/lib/dates';
 import { resetEnsured } from '@/lib/schedule';
 
@@ -28,7 +28,7 @@ export const GET = route(async (req, { params }, user) => {
   if (a.layer === 1 || a.kind === 'process') {
     const { rows: m } = await q(`SELECT DISTINCT zone, machine FROM audits WHERE zone <> '' AND machine <> ''`);
     for (const [z, list] of Object.entries(SEED_MACHINES)) machines[z] = [...list];
-    for (const r of m) { const l = (machines[r.zone] ||= []); if (!l.includes(r.machine)) l.push(r.machine); }
+    for (const r of m) { const l = (machines[r.zone] ||= []); if (isActiveMachine(r.machine) && !l.includes(r.machine)) l.push(r.machine); }
   }
   if (a.status === 'completed') {
     const { rows } = await q(
