@@ -31,8 +31,11 @@ const TXT = {
 };
 const NOTES = { 0: 'Control Plan Audited :', 1: '* Registre número de nómina del operador en apartado hallazgo si no se cumple', 1341: 'Moldeo', 1032: 'Verificar PLEX', 455: 'Formato MFG-071-C vigente PLEX', 449: 'Formato MFG-006-C vigente PLEX' };
 
+// El formato no se estira: siempre 11 renglones de hallazgos; si hay más, siguen en otra hoja igual
+const ROWS = 11;
+const chunk = (a) => { const o = []; for (let i = 0; i < Math.max(1, a.length); i += ROWS) o.push(a.slice(i, i + ROWS)); return o; };
 const RANKR = { nok: 3, partial: 2, ok: 1, na: 0 };
-function Sheet({ d, k, cols, finds, total }) {
+function Sheet({ d, k, lane = k, cols, finds, total }) {
   const qe = d.tplName === 'Quality Engineer';
   const M = metaFor(qe ? 'QE Layer 1 Audit' : d.tplName);
   const SH = !qe && d.layer === 1 && !d.weeks; // formatos con Shift 1·2·3 por día (lunes a viernes)
@@ -49,7 +52,7 @@ function Sheet({ d, k, cols, finds, total }) {
   // En los formatos por shift, cada auditoría va en la columna de su turno; si ya está ocupada, pasa a la siguiente hoja
   const ucell = (u) => {
     if (!SH) return cell(u.x);
-    const c = cols.filter((z) => z.date === u.x && z.shift === u.s && z.status === 'completed')[k - 1];
+    const c = cols.filter((z) => z.date === u.x && z.shift === u.s && z.status === 'completed')[lane - 1];
     return c ? { initials: c.initials, part: c.part, area: c.area, answers: c.answers, status: 'completed' } : undefined;
   };
   const wm = new Date(d.monday + 'T12:00:00Z');
@@ -91,7 +94,7 @@ function Sheet({ d, k, cols, finds, total }) {
       <table className="qfs-t qfs-f">
         <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
         <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
-        <tbody>{[...Array(Math.max(11, finds.length))].map((_, i) => { const f = finds[i]; return (
+        <tbody>{[...Array(ROWS)].map((_, i) => { const f = finds[i]; return (
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
             <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? `${dmy(mx(f.closed_at))}` : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
       </table>
@@ -104,7 +107,7 @@ function Sheet({ d, k, cols, finds, total }) {
 
 // Formato "QA Layer 2 Audit" (mensual, una columna por semana). Preguntas e instrucciones como en el impreso.
 const monOf = (s) => { const t = new Date(s + 'T12:00:00Z'); const w = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - w); return t.toISOString().slice(0, 10); };
-function Sheet2({ d, finds }) {
+function Sheet2({ d, finds, k = 1, total = 1 }) {
   const M = metaFor(d.tplName);
   const wk = d.weeks, N = wk.length, IDX = [...Array(N).keys()];
   const cell = (w) => {
@@ -152,11 +155,11 @@ function Sheet2({ d, finds }) {
       <table className="qfs-t qfs-f">
         <colgroup><col style={{ width: '2.8%' }} /><col style={{ width: '2.8%' }} /><col style={{ width: '38%' }} /><col style={{ width: '7%' }} /><col style={{ width: '43%' }} /><col style={{ width: '6.4%' }} /></colgroup>
         <thead><tr><th>Item #</th><th>Area</th><th>Finding for any X or Δ Items</th><th>Date &amp; Time</th><th>Immediate Action/Correction Taken</th><th>Closed</th></tr></thead>
-        <tbody>{[...Array(Math.max(11, finds.length))].map((_, i) => { const f = finds[i]; return (
+        <tbody>{[...Array(ROWS)].map((_, i) => { const f = finds[i]; return (
           <tr key={i}><td>{f?.item || ''}</td><td className="sm">{f?.area || ''}</td><td className="ft">{f ? `OI-${String(f.id).padStart(4, '0')} · ${f.result === 'partial' ? 'Δ ' : 'X '}${f.notes}` : ''}</td>
             <td className="sm">{f ? `${dmy(mx(f.date))} ${hm(f.date)}` : ''}</td><td className="ft">{f?.action || ''}</td><td className="sm">{f?.closed_at ? dmy(mx(f.closed_at)) : f ? 'Abierto' : ''}</td></tr>); })}</tbody>
       </table>
-      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div><i style={{ fontSize: 8 }}>Use the back of this sheet if more space is needed</i></div><div>Approved By:Director of Quality</div></div>
+      <div className="qfs-ft"><div>MGMT-015-C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <small>Rev:003</small></div><div><i style={{ fontSize: 8 }}>Use the back of this sheet if more space is needed</i>{total > 1 ? <em style={{ fontSize: 8 }}> · hoja {k} de {total}</em> : null}</div><div>Approved By:Director of Quality</div></div>
     </div>
   );
 }
@@ -196,10 +199,11 @@ function Inner() {
       <div className="row qf-bar"><select className="inp grow" value={tpl || d.tpl || ''} onChange={(e) => setTpl(e.target.value)}>
         {d.templates.map((t) => <option key={t.id} value={t.id}>{t.name === 'Quality Engineer' ? 'QEs · Layer 1 (LPA)' : t.name === 'QA Layer 2 Audit' ? 'Gerente de Calidad · Layer 2' : t.name}</option>)}</select></div>
       <p className="sub qf-hint">Solo auditorías normales (LPA); las de proceso no llenan formato. Cada día es una columna con las iniciales de quien auditó; si dos personas coinciden en un día, comparten columna (cada pregunta muestra el peor resultado). En el celular, desliza de lado.</p>
-      {d.weeks ? <div className="qf-wrap"><Sheet2 d={d} finds={d.findings} /></div> : sheets.map((k) => {
-        const ids = SHEETS ? new Set(laneOf(k).map((c) => c.id)) : null;
-        return <div className="qf-wrap" key={k}><Sheet d={d} k={k} total={sheets.length} cols={d.columns} finds={ids ? d.findings.filter((f) => ids.has(f.audit_id)) : d.findings} /></div>;
-      })}
+      {d.weeks ? (() => { const parts = chunk(d.findings); return parts.map((fs, i) => <div className="qf-wrap" key={i}><Sheet2 d={d} finds={fs} k={i + 1} total={parts.length} /></div>); })() : (() => {
+        const pages = [];
+        for (const lane of sheets) { const ids = SHEETS ? new Set(laneOf(lane).map((c) => c.id)) : null; for (const fs of chunk(ids ? d.findings.filter((f) => ids.has(f.audit_id)) : d.findings)) pages.push({ lane, fs }); }
+        return pages.map((p, i) => <div className="qf-wrap" key={i}><Sheet d={d} k={i + 1} lane={p.lane} total={pages.length} cols={d.columns} finds={p.fs} /></div>);
+      })()}
       <style>{`
         .qf-bar { gap: 6px; margin-bottom: 8px; flex-wrap: wrap } .qf-hint { margin: 0 0 10px }
         .qf-wrap { overflow-x: auto; margin-bottom: 18px } 
@@ -219,7 +223,7 @@ function Inner() {
         .qfs-t .q td { height: 16px; vertical-align: middle } .qfs-t .it { text-align: center; font-size: 8px } .qfs-t .qt { font-size: 7.5px; line-height: 1.12 }
         .qfs-t .mk { text-align: center; color: #12328f; font-weight: 700; font-size: 13px } .qfs-t .mk.r-na { font-size: 10px } .qfs-t .mk.r-nok { color: #c00; font-size: 14px } .qfs-t .mk.r-partial { color: #b27300 }
         .qfs-t .nn { font-size: 7px; line-height: 1.15 } .qfs-t .so td { height: 17px } .qfs-t .qs { text-align: center; font-size: 10px; border-left: 0; border-bottom: 0 } .qfs-t .so td:first-child { border: 0 }
-        .qfs-f { margin-top: 8px } .qfs-f th { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; font-size: 7.5px; height: 12px } .qfs-f td { height: 20px; font-size: 8px; color: #12328f } .qfs-f .sm { font-size: 7px; text-align: center } .qfs-f .ft { font-size: 8px }
+        .qfs-f { margin-top: 8px } .qfs-f th { background: #d4d4d4; background-image: radial-gradient(#9a9a9a .6px, transparent .7px); background-size: 3px 3px; font-size: 7.5px; height: 12px } .qfs-f td { height: 20px; max-height: 20px; font-size: 8px; color: #12328f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .qfs-f .sm { font-size: 7px; text-align: center } .qfs-f .ft { font-size: 8px }
         .qfs-ft { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; font-size: 8px } .qfs-ft div:nth-child(2) { text-align: center } .qfs-ft div:nth-child(3) { text-align: right } .qfs-ft em { font-style: normal; color: #666 }
         @media print { @page { size: letter landscape; margin: 6mm } body * { visibility: hidden } .qf, .qf * { visibility: visible } .qf { position: absolute; left: 0; top: 0; width: 100% } .qf-bar, .qf-hint { display: none } .qf-wrap { overflow: visible; margin: 0; page-break-after: always; break-after: page } .qf-wrap:last-of-type { page-break-after: auto } .qfs { width: 100%; padding: 0 } }
       `}</style>
