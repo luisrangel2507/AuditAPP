@@ -1,6 +1,6 @@
 import { pool } from '@/lib/db';
 import { route, json, err } from '@/lib/api';
-import { addOwner, logUpdate, managersOf } from '@/lib/issues';
+import { addOwner, logUpdate, managersOf, areaRecipients } from '@/lib/issues';
 import { notify } from '@/lib/notify';
 import { mxToday, addDays, closesOn } from '@/lib/dates';
 
@@ -161,6 +161,15 @@ export const POST = route(async (req, { params }, user) => {
       await client.query(
         `INSERT INTO notifications(site_id,type,audit_id,user_id,message) VALUES($1,'short_audit',$2,$3,$4)`,
         [au2.site_id, a.id, a.user_id, `${au2.name} terminó "${a.area}" en ${mm} min ${ss} s (menos de ${MIN_SEC / 60} min)`]);
+    }
+    // Solo si la auditoría LPA tuvo hallazgos: se avisa a quien la mandó, a los supervisores del área y a sus gerentes. Al 100 % no se avisa a nadie.
+    if (!proc && c.nok + c.partial > 0) {
+      const { rows: [au3] } = await client.query('SELECT name,site_id FROM users WHERE id=$1', [a.user_id]);
+      const rc = await areaRecipients(client, { user_id: a.user_id, zone: a.zone, area: a.area });
+      const n = c.nok + c.partial;
+      const msg = `Auditoría LPA de ${au3.name} en ${a.area}: ${n} hallazgo(s) (${c.nok} no satisfactorio${c.nok === 1 ? '' : 's'}, ${c.partial} por mejorar)`;
+      await notify({ db: client, userId: a.user_id, siteId: au3.site_id, type: 'audit_findings', auditId: a.id, link: '/findings', message: `Tu auditoría en ${a.area} terminó con ${n} hallazgo(s)`, dedupe: `af:${a.id}:u${a.user_id}` });
+      for (const uid of new Set([...rc.supervisors, ...rc.managers])) await notify({ db: client, userId: uid, siteId: au3.site_id, type: 'audit_findings', auditId: a.id, link: '/findings', message: msg, dedupe: `af:${a.id}:u${uid}` });
     }
     await client.query('COMMIT');
     return json({ ok: true, score, ...c, findings: c.nok + c.partial });

@@ -6,14 +6,15 @@ import { canPanel } from '@/lib/roles';
 
 // Layout de planta digitalizado: cada zona es un bloque que se pinta según los hallazgos recientes
 const BLOCKS = [
-  ['Shipping', 10, 60, 170, 300, 'Shipping / Docks'], ['Receiving', 190, 200, 70, 160, 'Receiving'],
-  ['E2', 270, 60, 120, 145, 'E2'], ['E1', 270, 215, 120, 145, 'E1'], ['D2', 400, 60, 120, 145, 'D2'], ['D1', 400, 215, 120, 145, 'D1'],
-  ['C2', 530, 60, 58, 145, 'C2'], ['C3', 592, 60, 58, 145, 'C3'], ['C1', 530, 215, 120, 145, 'C1'],
-  ['B2', 660, 60, 120, 145, 'B2'], ['B1', 660, 215, 120, 145, 'B1'], ['A2', 790, 60, 120, 145, 'A2'], ['A1', 790, 215, 120, 145, 'A1'],
-  ['Toolroom', 660, 6, 120, 44, 'Tool Shop'], ['PL4', 790, 6, 120, 44, 'PL4'], ['PL1', 920, 60, 70, 70, 'PL1'], ['PL3', 920, 140, 70, 70, 'PL3'],
-  ['QIA', 270, 372, 200, 34, 'QIA'], ['Proveedores', 480, 372, 200, 34, 'Proveedores'],
+  ['WH', 0, 130, 148, 226, 'WH'], ['Shipping', 0, 360, 70, 186, 'Shipping'], ['Receiving', 76, 360, 72, 186, 'Receiving'],
+  ['E2', 159, 130, 106, 200, 'E2'], ['QIA', 159, 350, 106, 100, 'QIA'], ['E1', 159, 456, 106, 90, 'E1'],
+  ['D2', 294, 137, 106, 181, 'D2'], ['D1', 294, 325, 106, 221, 'D1'],
+  ['Toolroom', 429, 0, 100, 45, 'Tool Shop'], ['C3', 429, 52, 100, 72, 'C3'], ['C2', 429, 143, 100, 156, 'C2'], ['C1', 429, 318, 100, 228, 'C1'],
+  ['PL4', 553, 13, 112, 111, 'PL4'], ['B2', 553, 150, 112, 136, 'B2'], ['B1', 553, 305, 112, 241, 'B1'],
+  ['PL3', 712, 13, 129, 117, 'PL3'], ['A2', 712, 156, 129, 120, 'A2'], ['A1', 712, 296, 129, 250, 'A1'], ['PL1', 876, 299, 124, 247, 'PL1'],
+  ['Proveedores', 159, 556, 250, 34, 'Proveedores'],
 ];
-const heat = (z) => !z ? '#c9ced8' : !z.audits ? '#c9ced8' : z.findings === 0 ? '#2e9e5b' : z.findings <= 2 ? '#e7c23a' : z.findings <= 5 ? '#f08a24' : '#d11d2a';
+const heat = (z) => !z ? '#e3e7ee' : !z.audits ? '#c9ced8' : z.findings === 0 ? '#2e9e5b' : z.findings <= 2 ? '#e7c23a' : z.findings <= 5 ? '#f08a24' : '#d11d2a';
 
 function Heat() {
   const [d, setD] = useState(null), [days, setDays] = useState(30), [sel, setSel] = useState(''), [err, setErr] = useState('');
@@ -24,12 +25,12 @@ function Heat() {
   return (
     <>
       <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '4px 0 8px' }}>{[[7, '7 días'], [30, '30 días'], [90, '90 días']].map(([n, l]) => <button key={n} type="button" className={`btn sm ${days === n ? '' : 'alt'}`} onClick={() => setDays(n)}>{l}</button>)}</div>
-      <div className="lyt-box"><svg viewBox="0 0 1000 415" width="100%" role="img" aria-label="Mapa de calor de la planta">
-        {BLOCKS.map(([k, x, y, w, h, label]) => { const v = d.zones[k]; return (
+      <div className="lyt-box"><svg viewBox="0 0 1000 600" width="100%" role="img" aria-label="Mapa de calor de la planta">
+        {BLOCKS.map(([k, x, y, w, h, label]) => { const v = d.zones[k], col = heat(v), tx = col === '#c9ced8' || col === '#e3e7ee' ? '#1b2a4a' : '#fff'; return (
           <g key={k} onClick={() => setSel(k)} style={{ cursor: 'pointer' }}>
-            <rect x={x} y={y} width={w} height={h} rx="10" fill={heat(v)} stroke={sel === k ? '#0b3a8c' : '#fff'} strokeWidth={sel === k ? 4 : 2} />
-            <text x={x + w / 2} y={y + h / 2 - 2} textAnchor="middle" fontSize={w < 80 ? 13 : 17} fontWeight="700" fill="#fff">{label}</text>
-            <text x={x + w / 2} y={y + h / 2 + 18} textAnchor="middle" fontSize="12" fill="#fff">{v?.audits ? `${v.findings} hallazgo(s)` : 'sin auditar'}</text>
+            <rect x={x} y={y} width={w} height={h} rx="10" fill={col} stroke={sel === k ? '#0b3a8c' : '#fff'} strokeWidth={sel === k ? 4 : 2} />
+            <text x={x + w / 2} y={y + h / 2 - 2} textAnchor="middle" fontSize={w < 80 ? 13 : 17} fontWeight="700" fill={tx}>{label}</text>
+            <text x={x + w / 2} y={y + h / 2 + 18} textAnchor="middle" fontSize="12" fill={tx}>{k === 'WH' ? '' : v?.audits ? `${v.findings} hallazgo(s)` : 'sin auditar'}</text>
           </g>); })}
       </svg></div>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', fontSize: 12, margin: '8px 0' }}>
