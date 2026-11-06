@@ -148,6 +148,7 @@ function Inner() {
         <div className="row wrap" style={{ gap: 8 }}>
           <a className="btn alt sm" href="/api/admin/backup" download>⬇ Completo sin fotos (JSON)</a>
           <a className="btn alt sm" href="/api/admin/backup?fotos=1" download>⬇ Completo con fotos (para migrar)</a>
+          <a className="btn sm" href="/api/admin/backup/zip" download>⬇ Paquete completo para migrar (ZIP: datos, fotos, imágenes, pantallas y código)</a>
         </div>
       </div>
     </div>
