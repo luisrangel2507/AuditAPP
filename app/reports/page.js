@@ -133,6 +133,7 @@ function Inner() {
           <Link href="/reports/qa075" className="rep-link"><b>QA-075-C · Management Audit Findings (hallazgos gerenciales)</b></Link>
           <Link href="/reports/qa076" className="rep-link"><b>QA-076-C · Dock Audit Findings</b></Link>
           <Link href="/reports/resumen?period=week" className="rep-link"><b>Resumen semanal / mensual por departamento</b></Link>
+          <Link href="/reports/tendencias" className="rep-link"><b>Tendencias por persona (puntualidad, hallazgos, auditorías cortas)</b></Link>
           <Link href="/reports/programa" className="rep-link"><b>Programa Auditoría LPA (semanal, como el cartel de planta)</b></Link>
         </div>
       </div>
