@@ -276,22 +276,52 @@ function Archive() {
 }
 
 // Registro: cambios del administrador y eliminaciones con su razón
+const LOG_FIELDS = { name: 'Nombre', dept: 'Departamento', layer: 'Capa', access: 'Acceso', template_id: 'Formato', days: 'Días fijos', pool: 'Áreas', active: 'Activo', site_id: 'Planta', process_per_day: 'Auditorías de proceso por día', process_template_id: 'Formato de proceso', email: 'Correo', manager_id: 'Reporta a (id)', lpa_enabled: 'LPA activa', date: 'Fecha', name_: 'Nombre', area: 'Zona / área', part_number: 'Número de parte', user_id: 'Persona (id)', date_from: 'Desde', date_to: 'Hasta', kind: 'Motivo', note: 'Nota' };
+const LOG_SKIP = ['start_idx', 'rotate_daily', 'confirm_name', 'confirm_baja', 'username', 'must_change'];
+const DAYN = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+function logDetail(raw) {
+  if (!raw) return [];
+  let o; try { o = JSON.parse(raw); } catch { return [String(raw)]; }
+  if (!o || typeof o !== 'object') return [String(raw)];
+  const out = [];
+  for (const [k, v] of Object.entries(o)) {
+    if (LOG_SKIP.includes(k) || v === '' || v === null || v === undefined) continue;
+    if (k === 'reset_password') { out.push('Se restableció la contraseña'); continue; }
+    const label = LOG_FIELDS[k] || k;
+    const val = typeof v === 'boolean' ? (v ? 'Sí' : 'No') : k === 'days' && Array.isArray(v) ? v.map((x) => DAYN[x - 1] || x).join(', ') || 'ninguno' : Array.isArray(v) ? (v.join(', ') || 'ninguna') : typeof v === 'object' ? JSON.stringify(v) : String(v);
+    out.push(`${label}: ${val}`);
+  }
+  return out;
+}
+const LOG_CAT = (x) => x.kind !== 'cambio' ? ['Eliminación', '#d11d2a'] : /usuario/i.test(x.title) ? ['Usuarios', '#1f6bf0'] : /asignaci/i.test(x.title) ? ['Asignaciones', '#7c3aed'] : /pregunta/i.test(x.title) ? ['Preguntas', '#0e9f6e'] : /festivo|ausencia/i.test(x.title) ? ['Calendario', '#e0a000'] : ['Sistema', '#61708a'];
 function LogTab() {
-  const [d, setD] = useState(null), [f, setF] = useState('all');
+  const [d, setD] = useState(null), [f, setF] = useState('all'), [qs, setQs] = useState('');
   useEffect(() => { api('/api/admin/log').then((r) => setD(r.items)).catch(() => setD([])); }, []);
-  const when = (ts) => new Date(ts).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
-  const rows = (d || []).filter((x) => f === 'all' || (f === 'del' ? x.kind !== 'cambio' : x.kind === 'cambio'));
+  const hm = (ts) => new Date(ts).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });
+  const dayOf = (ts) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date(ts));
+  const today = dayOf(Date.now()), yest = dayOf(Date.now() - 864e5);
+  const dayLabel = (k) => k === today ? 'Hoy' : k === yest ? 'Ayer' : new Date(k + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  const rows = (d || []).filter((x) => (f === 'all' || LOG_CAT(x)[0] === f) && (!qs || `${x.title} ${x.who || ''} ${x.reason || ''} ${x.detail || ''}`.toLowerCase().includes(qs.toLowerCase())));
+  const groups = []; for (const x of rows) { const k = dayOf(x.created_at); const g = groups[groups.length - 1]; if (g && g.k === k) g.items.push(x); else groups.push({ k, items: [x] }); }
+  const CATS = ['Usuarios', 'Asignaciones', 'Preguntas', 'Calendario', 'Eliminación'];
   return (
     <>
-      <Archive />
-      <div className="seg" style={{ margin: '4px 0 10px' }}>{[['all', 'Todo'], ['cambio', 'Cambios'], ['del', 'Eliminaciones']].map(([k, l]) => <button key={k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}</div>
-      {!d ? <div className="empty">Cargando…</div> : !rows.length ? <div className="card empty">Sin registros.</div> : rows.map((x, i) => (
-        <div className="card" key={i} style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>{x.kind === 'cambio' ? '✎' : '🗑'} {x.title}</div>
-          {x.kind !== 'cambio' && x.reason && <div style={{ fontSize: 13, marginTop: 3 }}><b>Razón:</b> {x.reason}</div>}
-          {x.kind === 'cambio' && x.detail && <div className="sub" style={{ margin: '3px 0 0', fontFamily: 'var(--mono, monospace)', fontSize: 11, overflowWrap: 'anywhere' }}>{x.detail}</div>}
-          <div className="sub" style={{ margin: '4px 0 0' }}>{x.who || 'Sistema'} · {when(x.created_at)}</div>
+      <h3 style={{ margin: '4px 0 4px' }}>Historial de cambios</h3>
+      <p className="sub" style={{ margin: '0 0 8px' }}>Quién cambió qué y cuándo en la administración del sistema.</p>
+      <input className="inp" placeholder="Buscar por persona, usuario o cambio…" value={qs} onChange={(e) => setQs(e.target.value)} style={{ marginBottom: 8 }} />
+      <div className="seg" style={{ margin: '0 0 10px' }}>{[['all', 'Todo'], ...CATS.map((c) => [c, c === 'Eliminación' ? 'Eliminaciones' : c])].map(([k, l]) => <button key={k} className={f === k ? 'on' : ''} onClick={() => setF(k)}>{l}</button>)}</div>
+      {!d ? <div className="empty">Cargando…</div> : !rows.length ? <div className="card empty">Sin registros.</div> : groups.map((g) => (
+        <div key={g.k} style={{ marginBottom: 12 }}>
+          <div className="sect" style={{ textTransform: 'capitalize' }}>{dayLabel(g.k)}</div>
+          {g.items.map((x, i) => { const [cat, col] = LOG_CAT(x); const det = x.kind === 'cambio' ? logDetail(x.detail) : []; return (
+            <div className="card" key={i} style={{ marginBottom: 8, borderLeft: `4px solid ${col}` }}>
+              <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><b style={{ fontSize: 14.5 }}>{x.title}</b><span className="sub" style={{ margin: 0, whiteSpace: 'nowrap' }}>{hm(x.created_at)}</span></div>
+              {det.length > 0 && <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: 13 }}>{det.map((t, j) => <li key={j}>{t}</li>)}</ul>}
+              {x.kind !== 'cambio' && x.reason && <div style={{ fontSize: 13, marginTop: 4 }}><b>Razón:</b> {x.reason}</div>}
+              <div className="sub" style={{ margin: '6px 0 0', fontSize: 12 }}><span style={{ color: col, fontWeight: 700 }}>{cat}</span> · {x.who || 'Sistema'}</div>
+            </div>); })}
         </div>))}
+      <div style={{ marginTop: 18 }}><Archive /></div>
     </>
   );
 }
