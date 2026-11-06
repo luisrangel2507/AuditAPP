@@ -9,11 +9,31 @@ import Bi from '@/components/Bi';
 import { ZONES, NO_MACHINE } from '@/lib/zones';
 import { api, peek, useUrlState, useWeekUrl, DEPT, LAYER, DAYS_SHORT, fmtDate, getSiteCookie, setSiteCookie, todayStr } from '@/lib/client';
 
+// Selector de áreas como en Asignaciones: All Areas, zona completa o zona + máquina
+function PoolPicker({ value, onChange }) {
+  const [zm, setZm] = useState({ zones: [], machines: {} }), [z, setZ] = useState(''), [m, setM] = useState('');
+  useEffect(() => { api('/api/zones').then(setZm).catch(() => {}); }, []);
+  const groups = ['ZONA A', 'ZONA B', 'ZONA C', 'ZONA D-E'];
+  const add = () => { const e = !z ? '' : z === 'All Areas' ? 'All Areas' : m ? `${z} · ${m}` : z; if (e && !value.includes(e)) onChange([...value, e]); setZ(''); setM(''); };
+  return (
+    <div className="pp-box">
+      <div className="pp-chips">{value.length ? value.map((e) => <span key={e} className="pp-chip">{e}<button type="button" aria-label="Quitar" onClick={() => onChange(value.filter((x) => x !== e))}>×</button></span>) : <span className="sub" style={{ margin: 0 }}>Sin áreas: el sistema no podrá asignarle zona.</span>}</div>
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+        <select className="inp grow" value={z} onChange={(e) => { setZ(e.target.value); setM(''); }}>
+          <option value="">Agregar área…</option><option value="All Areas">All Areas</option>
+          <optgroup label="Zonas completas">{groups.map((g) => <option key={g} value={g}>{g}</option>)}</optgroup>
+          <optgroup label="Zonas">{zm.zones.filter((x) => x !== 'QIA' && x !== 'Proveedores').map((x) => <option key={x} value={x}>{x}</option>)}</optgroup>
+          <optgroup label="Exclusivas">{['QIA', 'Proveedores'].map((x) => <option key={x} value={x}>{x}</option>)}</optgroup></select>
+        {z && zm.machines[z]?.length > 0 && <select className="inp grow" value={m} onChange={(e) => setM(e.target.value)}><option value="">Toda la zona</option>{zm.machines[z].map((x) => <option key={x} value={x}>{x}</option>)}</select>}
+        <button type="button" className="btn alt sm" disabled={!z} onClick={add}>Agregar</button></div>
+    </div>);
+}
+
 function UserSheet({ u, templates, onClose, onSaved }) {
   const me = useUser(), master = isMaster(me);
   const isNew = !u.id;
   const [f, setF] = useState({ name: '', username: '', dept: 'production', layer: 1, access: 'auditor', template_id: '', days: [], pool: [], start_idx: 0, rotate_daily: false, active: true, ...u });
-  const [pool, setPool] = useState((u.pool || []).join(', ')), [pin, setPin] = useState(''), [err, setErr] = useState(''), [bajaStep, setBajaStep] = useState(0), [bajaName, setBajaName] = useState(''), [mgrs, setMgrs] = useState([]);
+  const [pool, setPool] = useState(u.pool || []), [pin, setPin] = useState(''), [err, setErr] = useState(''), [bajaStep, setBajaStep] = useState(0), [bajaName, setBajaName] = useState(''), [mgrs, setMgrs] = useState([]);
   useEffect(() => { api('/api/admin/users').then((r) => setMgrs(r.filter((x) => x.active && x.layer >= 2 && x.id !== u.id))).catch(() => {}); /* eslint-disable-next-line */ }, []);
   const [sites, setSites] = useState([]);
   useEffect(() => { api('/api/sites').then((s) => { setSites(s); if (isNew) { const c = getSiteCookie(); const d = s.find((x) => x.code === c) || s[0]; if (d) setF((v) => ({ ...v, site_id: d.id })); } }); /* eslint-disable-next-line */ }, []);
@@ -21,7 +41,7 @@ function UserSheet({ u, templates, onClose, onSaved }) {
   async function save() {
     setErr('');
     const body = { ...f, layer: Number(f.layer), template_id: f.template_id ? Number(f.template_id) : null, start_idx: Number(f.start_idx) || 0,
-      pool: pool.split(',').map((s) => s.trim()).filter(Boolean), days: Number(f.layer) >= 2 ? [] : f.days };
+      pool, days: Number(f.layer) >= 2 ? [] : f.days };
     if (!isNew && u.active && !f.active && !(bajaStep === 2 && bajaName.trim())) { setBajaStep(1); setErr('Dar de baja requiere confirmación: sigue los 2 pasos'); return; }
     try {
       if (isNew) await api('/api/admin/users', { method: 'POST', body: { ...body, password: pin } });
@@ -55,23 +75,19 @@ function UserSheet({ u, templates, onClose, onSaved }) {
         <label className="lbl">Días fijos de auditoría</label>
         <div className="days">{DAYS_SHORT.map((n, i) => (
           <label key={n}><input type="checkbox" checked={f.days.includes(i + 1)} onChange={(e) => set('days', e.target.checked ? [...f.days, i + 1].sort() : f.days.filter((x) => x !== i + 1))} />{n}</label>))}</div>
-        <label className="lbl">Áreas por las que rota (separadas por coma)</label>
-        <input className="inp" value={pool} onChange={(e) => setPool(e.target.value)} placeholder="ZONA A, ZONA B, ZONA C" />
-        <div className="row wrap">
-          <div className="grow"><label className="lbl">Área inicial (posición, 0 = primera)</label><input className="inp" type="number" min="0" value={f.start_idx} onChange={(e) => set('start_idx', e.target.value)} /></div>
-          <label className="row" style={{ marginTop: 24 }}><input type="checkbox" checked={f.rotate_daily} onChange={(e) => set('rotate_daily', e.target.checked)} /> Cambia de área cada día</label>
-        </div>
+        <label className="lbl">Áreas que audita</label>
+        <PoolPicker value={pool} onChange={setPool} />
       </>}
       {!isNew && <label className="lpa-sw">
         <input type="checkbox" checked={!!f.lpa_on} onChange={(e) => set('lpa_on', e.target.checked)} />
-        <span><b>Hace LPA</b><small>{f.lpa_on ? 'Le aparece su auditoría LPA según su capa y días.' : 'No se le generan auditorías LPA.'}{u.dept === 'quality' && Number(u.layer) === 1 && u.lpa_override == null ? ' (los QEs hoy solo hacen auditorías de proceso; actívala aquí para este usuario)' : ''}</small></span>
+        <span><b>LPA {f.lpa_on ? 'activa' : 'inactiva'}</b><small>{f.lpa_on ? 'Se le programan auditorías LPA según su capa y días.' : 'No se le programan auditorías LPA.'}{u.dept === 'quality' && Number(u.layer) === 1 && u.lpa_override == null ? ' Actualmente el personal de Calidad Layer 1 realiza únicamente auditorías de proceso; active la LPA para este usuario si corresponde.' : ''}</small></span>
       </label>}
-      {!isNew && f.dept === 'quality' && Number(f.layer) === 1 && <div style={{ margin: '10px 0' }}><label className="lbl">Auditorías de proceso al día</label>
+      {!isNew && f.dept === 'quality' && Number(f.layer) === 1 && <div style={{ margin: '10px 0' }}><label className="lbl">Auditorías de proceso por día</label>
         <select className="inp" value={f.process_per_day ?? ''} onChange={(e) => set('process_per_day', e.target.value)}>
-          <option value="">Las generales (según Admin → QEs)</option><option value="1">1 · Auditoría 1 (por la mañana)</option><option value="2">2 · Auditoría 1 y 2</option><option value="3">3 · Auditoría 1, 2 y 3</option></select>
-        <label className="lbl">Preguntas de su auditoría de proceso</label>
+          <option value="">Según la configuración general</option><option value="1">1 auditoría (matutina)</option><option value="2">2 auditorías</option><option value="3">3 auditorías</option></select>
+        <label className="lbl">Formato de la auditoría de proceso</label>
         <select className="inp" value={f.process_template_id ?? ''} onChange={(e) => set('process_template_id', e.target.value)}>
-          <option value="">Las de los QEs (QE Process Audit)</option>{templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
+          <option value="">Formato estándar de proceso</option>{templates.filter((t) => t.name !== 'QE Process Audit').map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
       </div>}
       <label className="lbl">{isNew ? 'Contraseña inicial (mín. 8 caracteres)' : 'Nueva contraseña (opcional, mín. 8 caracteres)'}</label>
       <input className="inp" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />
@@ -720,22 +736,34 @@ function QEs() {
 
 // Ausencias justificadas (vacaciones, permisos…): no penalizan el cumplimiento
 function Holidays() {
-  const [h, setH] = useState(null), [date, setDate] = useState(''), [name, setName] = useState(''), [msg, setMsg] = useState('');
+  const [h, setH] = useState(null), [msg, setMsg] = useState('');
+  const [ym, setYm] = useState(() => { const t = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date()); return t.slice(0, 7); });
   const load = () => api('/api/admin/holidays').then((r) => setH(r.rows)).catch((e) => setMsg(e.message));
   useEffect(() => { load(); }, []);
-  async function add() { setMsg(''); try { const r = await api('/api/admin/holidays', { method: 'POST', body: { date, name } }); setMsg(`Guardado. Se quitaron ${r.removed} auditoría(s) pendientes de ese día.`); setDate(''); setName(''); load(); } catch (e) { setMsg(e.message); } }
-  async function del(d) { if (!confirm('¿Quitar este día festivo? Las auditorías de ese día se generan de nuevo.')) return; await api(`/api/admin/holidays?date=${d}`, { method: 'DELETE' }); load(); }
+  const map = Object.fromEntries((h || []).map((x) => [x.date, x.name]));
+  const [Y, M] = ym.split('-').map(Number);
+  const first = new Date(Date.UTC(Y, M - 1, 1)), days = new Date(Date.UTC(Y, M, 0)).getUTCDate(), off = (first.getUTCDay() + 6) % 7;
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+  const go = (n) => { const t = new Date(Date.UTC(Y, M - 1 + n, 1)); setYm(t.toISOString().slice(0, 7)); };
+  async function toggle(date) {
+    setMsg('');
+    try {
+      if (map[date] !== undefined) { if (!confirm(`¿Quitar el festivo "${map[date]}"? Las auditorías de ese día se generan de nuevo.`)) return; await api(`/api/admin/holidays?date=${date}`, { method: 'DELETE' }); }
+      else { const name = prompt('Nombre del día festivo (opcional)', '') ; if (name === null) return; const r = await api('/api/admin/holidays', { method: 'POST', body: { date, name } }); setMsg(`Festivo guardado. Se quitaron ${r.removed} auditoría(s) pendientes de ese día.`); }
+      load();
+    } catch (e) { setMsg(e.message); }
+  }
+  const cells = [...Array(off).fill(null), ...Array.from({ length: days }, (_, i) => `${ym}-${String(i + 1).padStart(2, '0')}`)];
+  const MES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   return (
     <div className="card" style={{ marginBottom: 14 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Días festivos</h3>
-      <p className="sub" style={{ margin: '0 0 8px' }}>En un día festivo <b>no se programan ni se exigen auditorías</b> (no penaliza). Las semanales/mensuales que vencían ese día vencen el día hábil anterior.</p>
-      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-        <input className="inp" type="date" style={{ maxWidth: 170 }} value={date} onChange={(e) => setDate(e.target.value)} />
-        <input className="inp grow" placeholder="Nombre (ej. Día de la Constitución)" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
-        <button className="btn sm" disabled={!date} onClick={add}>Agregar festivo</button></div>
+      <h3 style={{ margin: '0 0 4px' }}>Calendario de días festivos</h3>
+      <p className="sub" style={{ margin: '0 0 8px' }}>Toca un día para marcarlo como festivo (rojo) y vuelve a tocarlo para quitarlo. En un día festivo <b>no se programan ni se exigen auditorías</b> y no penaliza. Las semanales y mensuales que vencían ese día vencen el día hábil anterior.</p>
+      <div className="row" style={{ marginBottom: 8 }}><button type="button" className="btn alt sm" onClick={() => go(-1)}>‹</button><b className="grow" style={{ textAlign: 'center' }}>{MES[M - 1]} {Y}</b><button type="button" className="btn alt sm" onClick={() => go(1)}>›</button></div>
+      <div className="cal-g">{['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => <div key={i} className="cal-h">{d}</div>)}
+        {cells.map((d, i) => d ? <button type="button" key={d} className={`cal-d ${map[d] !== undefined ? 'fe' : ''} ${(i % 7) > 4 ? 'we' : ''} ${d === today ? 'td' : ''}`} title={map[d] || ''} onClick={() => toggle(d)}>{Number(d.slice(8))}</button> : <div key={`e${i}`} />)}</div>
       {msg && <div className="sub" style={{ marginTop: 6 }}>{msg}</div>}
-      {h && h.length > 0 && <div style={{ marginTop: 8, display: 'grid', gap: 4 }}>{h.map((x) => (
-        <div key={x.date} className="row"><span className="grow"><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b> · {x.name}</span><button className="btn-ghost" onClick={() => del(x.date)}>Quitar</button></div>))}</div>}
+      {h && h.filter((x) => x.date.startsWith(ym)).length > 0 && <div style={{ marginTop: 8, display: 'grid', gap: 2 }}>{h.filter((x) => x.date.startsWith(ym)).map((x) => <div key={x.date} className="sub" style={{ margin: 0 }}><b>{fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b> · {x.name}</div>)}</div>}
     </div>);
 }
 
