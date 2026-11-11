@@ -103,6 +103,9 @@ CREATE TABLE IF NOT EXISTS findings (
 );
 CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 
+-- Usuarios que entran solo con usuario (sin contraseña)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS passwordless BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- Tiempos de auditoría (estadísticas admin)
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS active_sec INT;
@@ -771,6 +774,9 @@ async function main() {
     }
     console.log(`[setup] ${ROSTER.length} usuarios sembrados (contraseña inicial = SEED_PASSWORD, o aleatoria si no se define)`);
   }
+
+  // Víctor Ramírez entra solo con su usuario (sin contraseña)
+  await pool.query(`UPDATE users SET passwordless=TRUE, must_change=FALSE WHERE name='Victor Ramírez'`);
 
   // Usuario admin: se crea si ADMIN_PIN está definido y aún no existe
   const adminPin = process.env.ADMIN_PASSWORD || '';

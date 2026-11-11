@@ -76,7 +76,7 @@ export default function Login() {
           <button type="button" className="eye" onClick={() => setShow(!show)} aria-label="mostrar / ocultar contraseña">{show ? Icon.eyeOff : Icon.eye}</button></div>
         {expired && !err && <div className="err">{lang === 'en' ? 'Your session was closed after a period of inactivity. Please sign in again.' : 'Tu sesión se cerró por inactividad. Vuelve a entrar.'}</div>}
         {err && <div className="err">{err}</div>}
-        <button className={`btn go ${okAnim ? 'ok' : ''}`} disabled={busy || !username || !pin}>{okAnim ? '✓' : busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
+        <button className={`btn go ${okAnim ? 'ok' : ''}`} disabled={busy || !username}>{okAnim ? '✓' : busy ? t.busy : <>{t.go}{Icon.arrow}</>}</button>
         <div className="remrow">
           <label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> {t.remember}</label>
           <button type="button" className="linkbtn" onClick={() => setForgot(!forgot)}>{t.forgot}</button>

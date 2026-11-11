@@ -14,12 +14,12 @@ export async function POST(req) {
     const it = ipTries.get(ip);
     if (it && it.n >= 40 && Date.now() - it.at < 600000) return err('Demasiados intentos. Espera 10 minutos.', 429);
     const un = String(username || '').trim().toLowerCase();
-    if (!un || !password) return err('Usuario y contraseña requeridos');
+    if (!un) return err('Usuario requerido');
     const t = tries.get(un);
     if (t && t.n >= 6 && Date.now() - t.at < 600000) return err('Demasiados intentos. Espera 10 minutos.', 429);
 
-    const { rows } = await q('SELECT id,pin_hash,must_change FROM users WHERE username=$1 AND active', [un]);
-    const ok = rows[0] && (await bcrypt.compare(String(password), rows[0].pin_hash));
+    const { rows } = await q('SELECT id,pin_hash,must_change,passwordless FROM users WHERE username=$1 AND active', [un]);
+    const ok = rows[0] && (rows[0].passwordless || (password && (await bcrypt.compare(String(password), rows[0].pin_hash))));
     if (!ok) {
       ipTries.set(ip, { n: (it && Date.now() - it.at < 600000 ? it.n : 0) + 1, at: Date.now() });
       tries.set(un, { n: (t && Date.now() - t.at < 600000 ? t.n : 0) + 1, at: Date.now() });
@@ -27,7 +27,7 @@ export async function POST(req) {
     }
     tries.delete(un);
     await createSession(rows[0].id, remember !== false);
-    return json({ ok: true, must_change: rows[0].must_change });
+    return json({ ok: true, must_change: rows[0].passwordless ? false : rows[0].must_change });
   } catch (e) {
     console.error(e);
     return err('Error interno', 500);
