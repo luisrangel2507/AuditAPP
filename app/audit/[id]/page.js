@@ -449,6 +449,12 @@ function RunnerInner({ audit, onExit, onDone }) {
               <span className="sym">{sym}</span>{code}<small>{lbl}</small>
             </button>))}
         </div>
+        {(a.result === 'ok' || a.result === 'na') && (
+          <div style={{ marginTop: 18 }}>
+            <label className="lbl">Nota (opcional)</label>
+            <textarea className="inp" rows={2} value={a.notes || ''} onChange={(e) => set({ notes: e.target.value })} placeholder="Agrega un comentario si lo necesitas…" />
+          </div>
+        )}
         {needsNote && (
           <div style={{ marginTop: 18 }}>
             {q.category === 'Auditoría gerencial' && <div className="qextra">
